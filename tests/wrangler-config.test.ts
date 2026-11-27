@@ -22,6 +22,10 @@ describe('wrangler.jsonc', () => {
     expect(config.previews).toBeDefined();
   });
 
+  it('明确打开预览地址：不写的话 `wrangler deploy` 不会去改 Worker 上现有的开关', () => {
+    expect(config.preview_urls).toBe(true);
+  });
+
   it('不把账号 ID 写进仓库', () => {
     expect(config.account_id).toBeUndefined();
   });

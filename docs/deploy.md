@@ -49,6 +49,7 @@
 1. 进这个 Worker → **Settings** → **Build** → **Branch control**。
 2. 确认 Production branch 是 `main`，勾上 **Enable Preview Builds**（新建的 Worker 默认已经勾上，并且用的是 Worker Previews）。
 3. 如果这里有「是否构建来自 fork 的 PR」之类的选项，选不构建。这是公开仓库，不应该让陌生人的改动在我们的 Cloudflare 账号里跑构建。
+4. 进 **Settings** → **Domains & Routes**，把 **workers.dev** 和 **Preview URLs** 都打开。`wrangler.jsonc` 里写了 `workers_dev` 和 `preview_urls` 为 `true`，但只有正式部署（`wrangler deploy`）会把它们写到 Worker 上，`wrangler preview` 不会。在 `main` 第一次部署成功之前不手动打开的话，PR 预览能构建成功，但没有地址（构建日志里会出现 `This Preview deployment has no active URLs`）。
 
 ### 4.（建议）在 GitHub 上保护 `main`
 
