@@ -1,0 +1,38 @@
+---
+// 状态小标签，产品页用：已确认（绿）、待确认（黄）、未知（灰）。颜色见 tokens.css。
+// 文字放进 slot，照抄 design/copy.md（比如「已验证」「已确认」「待确认」「未知」）。
+interface Props {
+  status: 'ok' | 'wait' | 'unknown';
+}
+
+const { status } = Astro.props;
+---
+
+<span class:list={['status-tag', status]}>
+  <slot />
+</span>
+
+<style>
+  .status-tag {
+    display: inline-block;
+    padding: 3px 9px;
+    border-radius: var(--radius-pill);
+    font-size: var(--text-label);
+    white-space: nowrap;
+  }
+
+  .ok {
+    background: var(--status-ok-bg);
+    color: var(--status-ok-ink);
+  }
+
+  .wait {
+    background: var(--status-wait-bg);
+    color: var(--status-wait-ink);
+  }
+
+  .unknown {
+    background: var(--status-unknown-bg);
+    color: var(--status-unknown-ink);
+  }
+</style>

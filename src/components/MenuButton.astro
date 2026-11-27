@@ -1,0 +1,35 @@
+---
+// 右下角菜单按钮，44×44，圆角 10。每一屏都有，深色屏上也是浅色按钮。
+// 菜单本身还没有设计稿，这里只有按钮；展开的菜单做出来时再加 aria-expanded 和 aria-controls。
+import { MENU_LABEL } from '../data/site';
+---
+
+<button type="button" class="menu-button" aria-label={MENU_LABEL}>
+  <svg width="18" height="12" viewBox="0 0 18 12" aria-hidden="true">
+    <path
+      d="M0 1h18M0 6h18M0 11h18"
+      stroke="currentColor"
+      stroke-width="1.4"
+    ></path>
+  </svg>
+</button>
+
+<style>
+  .menu-button {
+    position: absolute;
+    right: var(--page-margin);
+    bottom: 32px;
+    width: var(--tap-min);
+    height: var(--tap-min);
+    padding: 0;
+    border-radius: var(--radius-menu);
+    border: 1px solid rgba(28, 28, 27, 0.25);
+    background: var(--paper-button);
+    color: var(--ink);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: var(--z-chrome);
+  }
+</style>

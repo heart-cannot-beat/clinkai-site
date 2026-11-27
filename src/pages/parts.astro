@@ -1,0 +1,498 @@
+---
+// 部件陈列页（S-04）。把 design/README.md「公共部件」表里的部件和 tokens.css 的变量摆在一页上。
+// 不进站点导航，不让搜索引擎收录。部件上的文字都照抄 design/copy.md；
+// 这一页自己的小标题和说明只给开发和设计核对用，不是站点文案。
+import BaseLayout from '../layouts/BaseLayout.astro';
+import CounterBlock from '../components/CounterBlock.astro';
+import ExampleTag from '../components/ExampleTag.astro';
+import ScreenCorners from '../components/ScreenCorners.astro';
+import SectionLabel from '../components/SectionLabel.astro';
+import SiteHeader from '../components/SiteHeader.astro';
+import StatusTag from '../components/StatusTag.astro';
+import ChoiceGroup from '../components/form/ChoiceGroup.astro';
+import SelectField from '../components/form/SelectField.astro';
+import SubmitButton from '../components/form/SubmitButton.astro';
+import TextAreaField from '../components/form/TextAreaField.astro';
+import TextField from '../components/form/TextField.astro';
+import tokensCss from '../styles/tokens.css?raw';
+
+interface Token {
+  name: string;
+  value: string;
+  note: string;
+}
+
+// 直接从 tokens.css 读出变量和行尾注释，交接包更新后这一页自动跟着变
+const groups: { title: string; tokens: Token[] }[] = [];
+for (const line of tokensCss.split('\n')) {
+  const heading = line.match(/\/\*\s*-+\s*(.+?)\s*-+\s*\*\//);
+  if (heading?.[1]) {
+    groups.push({ title: heading[1], tokens: [] });
+    continue;
+  }
+  const token = line.match(
+    /^\s*(--[\w-]+):\s*(.+?);\s*(?:\/\*\s*(.*?)\s*\*\/)?\s*$/,
+  );
+  if (token?.[1] && token[2]) {
+    if (groups.length === 0) groups.push({ title: '其他', tokens: [] });
+    groups.at(-1)!.tokens.push({
+      name: token[1],
+      value: token[2],
+      note: token[3] ?? '',
+    });
+  }
+}
+
+const isColor = (value: string) => /^(#|rgba?\()/.test(value);
+const isTextSize = (name: string) => name.startsWith('--text-');
+const isRadius = (name: string) => name.startsWith('--radius-');
+
+const MARKETS = ['北美', '欧洲', '中东', '东南亚', '日韩', '拉美', '其他'];
+const SERVICES = ['策略', '品牌', '广告', '达人', '内容', '结果分析'];
+---
+
+<BaseLayout title="部件陈列 · ClinkAI" noindex>
+  <main class="parts">
+    <header class="intro">
+      <h1>部件陈列（S-04）</h1>
+      <p>
+        数值照 <code>design/tokens.css</code>，部件照{' '}
+        <code>design/README.md</code>「公共部件」表。部件上的文字照抄{' '}
+        <code>design/copy.md</code>。
+      </p>
+      <p>
+        设计稿只有 1440 宽的桌面稿：窄屏上每个部件按 1440
+        宽的画布等比缩小展示。部件的手机版要等手机稿（D-02）。
+      </p>
+    </header>
+
+    <section class="block" aria-labelledby="tokens">
+      <h2 id="tokens">设计规范（tokens.css）</h2>
+      {groups.map((group) => (
+        <div class="token-group">
+          <h3>{group.title}</h3>
+          <ul class="token-list">
+            {group.tokens.map((token) => (
+              <li class="token">
+                {isColor(token.value) && (
+                  <span
+                    class="swatch"
+                    style={`background: var(${token.name})`}
+                  />
+                )}
+                {token.name === '--hero-light' && (
+                  <span
+                    class="swatch wide"
+                    style={`background: var(${token.name})`}
+                  />
+                )}
+                {isRadius(token.name) && (
+                  <span
+                    class="radius-sample"
+                    style={`border-radius: var(${token.name})`}
+                  />
+                )}
+                <code class="token-name">{token.name}</code>
+                <code class="token-value">{token.value}</code>
+                {token.note && <span class="token-note">{token.note}</span>}
+                {isTextSize(token.name) && (
+                  <span
+                    class="type-sample"
+                    style={`font-size: var(${token.name})`}
+                  >
+                    CLINKAI 增长服务
+                  </span>
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </section>
+
+    <section class="block" aria-labelledby="header-plain">
+      <h2 id="header-plain">页头 · 普通</h2>
+      <p class="note">
+        01、05、06 屏和子页面。当前页标在导航上（下例是「我们的产品」）。
+      </p>
+      <div class="stage" data-stage style="--w: 1440; --h: 96">
+        <div class="frame">
+          <SiteHeader current="products" />
+        </div>
+      </div>
+      <p class="note">04 屏深色底：文字和描边换成纸色。</p>
+      <div class="stage" data-stage style="--w: 1440; --h: 96">
+        <div class="frame dark">
+          <SiteHeader tone="paper" />
+        </div>
+      </div>
+    </section>
+
+    <section class="block" aria-labelledby="header-pill">
+      <h2 id="header-pill">页头 · 胶囊</h2>
+      <p class="note">
+        02、03、03b
+        屏。背后是图片墙，所以标志和导航各自放在浅色胶囊里（下面的色块只是占位，代替图片）。
+      </p>
+      <div class="stage" data-stage style="--w: 1440; --h: 96">
+        <div class="frame busy">
+          <SiteHeader variant="pill" />
+        </div>
+      </div>
+    </section>
+
+    <section class="block" aria-labelledby="corners">
+      <h2 id="corners">角落部件</h2>
+      <p class="note">
+        左下角圆点（声音开关，默认关；交互在 M-02 做）、SCROLL（只在 01、04、05
+        屏）、菜单按钮（每一屏）。
+      </p>
+      <div class="stage" data-stage style="--w: 1440; --h: 110">
+        <div class="frame">
+          <ScreenCorners scroll />
+        </div>
+      </div>
+      <p class="note">04 屏深色底：圆点和 SCROLL 换成纸色，菜单按钮不变。</p>
+      <div class="stage" data-stage style="--w: 1440; --h: 110">
+        <div class="frame dark">
+          <ScreenCorners scroll tone="paper" />
+        </div>
+      </div>
+      <p class="note">02、03、03b 和子页面：没有 SCROLL。</p>
+      <div class="stage" data-stage style="--w: 1440; --h: 110">
+        <div class="frame">
+          <ScreenCorners />
+        </div>
+      </div>
+    </section>
+
+    <section class="block" aria-labelledby="counter">
+      <h2 id="counter">计数块</h2>
+      <p class="note">
+        02、03、03b 屏左下角。数字随滚动 40 → 1 →
+        8，右边两行说明跟着换；下面是三拍各自的静态帧。
+      </p>
+      <div class="counter-row">
+        <div class="stage" data-stage style="--w: 440; --h: 150">
+          <div class="frame busy">
+            <CounterBlock
+              label="03 / 广告投放 · 出素材"
+              value={40}
+              lines={['个版本，同一个创意', '7 种语言 · 4 种尺寸 · 示例']}
+            />
+          </div>
+        </div>
+        <div class="stage" data-stage style="--w: 440; --h: 150">
+          <div class="frame busy">
+            <CounterBlock
+              label="03 / 广告投放 · 测试"
+              value={1}
+              lines={[
+                '个胜出，40 个版本里测出来的',
+                '把预算加到这一张上 · 示例',
+              ]}
+            />
+          </div>
+        </div>
+        <div class="stage" data-stage style="--w: 440; --h: 150">
+          <div class="frame busy">
+            <CounterBlock
+              label="03 / 广告投放 · 下一轮"
+              value={8}
+              lines={[
+                '个新版本，从赢的那一张长出来',
+                '每一轮的结果，都喂给下一轮',
+              ]}
+            />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="block" aria-labelledby="section-label">
+      <h2 id="section-label">小节标签</h2>
+      <div class="specimens">
+        <div class="specimen dark">
+          <SectionLabel as="h3">04 / 达人营销 · 示例内容</SectionLabel>
+        </div>
+        <div class="specimen">
+          <SectionLabel>工具 / 我们的产品</SectionLabel>
+        </div>
+      </div>
+    </section>
+
+    <section class="block" aria-labelledby="example-tag">
+      <h2 id="example-tag">「示例」标签</h2>
+      <p class="note">所有虚构品牌内容旁边都必须有。文字或细线框两种。</p>
+      <div class="specimens">
+        <div class="specimen">
+          <span>B 版胜出，可以加预算</span>
+          <ExampleTag />
+        </div>
+        <div class="specimen cobalt">
+          <span class="brand">PEBBLESOUND</span>
+          <ExampleTag variant="outline">示例广告 · 非真实客户</ExampleTag>
+        </div>
+      </div>
+    </section>
+
+    <section class="block" aria-labelledby="status-tag">
+      <h2 id="status-tag">状态小标签</h2>
+      <p class="note">
+        产品页。颜色见 tokens.css 的 <code>--status-*</code>。
+      </p>
+      <div class="specimens">
+        <div class="specimen">
+          <StatusTag status="ok">已验证</StatusTag>
+          <StatusTag status="ok">已确认</StatusTag>
+          <StatusTag status="wait">待确认</StatusTag>
+          <StatusTag status="unknown">未知</StatusTag>
+        </div>
+      </div>
+    </section>
+
+    <section class="block" aria-labelledby="form">
+      <h2 id="form">表单控件</h2>
+      <p class="note">
+        预约沟通页。这里只看样子：不提交，不接 /api/contact（P-04 再接）。
+      </p>
+      <form class="demo-form" data-demo-form>
+        <TextField label="品牌名" name="brand" />
+        <TextField label="官网或店铺链接" name="site" type="url" />
+        <ChoiceGroup legend="想去的市场" name="market" options={MARKETS} />
+        <ChoiceGroup legend="需要哪些服务" name="service" options={SERVICES} />
+        <div class="form-row">
+          <SelectField
+            label="月预算"
+            name="budget"
+            options={['【待填：预算区间】', '先聊聊再说']}
+          />
+          <TextField
+            label="怎么联系你"
+            name="contact"
+            placeholder="微信 / 邮箱 / 电话"
+          />
+        </div>
+        <TextAreaField label="补充说明（选填）" name="note" />
+        <SubmitButton>提交，预约沟通 →</SubmitButton>
+      </form>
+    </section>
+  </main>
+</BaseLayout>
+
+<script>
+  // 窄屏上把 1440 宽的画布等比缩小；宽屏上按原尺寸显示
+  const stages = document.querySelectorAll<HTMLElement>('[data-stage]');
+  const fit = () => {
+    for (const stage of stages) {
+      const width = Number(stage.style.getPropertyValue('--w')) || 1440;
+      const scale = Math.min(1, stage.clientWidth / width);
+      stage.style.setProperty('--scale', String(scale));
+    }
+  };
+  fit();
+  window.addEventListener('resize', fit);
+
+  // 陈列页上的表单只看样子，不提交
+  document
+    .querySelector('[data-demo-form]')
+    ?.addEventListener('submit', (event) => event.preventDefault());
+</script>
+
+<style>
+  .parts {
+    box-sizing: border-box;
+    max-width: 1520px;
+    margin: 0 auto;
+    padding: 40px 40px 120px;
+  }
+
+  .intro h1 {
+    margin: 0 0 12px;
+    font-size: var(--text-card-title);
+    font-weight: var(--weight);
+  }
+
+  .intro p,
+  .note {
+    margin: 0 0 12px;
+    max-width: 760px;
+    font-size: var(--text-small);
+    line-height: 1.6;
+    color: var(--muted);
+  }
+
+  .block {
+    margin-top: 56px;
+    padding-top: 20px;
+    border-top: 1px solid var(--hairline);
+  }
+
+  .block h2 {
+    margin: 0 0 16px;
+    font-size: var(--text-lead);
+    font-weight: var(--weight);
+  }
+
+  .token-group h3 {
+    margin: 24px 0 10px;
+    font-size: var(--text-small);
+    font-weight: var(--weight);
+    color: var(--muted);
+  }
+
+  .token-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 6px;
+  }
+
+  .token {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 12px;
+    font-size: var(--text-small);
+  }
+
+  .token code {
+    font-size: var(--text-label);
+  }
+
+  .token-name {
+    min-width: 170px;
+  }
+
+  .token-value {
+    color: var(--muted);
+    overflow-wrap: anywhere;
+  }
+
+  .token-note {
+    color: var(--muted);
+  }
+
+  .swatch {
+    flex: none;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    box-shadow: inset 0 0 0 1px var(--hairline-soft);
+  }
+
+  .swatch.wide {
+    width: 120px;
+  }
+
+  .radius-sample {
+    flex: none;
+    width: 40px;
+    height: 28px;
+    border: 1px solid var(--ink);
+  }
+
+  .type-sample {
+    flex-basis: 100%;
+    line-height: 1.3;
+  }
+
+  /* 1440 宽画布的展示框：窄屏等比缩小（--scale 由上面的脚本算） */
+  .stage {
+    width: 100%;
+    max-width: calc(var(--w) * 1px);
+    height: calc(var(--h) * var(--scale, 1) * 1px);
+    margin-bottom: 16px;
+    overflow: hidden;
+  }
+
+  .frame {
+    position: relative;
+    width: calc(var(--w) * 1px);
+    height: calc(var(--h) * 1px);
+    overflow: hidden;
+    isolation: isolate;
+    background: var(--paper);
+    box-shadow: inset 0 0 0 1px var(--hairline-soft);
+    transform: scale(var(--scale, 1));
+    transform-origin: 0 0;
+  }
+
+  .dark {
+    background: var(--ink);
+    color: var(--paper);
+  }
+
+  /* 占位色块，代替胶囊页头和计数块后面的图片墙 */
+  .busy {
+    background:
+      linear-gradient(90deg, transparent 0 50%, rgba(22, 32, 90, 0.35) 50%) 0
+        0 / 180px 100%,
+      linear-gradient(var(--pebble-cobalt) 0 50%, var(--pebble-stone) 50%) 0 0 /
+        100% 120px;
+  }
+
+  .counter-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .counter-row .stage {
+    flex: 1 1 300px;
+  }
+
+  .specimens {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .specimen {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    padding: 20px 24px;
+    border-radius: var(--radius-field);
+    background: var(--paper-light);
+    font-size: var(--text-small);
+  }
+
+  .specimen.dark {
+    background: var(--ink);
+  }
+
+  .specimen.cobalt {
+    background: var(--pebble-cobalt);
+    color: var(--pebble-cream);
+  }
+
+  .brand {
+    letter-spacing: 0.1em;
+  }
+
+  .demo-form {
+    max-width: 640px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+
+  @media (max-width: 560px) {
+    .parts {
+      padding: 24px 16px 80px;
+    }
+
+    .form-row {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

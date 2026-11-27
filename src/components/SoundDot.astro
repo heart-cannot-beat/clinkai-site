@@ -1,0 +1,33 @@
+---
+// 左下角圆点。design/README.md 说它是声音开关、默认关；声音和交互在 M-02 做，
+// 这里只是设计稿里的静态样子（和 screens/*.html 一样对读屏隐藏）。
+// 位置：所在画面左下角，左 40px、下 40px。
+interface Props {
+  /** ink：纸色底上的墨色点；paper：深色底（04 屏）上的纸色点 */
+  tone?: 'ink' | 'paper';
+}
+
+const { tone = 'ink' } = Astro.props;
+---
+
+<span class:list={['sound-dot', tone]} aria-hidden="true"></span>
+
+<style>
+  .sound-dot {
+    position: absolute;
+    left: var(--page-margin);
+    bottom: 40px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    z-index: var(--z-chrome);
+  }
+
+  .ink {
+    background: var(--ink);
+  }
+
+  .paper {
+    background: var(--paper);
+  }
+</style>

@@ -1,0 +1,64 @@
+---
+// 多选胶囊：想去的市场、需要哪些服务。每个选项是一个带复选框的胶囊，可以多选。
+interface Props {
+  legend: string;
+  name: string;
+  options: readonly string[];
+}
+
+const { legend, name, options } = Astro.props;
+---
+
+<fieldset class="choice-group">
+  <legend>{legend}</legend>
+  <div class="choices">
+    {options.map((option) => (
+      <label class="choice">
+        <input type="checkbox" name={name} value={option} />
+        {option}
+      </label>
+    ))}
+  </div>
+</fieldset>
+
+<style>
+  .choice-group {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  legend {
+    padding: 0;
+    margin-bottom: 8px;
+    font-size: var(--text-nav);
+    color: var(--muted);
+  }
+
+  .choices {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .choice {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 40px;
+    padding: 0 14px;
+    border-radius: var(--radius-pill);
+    border: 1px solid rgba(28, 28, 27, 0.3);
+    font-size: var(--text-small);
+    cursor: pointer;
+  }
+
+  input {
+    margin: 0;
+    accent-color: var(--ink);
+  }
+</style>
