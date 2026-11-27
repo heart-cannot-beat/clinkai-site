@@ -81,6 +81,14 @@ export interface WallConfig {
   templates: { [Size in TileSize]: TemplateName<Size>[] };
 }
 
+/** 配置里登记的全部图片文件名（产品图和场景图） */
+export function wallImageFiles(config: WallConfig): string[] {
+  return [
+    ...Object.values(config.cutouts),
+    ...Object.values(config.photos),
+  ].map((image) => image.file);
+}
+
 const INK = '#1C1C1B';
 const COBALT = '#2743C9';
 const CREAM = '#F3EEE2';

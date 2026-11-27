@@ -6,16 +6,15 @@
 
 ## 文件
 
-| 路径                         | 内容                                                                                            |
-| :--------------------------- | :---------------------------------------------------------------------------------------------- |
-| `src/wall/config.ts`         | 变体配置：格子和随机种子、候选尺寸、底色、各语言的标题、图片、每种尺寸轮流套的模板              |
-| `src/wall/templates.ts`      | 每个模板里图片和文字摆在哪                                                                      |
-| `src/wall/generate.ts`       | `packGrid` 用固定种子切格子，`generateWall` 生成小图并数出三个计数，`renderWallTiles` 输出 HTML |
-| `src/wall/python-compat.ts`  | 和 Python 一致的随机数序列（MT19937）和取整。没有它，同一个种子切出来的格子就和设计稿不一样     |
-| `src/wall/images.ts`         | 把图片文件名换成站点上的地址                                                                    |
-| `src/wall/index.ts`          | `versionWall`：站点上的那面墙，构建时生成一次                                                   |
-| `src/wall/VersionWall.astro` | 输出整面墙的组件                                                                                |
-| `src/assets/wall/`           | 墙里用到的图片，从 `design/assets/img/` 原样拷来。全部是虚构品牌 Pebblesound 的 AI 生成示例     |
+| 路径                         | 内容                                                                                                            |
+| :--------------------------- | :-------------------------------------------------------------------------------------------------------------- |
+| `src/wall/config.ts`         | 变体配置：格子和随机种子、候选尺寸、底色、各语言的标题、图片、每种尺寸轮流套的模板                              |
+| `src/wall/templates.ts`      | 每个模板里图片和文字摆在哪                                                                                      |
+| `src/wall/generate.ts`       | `packGrid` 用固定种子切格子，`generateWall` 生成小图并数出三个计数，`renderWallTiles` 输出 HTML                 |
+| `src/wall/python-compat.ts`  | 和 Python 一致的随机数序列（MT19937）和取整。没有它，同一个种子切出来的格子就和设计稿不一样                     |
+| `src/wall/index.ts`          | `versionWall`：站点上的那面墙，构建时生成一次。图片走站点的图片管线（`docs/media.md`）                          |
+| `src/wall/VersionWall.astro` | 输出整面墙的组件                                                                                                |
+| `src/assets/img/`            | 图片，和站点上别的示例图放在一起，从 `design/assets/img/` 原样拷来。墙里只用虚构品牌 Pebblesound 的 AI 生成示例 |
 
 ## 怎么用
 
@@ -34,6 +33,7 @@ const { versions, languages, sizes } = versionWall.counts; // 现在是 40、7�
 
 - **计数不手写。** 计数块里的版本数、语言数、尺寸数读 `versionWall.counts`，它是从生成结果里数出来的。
 - **坐标是设计稿 1440×900 画布上的像素。** 组件只输出小图和一层 `position: absolute; inset: 0` 的容器；深色底、字体、层级、缩放由所在的屏负责。手机上怎么排要等手机稿。
+- **图片走站点的图片管线。** 墙里每张图输出成 `<picture>`：AVIF 在前、WebP 兜底、多尺寸、延迟加载，`sizes` 按图在画布上实际显示的宽度写。和别处用同一套文件，见 `docs/media.md`。生成器本身不管图片怎么输出：`generateWall` 收一个把图画成 HTML 的函数，站点上用 `pictureHtml`，和设计稿对照的测试用 `plainImage` 输出设计稿里的 `<img>`。
 - **「示例」必须标。** 组件的无障碍说明以「示例：」开头；计数块里那行文案末尾的「· 示例」由所在的屏照 `design/copy.md` 写上。
 
 ## 规则
@@ -47,7 +47,7 @@ const { versions, languages, sizes } = versionWall.counts; // 现在是 40、7�
 `design/wall/tiles.json` 变了，`npm run test` 里对照它的测试就会挂。按下面的顺序同步：
 
 1. 对照 `design/wall/generate_wall.py` 的改动，改 `src/wall/config.ts`（数据）或 `src/wall/templates.ts`（位置）。
-2. 图片换了或加了，把 `design/assets/img/` 里对应的文件拷到 `src/assets/wall/`，并在 `config.ts` 里登记。
-3. 跑 `npm run test`，直到生成的 40 张和 `tiles.json`、`design/screens/02-wall.html` 一字不差。
+2. 图片换了或加了，把 `design/assets/img/` 里对应的文件拷到 `src/assets/img/`，并在 `config.ts` 里登记。
+3. 跑 `npm run test`，直到生成的 40 张和 `tiles.json` 一致、和 `design/screens/02-wall.html` 一字不差（站点上的图换成了 `<picture>`，和设计稿对照时只忽略图片元素自己的属性，见 `src/wall/VersionWall.test.ts`）。
 
 代码和交接包对不上、又不是移植的问题时，在 Issue 里报，不要改 `design/`，也不要在代码里绕过去。

@@ -10,6 +10,7 @@ import type {
   WallConfig,
   WallGrid,
 } from './config';
+import type { DisplayBox } from '../media/responsive';
 import { PythonRandom, pythonRound } from './python-compat';
 import { drawTile, isTileSize, type Painter } from './templates';
 
@@ -43,6 +44,18 @@ export interface Wall {
   tiles: WallTile[];
 }
 
+/** 墙里的一张图：文件名、设计稿里这张图的内联样式、在 1440 宽画布上显示多大 */
+export interface WallImage extends DisplayBox {
+  file: string;
+  style: string;
+}
+
+/**
+ * 把墙里的一张图画成 HTML。站点上输出带 AVIF、WebP 和多尺寸的 <picture>
+ * （src/wall/index.ts），和设计稿对照时输出设计稿里的 <img>（plainImage）。
+ */
+export type WallImageRenderer = (image: WallImage) => string;
+
 // 底色轮换的步长：序号乘它再加行号，相邻的小图就不会撞色
 const PALETTE_STRIDE = 5;
 const MARK_STYLE = 'font-size: 10px; letter-spacing: 0.1em';
@@ -53,6 +66,12 @@ function escapeHtml(value: string): string {
     .replaceAll('<', '&lt;')
     .replaceAll('>', '&gt;')
     .replaceAll('"', '&quot;');
+}
+
+/** 设计稿里的写法：一个 <img>，地址由 url 给出 */
+export function plainImage(url: (file: string) => string): WallImageRenderer {
+  return ({ file, style }) =>
+    `<img src="${escapeHtml(url(file))}" alt="" style="${style}">`;
 }
 
 /**
@@ -119,10 +138,10 @@ function headlineHtml(headline: Headline): string {
 
 function createPainter(
   config: WallConfig,
-  imageUrl: (file: string) => string,
+  renderImage: WallImageRenderer,
   usedLanguages: Set<string>,
+  tile: { width: number; height: number },
 ): Painter {
-  const src = (file: string) => escapeHtml(imageUrl(file));
   const text = (inner: string, css: string) =>
     `<span style="position: absolute; ${css}">${inner}</span>`;
   const cutoutHeight: Painter['cutoutHeight'] = (name, width) => {
@@ -136,10 +155,20 @@ function createPainter(
     cutoutHeight,
     cutout(name, left, top, width, rotate = 0) {
       const transform = rotate ? `; transform: rotate(${rotate}deg)` : '';
-      return `<img src="${src(config.cutouts[name].file)}" alt="" style="position: absolute; left: ${left}px; top: ${top}px; width: ${width}px; height: ${cutoutHeight(name, width)}px; max-width: none${transform}">`;
+      return renderImage({
+        file: config.cutouts[name].file,
+        style: `position: absolute; left: ${left}px; top: ${top}px; width: ${width}px; height: ${cutoutHeight(name, width)}px; max-width: none${transform}`,
+        width,
+      });
     },
     cover(name, position = '50% 50%') {
-      return `<img src="${src(config.photos[name].file)}" alt="" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: ${position}">`;
+      // 铺满整张小图：按小图的框算图实际铺开多宽
+      return renderImage({
+        file: config.photos[name].file,
+        style: `position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: ${position}`,
+        width: tile.width,
+        height: tile.height,
+      });
     },
     headline(index, maxLength = Infinity) {
       const { headlines } = config;
@@ -173,15 +202,14 @@ function createPainter(
 
 /**
  * 生成整面墙。同样的配置（含种子）每次得到同样的结果。
- * imageUrl 把配置里的图片文件名换成页面上能用的地址。
+ * renderImage 把配置里的一张图画成页面上的 HTML。
  */
 export function generateWall(
   config: WallConfig,
-  imageUrl: (file: string) => string,
+  renderImage: WallImageRenderer,
 ): Wall {
   const { grid, header, menuCell, palette } = config;
   const usedLanguages = new Set<string>();
-  const paint = createPainter(config, imageUrl, usedLanguages);
   const turns = new Map<TileSize, number>();
 
   const tiles = packGrid(config).map((cell, index): WallTile => {
@@ -206,6 +234,10 @@ export function generateWall(
       row === header.row &&
       (left < header.logoEnd || left + width > header.navStart);
 
+    const paint = createPainter(config, renderImage, usedLanguages, {
+      width,
+      height,
+    });
     const draft = drawTile(
       size,
       template,

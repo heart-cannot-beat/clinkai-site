@@ -4,13 +4,19 @@ import wallScreen from '../../design/screens/02-wall.html?raw';
 import winnerScreen from '../../design/screens/03-winner.html?raw';
 import designWall from '../../design/wall/tiles.json';
 import { pebblesoundWall, type WallConfig } from './config';
-import { generateWall, packGrid, renderWallTiles } from './generate';
+import {
+  generateWall,
+  packGrid,
+  plainImage,
+  renderWallTiles,
+  type WallImage,
+} from './generate';
 
 // 基准是设计交接包里的定稿数据 design/wall/tiles.json 和每屏的 HTML 源。
 // 设计侧重新导出后这里的测试会挂，按新数据同步 config.ts 和 templates.ts。
 
-// 设计稿里图片的相对路径。用它生成，结果应当和 tiles.json 一字不差
-const designImage = (file: string) => `../assets/img/${file}`;
+// 按设计稿的写法画图：<img>，地址是设计稿里的相对路径。用它生成，结果应当和 tiles.json 一字不差
+const designImage = plainImage((file) => `../assets/img/${file}`);
 
 function withSeed(seed: number): WallConfig {
   return { ...pebblesoundWall, grid: { ...pebblesoundWall.grid, seed } };
@@ -173,14 +179,41 @@ describe('版本墙输出的静态 HTML', () => {
     );
   });
 
-  it('图片路径换成站点自己的，其余不变', () => {
-    const site = generateWall(pebblesoundWall, (file) => `/_site/wall/${file}`);
+  it('图片怎么画交给 renderImage，其余不变', () => {
+    const site = generateWall(
+      pebblesoundWall,
+      ({ file, style }) => `<img src="/_site/${file}" alt="" style="${style}">`,
+    );
     const html = renderWallTiles(site);
 
     expect(html).not.toContain('../assets/img/');
-    expect(html.replaceAll('/_site/wall/', '../assets/img/')).toBe(
+    expect(html.replaceAll('/_site/', '../assets/img/')).toBe(
       renderWallTiles(wall),
     );
+  });
+
+  it('告诉 renderImage 图显示多大：产品图按画出来的宽度，场景图按整张小图的框', () => {
+    const images: WallImage[] = [];
+    const site = generateWall(
+      pebblesoundWall,
+      (image) => `<i data-image="${images.push(image) - 1}"></i>`,
+    );
+
+    expect(images).toHaveLength(renderWallTiles(wall).match(/<img /g)!.length);
+    for (const tile of site.tiles) {
+      for (const [, n] of tile.html.matchAll(/data-image="(\d+)"/g)) {
+        const image = images[Number(n)];
+        if (image.style.includes('object-fit: cover')) {
+          expect(image).toMatchObject({
+            width: tile.width,
+            height: tile.height,
+          });
+        } else {
+          expect(image.height).toBeUndefined();
+          expect(image.style).toContain(`; width: ${image.width}px;`);
+        }
+      }
+    }
   });
 
   it('中日韩标题按词包成 inline-block，只在词和词之间换行', () => {
