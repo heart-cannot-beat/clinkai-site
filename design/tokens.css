@@ -1,0 +1,90 @@
+/* ClinkAI 官网设计规范。来自设计画布定稿（2026-11-27）。
+   S-04 以此为准；数值和 design/screens/*.html 里用的一致。 */
+:root {
+  /* ---------- 颜色：站点本身只有墨色和纸色 ---------- */
+  --ink: #1c1c1b;            /* 正文、深色底（04 屏）、实心按钮 */
+  --paper: #e6e4df;          /* 页面底色；深色底上的文字 */
+  --paper-light: #f4f2ee;    /* 输入框底、列表行底、贴纸 */
+  --paper-raised: #eeece7;   /* 子页面卡片底 */
+  --paper-button: #eeede9;   /* 菜单按钮底 */
+  --muted: #5c5a55;          /* 次要文字、表单标签、编号 */
+  --hairline: rgba(28, 28, 27, 0.28);       /* 分隔线、图例细线 */
+  --hairline-soft: rgba(28, 28, 27, 0.12);  /* 卡片描边 */
+  --outline-button: rgba(28, 28, 27, 0.35); /* 描边按钮 */
+
+  /* 首屏背景的光：中间亮、四周暗，再叠一层细颗粒（见 screens/01-hero.html） */
+  --hero-light: radial-gradient(120% 92% at 50% 44%, #f0eee9 0%, #e6e4df 46%, #d6d3cc 100%);
+
+  /* ---------- 状态小标签（产品页） ---------- */
+  --status-ok-bg: rgba(30, 122, 63, 0.13);
+  --status-ok-ink: #1e6b39;
+  --status-wait-bg: rgba(214, 140, 0, 0.16);
+  --status-wait-ink: #7a4800;
+  --status-unknown-bg: rgba(28, 28, 27, 0.08);
+  --status-unknown-ink: #5c5a55;
+
+  /* ---------- 示例品牌 Pebblesound 的色板：只用在示例广告里，不是站点配色 ---------- */
+  --pebble-cobalt: #2743c9;
+  --pebble-navy: #16205a;
+  --pebble-pale: #b9c8ec;
+  --pebble-stone: #cbc7be;
+  --pebble-brass: #cda349;
+  --pebble-dark: #2a2a28;
+  --pebble-cream: #f3eee2;   /* 钴蓝和深色底上的字 */
+
+  /* ---------- 字体：全站只有一种字重 ---------- */
+  --font-sans: 'Inter Tight', 'Noto Sans SC', system-ui, sans-serif;
+  --font-latin: 'Inter Tight', 'Helvetica Neue', Arial, sans-serif; /* 英文大标题专用，见 README 排版规则 1 */
+  --weight: 400;
+
+  /* ---------- 字号（px，按 1440 宽的画布） ---------- */
+  --text-label: 12px;        /* 示例标签、状态标签 */
+  --text-nav: 13px;          /* 导航、表单标签、SCROLL */
+  --text-small: 14px;
+  --text-body: 15px;         /* 小节标签、说明、图例 */
+  --text-button: 16px;
+  --text-lead: 17px;
+  --text-desc: 19px;         /* 05 屏每行右边的说明 */
+  --text-intro: 22px;        /* 关于我们的介绍段 */
+  --text-logo: 24px;
+  --text-card-title: 30px;
+  --display-counter: 100px;  /* 计数块里的数字，字距 -0.04em，行高 0.9 */
+  --display-hero: 120px;     /* 首屏三行大字，字距 -0.025em，行高 1 */
+  --display-zh: 124px;       /* 05 屏的中文大字，字距 0.02em */
+  --display-page: 140px;     /* 关于我们标题 */
+  --display-contact: 190px;  /* 预约沟通标题，字距 -0.04em，行高 0.9 */
+  --display-card: 250px;     /* 03 屏大卡片里的 Mute，字距 -0.045em */
+  --display-ending: 300px;   /* 结尾两行 */
+
+  /* ---------- 圆角 ---------- */
+  --radius-pill: 999px;      /* 按钮、胶囊页头、多选项 */
+  --radius-field: 8px;       /* 输入框、列表行 */
+  --radius-menu: 10px;       /* 菜单按钮 */
+  --radius-card: 12px;       /* 子页面卡片 */
+  --radius-video: 26px;      /* 达人屏主视频；旁边的小视频 22px */
+  --radius-tag: 4px;         /* 示例标签 */
+
+  /* ---------- 版式 ---------- */
+  --page-margin: 40px;       /* 左右边距；胶囊页头是 20px */
+  --header-top: 26px;
+  --tap-min: 44px;           /* 可点区域的最小边 */
+
+  /* ---------- 层级 ---------- */
+  --z-back: 1;               /* 背景、阴影、图片墙 */
+  --z-object: 2;             /* 主体：叠板、主视频 */
+  --z-card: 3;               /* 03 屏抽出来的卡片、句号 */
+  --z-type: 4;               /* 首屏三行大字 */
+  --z-chrome: 5;             /* 图例、小节标签、计数块、角落部件 */
+  --z-header: 6;
+}
+
+/* 首屏三行大字压在叠板上时反色：白字加差值混合。只在首屏用。 */
+.hero-word {
+  color: #fff;
+  mix-blend-mode: difference;
+  font-family: var(--font-latin);
+  font-size: var(--display-hero);
+  line-height: 1;
+  letter-spacing: -0.025em;
+  white-space: nowrap;
+}

@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ClinkAI 首屏动效小样 · 每一层</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400&family=Noto+Sans+SC:wght@400&display=swap" rel="stylesheet">
+<style>
+/*
+VOICE  confident, quiet, studio-grade; one typeface at one weight
+IDEA   a full-service team as a physical stack: strategy at the bottom, results on top
+PICTURE six thin plates in isometric 3D, each one alive, pulled out one by one on scroll
+COLOUR warm grey ground, near-black ink; colour only comes from the work inside the plates
+LAYOUT OFF+BRAND-style: three huge staggered words around one central object, small chrome in corners
+*/
+:root{color-scheme:light;--bg:#E6E4DF;--ink:#1C1C1B;--muted:#5C5A55;--paper:#F4F2EE}
+*{box-sizing:border-box;min-width:0}
+html,body{margin:0;background:var(--bg);color:var(--ink)}
+body{font:16px/1.5 'Inter Tight','Noto Sans SC',system-ui,sans-serif;font-weight:400;overflow-x:clip}
+a{color:inherit;text-decoration:none}
+header{position:fixed;inset:0 0 auto 0;display:flex;align-items:center;justify-content:space-between;padding:22px clamp(16px,2.8vw,40px);z-index:30}
+.logo{display:flex;align-items:baseline;gap:3px;font-size:24px;letter-spacing:-.01em}
+.logo i{width:9px;height:9px;border-radius:50%;background:var(--ink);display:inline-block}
+nav{display:flex;align-items:center;gap:26px;font-size:13px;letter-spacing:.02em}
+nav .pill{padding:10px 18px;border-radius:999px;border:1px solid rgba(28,28,27,.35);display:flex;gap:8px;align-items:center;min-height:44px}
+@media(max-width:700px){nav a:not(.pill){display:none}}
+
+.hero{position:relative;height:720vh}
+.pin{position:sticky;top:0;height:100vh;overflow:hidden;isolation:isolate;background:var(--bg)}
+.scene{position:absolute;left:50%;top:52%;width:0;height:0;perspective:2400px;z-index:1}
+.stack{position:absolute;width:300px;height:300px;left:-150px;top:-150px;transform-style:preserve-3d}
+.plate{position:absolute;inset:0;border-radius:10px;overflow:hidden;background:var(--paper);
+  box-shadow:0 0 0 1px rgba(28,28,27,.10),0 22px 44px rgba(28,28,27,.14);backface-visibility:hidden}
+.plate .lab{position:absolute;left:14px;top:12px;font-size:13px;z-index:3}
+.plate.lt .lab{color:var(--paper)}
+.sheen{position:absolute;inset:-40%;background:linear-gradient(115deg,transparent 42%,rgba(255,255,255,.38) 50%,transparent 58%);transform:translateX(-60%);animation:sheen 5.5s ease-in-out infinite;z-index:4;pointer-events:none}
+@keyframes sheen{0%,62%{transform:translateX(-60%)}84%,100%{transform:translateX(60%)}}
+.dot{position:absolute;left:127px;top:127px;width:46px;height:46px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#4a4a48,#121211 60%,#050505);box-shadow:0 0 0 1px rgba(255,255,255,.08)}
+.shadow{position:absolute;left:50%;top:calc(52% + 210px);width:min(520px,70vw);height:46px;transform:translateX(-50%);border-radius:50%;background:rgba(28,28,27,.2);filter:blur(22px);z-index:0}
+
+/* plate contents */
+.p-strat{background:#F3EEE2}
+.p-strat .ln{position:absolute;left:18px;height:7px;border-radius:4px;background:var(--ink);transform-origin:left;animation:write 4.8s cubic-bezier(.2,.8,.2,1) infinite}
+@keyframes write{0%{transform:scaleX(0)}35%,85%{transform:scaleX(1)}100%{transform:scaleX(0)}}
+.p-strat .chips{position:absolute;left:18px;right:18px;bottom:18px;display:flex;flex-wrap:wrap;gap:6px}
+.p-strat .chips span{padding:4px 10px;border:1px solid rgba(28,28,27,.45);border-radius:999px;font-size:13px;animation:pop 4.8s ease infinite}
+@keyframes pop{0%,30%{opacity:0;transform:translateY(6px)}42%,88%{opacity:1;transform:none}100%{opacity:0}}
+.p-brand{transition:background-color .7s ease}
+.p-brand .name{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);text-align:center;color:var(--paper);font-size:34px;letter-spacing:-.02em;transition:opacity .35s}
+.cyc{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .8s ease}
+.cyc.on{opacity:1}
+.bars{position:absolute;left:12px;right:12px;top:10px;display:flex;gap:4px;z-index:3}
+.bars span{flex:1;height:3px;border-radius:2px;background:rgba(244,242,238,.4);overflow:hidden}
+.bars span b{display:block;height:100%;width:100%;background:var(--paper);transform-origin:left;transform:scaleX(0)}
+.bars span.done b{transform:scaleX(1)}
+.bars span.run b{animation:fill 2s linear forwards}
+@keyframes fill{to{transform:scaleX(1)}}
+.handle{position:absolute;left:12px;bottom:12px;display:flex;align-items:center;gap:8px;color:var(--paper);font-size:13px;z-index:3}
+.handle img{width:26px;height:26px;border-radius:50%;object-fit:cover;border:1.5px solid var(--paper)}
+.grid{position:absolute;inset:40px 14px 14px}
+.grid img{position:absolute;width:calc(50% - 4px);height:calc(50% - 4px);object-fit:cover;border-radius:5px;transition:transform .8s cubic-bezier(.2,.8,.2,1)}
+.p-res .barwrap{position:absolute;left:26px;right:26px;bottom:26px;height:150px;display:flex;align-items:flex-end;justify-content:space-between}
+.p-res .barwrap i{width:28px;height:100%;background:var(--ink);transform-origin:bottom;animation:grow 4.8s cubic-bezier(.2,.8,.2,1) infinite}
+@keyframes grow{0%{transform:scaleY(.08)}40%,85%{transform:scaleY(var(--h))}100%{transform:scaleY(.08)}}
+.p-res svg{position:absolute;left:26px;top:52px;width:248px;height:70px}
+.p-res polyline{fill:none;stroke:#E8542F;stroke-width:2.5;stroke-dasharray:320;stroke-dashoffset:320;animation:draw 4.8s ease infinite}
+@keyframes draw{0%{stroke-dashoffset:320}45%,85%{stroke-dashoffset:0}100%{stroke-dashoffset:320}}
+
+/* words */
+.w{position:absolute;color:#fff;mix-blend-mode:difference;font-size:clamp(52px,8.4vw,126px);line-height:1;letter-spacing:-.025em;white-space:nowrap;z-index:5;pointer-events:none;margin:0;font-weight:400}
+.w1{left:6.5vw;top:12vh}.w2{right:9vw;top:41vh}.w3{left:21vw;top:70vh;height:1.06em;overflow:hidden}
+.w3 span{display:block}
+@media(max-width:700px){.w1{left:5vw;top:14vh}.w2{right:5vw;top:38vh}.w3{left:5vw;top:66vh}}
+
+/* chrome */
+.legend{position:absolute;left:clamp(16px,2.8vw,40px);top:50%;transform:translateY(-50%);margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:2px;z-index:6}
+.legend button{font:inherit;font-size:15px;color:var(--muted);background:none;border:0;padding:6px 0;min-height:36px;display:flex;gap:12px;align-items:baseline;cursor:pointer;text-align:left}
+.legend button:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:4px}
+.legend li.on button{color:var(--ink)}
+.legend li.on button::after{content:'';width:22px;height:1px;background:var(--ink);align-self:center}
+.legend .desc{font-size:13px;color:var(--muted);margin:-2px 0 8px 34px;max-width:220px;display:none}
+.legend li.on .desc{display:block}
+@media(max-width:700px){.legend{top:auto;bottom:128px;transform:none;flex-direction:row;flex-wrap:wrap;gap:0 14px;right:16px}.legend li.on .desc,.legend li.on button::after{display:none}.shadow{top:calc(52% + 150px);width:62vw}.scene{top:50%}}
+.sub{position:absolute;left:clamp(16px,2.8vw,40px);bottom:78px;margin:0;font-size:15px;z-index:6;white-space:nowrap}
+@media(max-width:700px){.sub{white-space:normal;right:16px;bottom:72px}}
+.sound{position:absolute;left:clamp(16px,2.8vw,40px);bottom:22px;min-height:44px;display:flex;align-items:center;gap:10px;background:none;border:0;padding:0 8px 0 0;font:inherit;font-size:13px;color:var(--muted);cursor:pointer;z-index:7}
+.sound i{width:10px;height:10px;border-radius:50%;background:var(--ink);position:relative;flex:none}
+.sound[aria-pressed=true]{color:var(--ink)}
+.sound[aria-pressed=true] i::after{content:'';position:absolute;inset:-7px;border-radius:50%;border:1px solid var(--ink);animation:ring 1.6s ease-out infinite}
+@keyframes ring{from{transform:scale(.5);opacity:1}to{transform:scale(1.7);opacity:0}}
+.sound:focus-visible{outline:2px solid var(--ink);outline-offset:4px;border-radius:6px}
+.scroll{position:absolute;right:clamp(16px,2.8vw,40px);bottom:36px;font-size:13px;letter-spacing:.04em;z-index:6;display:flex;gap:16px}
+.next{min-height:100vh;display:flex;flex-direction:column;justify-content:center;gap:16px;padding:0 clamp(16px,6vw,96px);background:var(--bg)}
+.next p{margin:0;font-size:15px;color:var(--muted)}
+.next h2{margin:0;font-weight:400;font-size:clamp(44px,7vw,104px);line-height:1;letter-spacing:-.025em}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+@media (prefers-reduced-motion: reduce){.sheen,.p-strat .ln,.p-strat .chips span,.p-res .barwrap i,.p-res polyline{animation:none}.p-strat .ln{transform:none}.p-strat .chips span{opacity:1}.p-res .barwrap i{transform:scaleY(var(--h))}.p-res polyline{stroke-dashoffset:0}}
+</style>
+</head>
+<body>
+<header>
+  <a class="logo" href="#top" aria-label="ClinkAI 首页"><span>CLINKAI</span><i aria-hidden="true"></i></a>
+  <nav aria-label="主导航"><a href="#services">增长服务 ↗</a><a href="#work">作品 ↗</a><a href="#products">我们的产品 ↗</a><a class="pill" href="#pilot">预约沟通 <span aria-hidden="true">→</span></a></nav>
+</header>
+
+<main id="top">
+<section class="hero" id="hero" aria-label="首屏：出海营销的每一层">
+  <div class="pin">
+    <div class="shadow" aria-hidden="true"></div>
+    <div class="scene" aria-hidden="true"><div class="stack" id="stack">
+      <div class="plate p-strat" data-i="0"><span class="lab">01 策略</span>
+        <span class="ln" style="top:46px;width:62%"></span><span class="ln" style="top:64px;width:78%;animation-delay:.15s"></span><span class="ln" style="top:82px;width:54%;animation-delay:.3s"></span><span class="ln" style="top:100px;width:70%;animation-delay:.45s"></span>
+        <div class="chips"><span>定位</span><span style="animation-delay:.12s">人群</span><span style="animation-delay:.24s">渠道</span><span style="animation-delay:.36s">节奏</span><span style="animation-delay:.48s">市场</span></div>
+        <div class="sheen"></div></div>
+      <div class="plate p-brand lt" data-i="1" id="brand"><span class="lab">02 品牌</span><span class="name" id="brandName">HALFMILE</span><div class="sheen"></div></div>
+      <div class="plate lt" data-i="2"><span class="lab">03 广告</span>
+        <img class="cyc on" src="img/ad1.jpg" alt=""><img class="cyc" src="img/ad2.jpg" alt=""><img class="cyc" src="img/ad3.jpg" alt=""><img class="cyc" src="img/ad4.jpg" alt=""><div class="sheen"></div></div>
+      <div class="plate lt" data-i="3"><span class="lab" style="top:20px">04 达人</span>
+        <div class="bars" id="bars"><span><b></b></span><span><b></b></span><span><b></b></span><span><b></b></span></div>
+        <img class="cyc on" src="img/cr1.jpg" alt=""><img class="cyc" src="img/cr2.jpg" alt=""><img class="cyc" src="img/cr3.jpg" alt=""><img class="cyc" src="img/cr4.jpg" alt="">
+        <div class="handle"><img id="av" src="img/av1.jpg" alt=""><span id="hd">@slowmornings.co</span></div><div class="sheen"></div></div>
+      <div class="plate" data-i="4"><span class="lab">05 内容</span>
+        <div class="grid" id="grid"><img src="img/ct1.jpg" alt=""><img src="img/ct2.jpg" alt=""><img src="img/ct3.jpg" alt=""><img src="img/ct4.jpg" alt=""></div><div class="sheen"></div></div>
+      <div class="plate p-res" data-i="5"><span class="lab">06 结论</span>
+        <svg viewBox="0 0 248 70" aria-hidden="true"><polyline points="0,62 40,54 80,58 120,36 160,40 200,18 248,6"></polyline></svg>
+        <div class="barwrap"><i style="--h:.38"></i><i style="--h:.55;animation-delay:.1s"></i><i style="--h:.47;animation-delay:.2s"></i><i style="--h:.78;animation-delay:.3s"></i><i style="--h:1;animation-delay:.4s"></i></div><div class="sheen"></div></div>
+      <div class="dot" id="dot"></div>
+    </div></div>
+
+    <h1 class="sr">ClinkAI：一个团队，做完出海营销的每一层</h1>
+    <p class="w w1" aria-hidden="true">ONE TEAM.</p>
+    <p class="w w2" aria-hidden="true">EVERY</p>
+    <p class="w w3" aria-hidden="true"><span id="w3">LAYER.</span></p>
+
+    <ol class="legend" id="legend" aria-label="全案的六层"></ol>
+    <p class="sub">从策略到结论，出海营销的每一层，一个团队做完。</p>
+    <button class="sound" id="sound" type="button" aria-pressed="false"><i aria-hidden="true"></i><span id="soundLab">开启声音</span></button>
+    <div class="scroll"><span id="count">00 / 06</span><span>SCROLL ↓</span></div>
+  </div>
+</section>
+<section class="next" aria-label="下一屏">
+  <p>下一屏 · 01–02 策略 · 品牌</p>
+  <h2>THINK FIRST.<br>SPEND LATER.</h2>
+  <p>动效小样，示例品牌均为虚构。</p>
+</section>
+</main>
+
+<script>
+{
+const LAYERS=[
+  ['01','策略','STRATEGY.','定位、人群、渠道和节奏，先想清楚再花钱。'],
+  ['02','品牌','BRAND.','名字、视觉和语气，按每个市场调整。'],
+  ['03','广告','ADS.','一个创意，做成每一种版式。'],
+  ['04','达人','CREATORS.','从找人到交付，一条龙。'],
+  ['05','内容','CONTENT.','社媒、短视频、详情页，持续产出。'],
+  ['06','结论','RESULTS.','每一轮测出了什么，都带进下一轮。']
+];
+const BRANDS=[['HALFMILE','#E8542F'],['DEWLAB','#7FA58B'],['NIBBL','#8E9C7A'],['DAWNROAST','#C9653E'],['PEBBLESOUND','#2346C8'],['FIELDCELL','#5F6B3F'],['NOOKBOT','#2A2A28'],['ACME CHARGE','#F26A1B']];
+const CREATORS=[['img/av1.jpg','@slowmornings.co'],['img/av2.jpg','@noor.on.the.go'],['img/av3.jpg','@kenji.runs'],['img/av4.jpg','@milesandroutes']];
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const $=s=>document.querySelector(s);
+const hero=$('#hero'),stack=$('#stack'),dot=$('#dot'),w3=$('#w3'),count=$('#count'),legend=$('#legend');
+const plates=[...document.querySelectorAll('.plate')];
+
+legend.innerHTML=LAYERS.map((l,i)=>`<li data-i="${i}"><button type="button"><span>${l[0]}</span>${l[1]}</button><p class="desc">${l[3]}</p></li>`).join('');
+const items=[...legend.querySelectorAll('li')];
+
+const clamp=(v,a=0,b=1)=>Math.min(b,Math.max(a,v));
+const lerp=(a,b,t)=>a+(b-a)*t;
+const ease=t=>1-Math.pow(1-t,3);
+const back=t=>{const c=1.70158;return 1+(c+1)*Math.pow(t-1,3)+c*Math.pow(t-1,2)};
+
+function progress(){
+  const r=hero.getBoundingClientRect(),span=hero.offsetHeight-innerHeight;
+  return clamp(-r.top/span);
+}
+function layerAt(p){return (p<0.1||p>=0.9)?-1:Math.min(5,Math.floor((p-0.1)/0.8*6))}
+items.forEach((li,i)=>li.querySelector('button').addEventListener('click',()=>{
+  const span=hero.offsetHeight-innerHeight,p=0.1+(i+0.5)/6*0.8;
+  scrollTo({top:hero.offsetTop+p*span,behavior:reduce?'auto':'smooth'});
+}));
+
+
+// sound: a glass "clink", synthesised; off until the visitor turns it on
+let actx=null,master=null,soundOn=false;
+function initAudio(){
+  if(!actx){const AC=window.AudioContext||window.webkitAudioContext;actx=new AC();master=actx.createGain();master.gain.value=0.45;const comp=actx.createDynamicsCompressor();master.connect(comp);comp.connect(actx.destination)}
+  return actx.state==='suspended'?actx.resume():Promise.resolve();
+}
+function clink(pitch=1,vol=0.5,delay=0){
+  if(!soundOn||!actx)return;
+  const t=actx.currentTime+delay,base=1568*pitch;
+  [[1,1],[2.76,.45],[5.4,.22],[8.93,.1]].forEach(([r,a])=>{
+    const o=actx.createOscillator(),g=actx.createGain();
+    o.type='sine';o.frequency.value=base*r*(1+(Math.random()-.5)*.006);
+    g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(vol*a,t+.004);g.gain.exponentialRampToValueAtTime(.0001,t+1.1/Math.pow(r,.35));
+    o.connect(g);g.connect(master);o.start(t);o.stop(t+1.3);
+  });
+  const len=Math.floor(.018*actx.sampleRate),buf=actx.createBuffer(1,len,actx.sampleRate),d=buf.getChannelData(0);
+  for(let i=0;i<len;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/len,4);
+  const n=actx.createBufferSource(),hp=actx.createBiquadFilter(),ng=actx.createGain();
+  hp.type='highpass';hp.frequency.value=3500;ng.gain.value=vol*.3;n.buffer=buf;n.connect(hp);hp.connect(ng);ng.connect(master);n.start(t);
+}
+const STEPS=[1,9/8,5/4,3/2,5/3,2];
+const soundBtn=$('#sound'),soundLab=$('#soundLab');
+soundBtn.addEventListener('click',()=>{
+  soundOn=!soundOn;
+  soundBtn.setAttribute('aria-pressed',String(soundOn));
+  soundLab.textContent=soundOn?'声音已开':'开启声音';
+  if(soundOn){
+    initAudio().then(()=>{clink(1,.5);if(!reduce&&progress()<0.1)restartIntro()}).catch(()=>{soundOn=false;soundBtn.setAttribute('aria-pressed','false');soundLab.textContent='声音不可用'});
+  }
+});
+
+// pointer tilt
+let mx=0,my=0;
+addEventListener('pointermove',e=>{mx=e.clientX/innerWidth*2-1;my=e.clientY/innerHeight*2-1},{passive:true});
+
+// state
+const cur={rx:58,rz:-42,gap:14,s:1,pull:plates.map(()=>0),dz:0,dpy:0};
+let t0=performance.now();
+const landed=plates.map(()=>false);let dotLanded=false;
+function restartIntro(){t0=performance.now();landed.fill(false);dotLanded=false}
+let lastActive=-2;
+
+function setWord(txt){
+  if(w3.textContent===txt)return;
+  w3.textContent=txt;
+  if(!reduce)w3.animate([{transform:'translateY(105%)'},{transform:'translateY(0)'}],{duration:520,easing:'cubic-bezier(.2,.8,.2,1)'});
+}
+
+function frame(now){
+  const t=(now-t0)/1000,p=progress(),a=layerAt(p);
+  const vw=innerWidth,vh=innerHeight,base=vw<700?Math.min(vw/400,vh/760)*0.66:Math.min(vw/1440,vh/900)*1.12;
+  const ex=ease(clamp(p/0.1)),col=ease(clamp((p-0.9)/0.1));
+  const k=reduce?1:0.1;
+  let rx=lerp(58,0,col)+(reduce?0:my*6),rz=lerp(-42,0,col)+(reduce?0:mx*8+Math.sin(t*0.35)*3);
+  const gap=lerp(lerp(14,58,ex),0,col),s=base*lerp(1,1.35,col);
+  cur.rx+= (rx-cur.rx)*k; cur.rz+=(rz-cur.rz)*k; cur.gap+=(gap-cur.gap)*k; cur.s+=(s-cur.s)*k;
+  const float=reduce?0:Math.sin(t*1.1)*6;
+  stack.style.transform=`translateY(${float}px) scale(${cur.s}) rotateX(${cur.rx}deg) rotateZ(${cur.rz}deg)`;
+  plates.forEach((el,i)=>{
+    const intro=reduce?1:clamp((t-0.25-i*0.16)/0.7),land=back(intro);
+    if(!landed[i]&&intro>=0.55){landed[i]=true;clink(STEPS[i],.42)}
+    cur.pull[i]+=(((i===a)?1:0)-cur.pull[i])*(reduce?1:0.12);
+    const pu=cur.pull[i],z=(i-2.5)*cur.gap+pu*46+(1-land)*520;
+    el.style.transform=`translate3d(${pu*-24}px,${pu*168}px,${z}px) scale(${1+pu*0.14})`;
+    el.style.opacity=intro<1?Math.min(1,intro*3):'';
+    el.style.filter=(a>=0&&i!==a)?'saturate(.65) brightness(.96)':'';
+  });
+  // the brand dot rides the active plate, or sits on top
+  const tgt=a>=0?a:5,tp=cur.pull[tgt];
+  const dz=(tgt-2.5)*cur.gap+tp*46+2, dpy=tp*168;
+  cur.dz+=(dz-cur.dz)*(reduce?1:0.14); cur.dpy+=(dpy-cur.dpy)*(reduce?1:0.14);
+  const dotIn=reduce?1:clamp((t-1.45)/0.55),dl=back(dotIn);
+  if(!dotLanded&&dotIn>=0.55){dotLanded=true;clink(.5,.55)}
+  dot.style.transform=`translate3d(${tp*-24}px,${cur.dpy}px,${cur.dz+(1-dl)*420}px) translate(${a>=0?96:0}px,${a>=0?-96:0}px) scale(${a>=0?0.6:1})`;
+  dot.style.opacity=dotIn<1?dotIn:'';
+  if(a!==lastActive){
+    if(lastActive!==-2){if(a>=0)clink(STEPS[a],.32);else if(p>=0.9)STEPS.forEach((st,j)=>clink(st,.22,j*0.045))}
+    lastActive=a;
+    items.forEach((li,i)=>li.classList.toggle('on',i===a));
+    setWord(a>=0?LAYERS[a][2]:'LAYER.');
+    count.textContent=(a>=0?LAYERS[a][0]:'00')+' / 06';
+  }
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+
+// living plates
+if(!reduce){
+  const brand=$('#brand'),bn=$('#brandName'),ads=plates[2].querySelectorAll('.cyc'),crs=plates[3].querySelectorAll('.cyc');
+  const bars=[...document.querySelectorAll('#bars span')],av=$('#av'),hd=$('#hd'),tiles=[...document.querySelectorAll('#grid img')];
+  const slots=[['0','0'],['calc(100% + 8px)','0'],['0','calc(100% + 8px)'],['calc(100% + 8px)','calc(100% + 8px)']];
+  let n=0;
+  const tick=()=>{
+    const b=BRANDS[n%BRANDS.length];
+    bn.style.opacity=0;
+    setTimeout(()=>{bn.textContent=b[0];brand.style.backgroundColor=b[1];bn.style.opacity=1},300);
+    ads.forEach((im,i)=>im.classList.toggle('on',i===n%ads.length));
+    const c=n%crs.length;
+    crs.forEach((im,i)=>im.classList.toggle('on',i===c));
+    av.src=CREATORS[c][0];hd.textContent=CREATORS[c][1];
+    bars.forEach((s,i)=>{s.className=i<c?'done':'';void s.offsetWidth;if(i===c)s.className='run'});
+    tiles.forEach((im,i)=>{const sl=slots[(i+n)%4];im.style.transform=`translate(${sl[0]},${sl[1]})`});
+    n++;
+  };
+  brand.style.backgroundColor=BRANDS[0][1];
+  tiles.forEach((im,i)=>{const sl=slots[i];im.style.transform=`translate(${sl[0]},${sl[1]})`});
+  tick();setInterval(tick,2000);
+}else{
+  $('#brand').style.backgroundColor=BRANDS[0][1];
+  document.querySelectorAll('#grid img').forEach((im,i)=>{im.style.transform=`translate(${i%2?'calc(100% + 8px)':'0'},${i>1?'calc(100% + 8px)':'0'})`});
+}
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,453 @@
+{
+ "note": "全部图片和视频都是 AI 生成的示例：品牌是虚构的，人物也是 AI 生成的虚构人物，不是真实客户或真实达人。页面上每一处都要标「示例」。达人账号名是编的，上线前逐个查有没有撞到真人账号。",
+ "rules": [
+  "kind 为 creator-video、creator-video-frame 和 creator-avatar 的素材只能出现在达人屏（04）和产品页的达人列表里",
+  "kind 为 ad-image 和 product-cutout 的图用在广告屏（02、03、03b）和首屏叠板",
+  "线上版本转成 AVIF/WebP、多尺寸、按需加载（P-05）",
+  "视频先给 webm、再给 mp4，两个都要带；永远静音，不带声轨；播放规则见 motion.md 的 04 屏"
+ ],
+ "generatedWith": "图片：OpenAI 图像接口。达人示例视频：Canva 的视频生成。提示词、分镜和带声轨的原片留在设计侧，不进本仓库",
+ "assets": [
+  {
+   "file": "img/acme_moon.jpg",
+   "width": 960,
+   "height": 1200,
+   "bytes": 39298,
+   "kind": "ad-image",
+   "brand": "Acme Charge",
+   "category": "家用新能源车充电枪",
+   "usedIn": [
+    "01-hero",
+    "page-products"
+   ],
+   "transparent": false
+  },
+  {
+   "file": "img/acme_ooh.jpg",
+   "width": 1536,
+   "height": 1024,
+   "bytes": 248838,
+   "kind": "ad-image",
+   "brand": "Acme Charge",
+   "category": "家用新能源车充电枪",
+   "usedIn": [
+    "page-products"
+   ],
+   "transparent": false
+  },
+  {
+   "file": "img/acme_road.jpg",
+   "width": 1536,
+   "height": 1024,
+   "bytes": 244594,
+   "kind": "ad-image",
+   "brand": "Acme Charge",
+   "category": "家用新能源车充电枪",
+   "usedIn": [
+    "page-products"
+   ],
+   "transparent": false
+  },
+  {
+   "file": "img/avatar_dawn.jpg",
+   "width": 256,
+   "height": 256,
+   "bytes": 22570,
+   "kind": "creator-avatar",
+   "brand": "Dawnroast",
+   "category": "咖啡豆",
+   "usedIn": [
+    "page-products"
+   ],
+   "transparent": false,
+   "creatorHandle": "@slowmornings.co"
+  },
+  {
+   "file": "img/avatar_field.jpg",
+   "width": 256,
+   "height": 256,
+   "bytes": 17965,
+   "kind": "creator-avatar",
+   "brand": "Fieldcell",
+   "category": "户外电源",
+   "usedIn": [
+    "page-products"
+   ],
+   "transparent": false,
+   "creatorHandle": "@trailvolt"
+  },
+  {
+   "file": "img/avatar_halfmile.jpg",
+   "width": 256,
+   "height": 256,
+   "bytes": 19574,
+   "kind": "creator-avatar",
+   "brand": "Halfmile",
+   "category": "跑鞋",
+   "usedIn": [
+    "page-products"
+   ],
+   "transparent": false,
+   "creatorHandle": "@kenji.runs"
+  },
+  {
+   "file": "img/avatar_pebble.jpg",
+   "width": 256,
+   "height": 256,
+   "bytes": 18745,
+   "kind": "creator-avatar",
+   "brand": "Pebblesound",
+   "category": "降噪耳机",
+   "usedIn": [
+    "04-creators",
+    "page-products"
+   ],
+   "transparent": false,
+   "creatorHandle": "@noor.on.the.go",
+   "note": "从达人示例视频最后一帧裁出来的头像"
+  },
+  {
+   "file": "img/dew_dots.jpg",
+   "width": 960,
+   "height": 1200,
+   "bytes": 31925,
+   "kind": "ad-image",
+   "brand": "Dewlab",
+   "category": "护肤精华",
+   "usedIn": [
+    "01-hero"
+   ],
+   "transparent": false
+  },
+  {
+   "file": "img/pebble_cut_closed.webp",
+   "width": 640,
+   "height": 510,
+   "bytes": 39820,
+   "kind": "product-cutout",
+   "brand": "Pebblesound",
+   "category": "降噪耳机",
+   "usedIn": [
+    "02-wall",
+    "03-winner",
+    "03b-next-round"
+   ],
+   "transparent": true
+  },
+  {
+   "file": "img/pebble_cut_hand.webp",
+   "width": 620,
+   "height": 990,
+   "bytes": 91504,
+   "kind": "product-cutout",
+   "brand": "Pebblesound",
+   "category": "降噪耳机",
+   "usedIn": [
+    "02-wall",
+    "03-winner",
+    "03b-next-round"
+   ],
+   "transparent": true
+  },
+  {
+   "file": "img/pebble_cut_hero.webp",
+   "width": 1336,
+   "height": 808,
+   "bytes": 98010,
+   "kind": "product-cutout",
+   "brand": "Pebblesound",
+   "category": "降噪耳机",
+   "usedIn": [
+    "02-wall",
+    "03-winner",
+    "03b-next-round"
+   ],
+   "transparent": true
+  },
+  {
+   "file": "img/pebble_cut_open.webp",
+   "width": 640,
+   "height": 629,
+   "bytes": 53770,
+   "kind": "product-cutout",
+   "brand": "Pebblesound",
+   "category": "降噪耳机",
+   "usedIn": [
+    "02-wall",
+    "03-winner",
+    "03b-next-round"
+   ],
+   "transparent": true
+  },
+  {
+   "file": "img/pebble_cut_pair.webp",
+   "width": 760,
+   "height": 345,
+   "bytes": 44954,
+   "kind": "product-cutout",
+   "brand": "Pebblesound",
+   "category": "降噪耳机",
+   "usedIn": [
+    "02-wall",
+    "03-winner",
+    "03b-next-round"
+   ],
+   "transparent": true
+  },
+  {
+   "file": "img/pebble_cut_single.webp",
+   "width": 640,
+   "height": 643,
+   "bytes": 46570,
+   "kind": "product-cutout",
+   "brand": "Pebblesound",
+   "category": "降噪耳机",
+   "usedIn": [
+    "02-wall",
+    "03-winner",
+    "03b-next-round"
+   ],
+   "transparent": true
+  },
+  {
+   "file": "img/pebble_cut_top.webp",
+   "width": 640,
+   "height": 495,
+   "bytes": 36358,
+   "kind": "product-cutout",
+   "brand": "Pebblesound",
+   "category": "降噪耳机",
+   "usedIn": [
+    "02-wall",
+    "03-winner"
+   ],
+   "transparent": true
+  },
+  {
+   "file": "img/pebble_photo_ear.jpg",
+   "width": 800,
+   "height": 1000,
+   "bytes": 98264,
+   "kind": "ad-image",
+   "brand": "Pebblesound",
+   "category": "降噪耳机",
+   "usedIn": [
+    "02-wall",
+    "03-winner",
+    "03b-next-round"
+   ],
+   "transparent": false
+  },
+  {
+   "file": "img/pebble_photo_table.jpg",
+   "width": 800,
+   "height": 800,
+   "bytes": 84717,
+   "kind": "ad-image",
+   "brand": "Pebblesound",
+   "category": "降噪耳机",
+   "usedIn": [
+    "02-wall",
+    "03-winner",
+    "03b-next-round"
+   ],
+   "transparent": false
+  },
+  {
+   "file": "img/pebble_subway.jpg",
+   "width": 720,
+   "height": 1280,
+   "bytes": 98125,
+   "kind": "ad-image",
+   "brand": "Pebblesound",
+   "category": "降噪耳机",
+   "usedIn": [
+    "02-wall",
+    "03-winner",
+    "03b-next-round"
+   ],
+   "transparent": false
+  },
+  {
+   "file": "img/pebble_trumpet.jpg",
+   "width": 1536,
+   "height": 1024,
+   "bytes": 123162,
+   "kind": "ad-image",
+   "brand": "Pebblesound",
+   "category": "降噪耳机",
+   "usedIn": [
+    "02-wall",
+    "03-winner"
+   ],
+   "transparent": false
+  },
+  {
+   "file": "img/ugc2_dew.jpg",
+   "width": 720,
+   "height": 1280,
+   "bytes": 107728,
+   "kind": "creator-video-frame",
+   "brand": "Dewlab",
+   "category": "护肤精华",
+   "usedIn": [
+    "04-creators"
+   ],
+   "transparent": false,
+   "creatorHandle": "@juno.glow"
+  },
+  {
+   "file": "img/ugc2_halfmile.jpg",
+   "width": 720,
+   "height": 1280,
+   "bytes": 173077,
+   "kind": "creator-video-frame",
+   "brand": "Halfmile",
+   "category": "跑鞋",
+   "usedIn": [
+    "04-creators"
+   ],
+   "transparent": false,
+   "creatorHandle": "@kenji.runs"
+  },
+  {
+   "file": "img/ugc2_nibbl.jpg",
+   "width": 720,
+   "height": 1280,
+   "bytes": 123833,
+   "kind": "creator-video-frame",
+   "brand": "Nibbl",
+   "category": "宠物喂食器",
+   "usedIn": [
+    "04-creators"
+   ],
+   "transparent": false,
+   "creatorHandle": "@twocats.onesofa"
+  },
+  {
+   "file": "img/ugc2_nook.jpg",
+   "width": 720,
+   "height": 1280,
+   "bytes": 180755,
+   "kind": "creator-video-frame",
+   "brand": "Nookbot",
+   "category": "扫地机器人",
+   "usedIn": [
+    "04-creators"
+   ],
+   "transparent": false,
+   "creatorHandle": "@tidywithtess"
+  },
+  {
+   "file": "img/ugc_acme.jpg",
+   "width": 720,
+   "height": 1280,
+   "bytes": 154173,
+   "kind": "creator-video-frame",
+   "brand": "Acme Charge",
+   "category": "家用新能源车充电枪",
+   "usedIn": [
+    "04-creators"
+   ],
+   "transparent": false,
+   "creatorHandle": "@milesandroutes"
+  },
+  {
+   "file": "img/ugc_dawn.jpg",
+   "width": 720,
+   "height": 1280,
+   "bytes": 176506,
+   "kind": "creator-video-frame",
+   "brand": "Dawnroast",
+   "category": "咖啡豆",
+   "usedIn": [
+    "01-hero",
+    "04-creators"
+   ],
+   "transparent": false,
+   "creatorHandle": "@slowmornings.co"
+  },
+  {
+   "file": "img/ugc_field.jpg",
+   "width": 720,
+   "height": 1280,
+   "bytes": 171754,
+   "kind": "creator-video-frame",
+   "brand": "Fieldcell",
+   "category": "户外电源",
+   "usedIn": [
+    "04-creators"
+   ],
+   "transparent": false,
+   "creatorHandle": "@trailvolt"
+  },
+  {
+   "file": "img/ugc_halfmile.jpg",
+   "width": 720,
+   "height": 1280,
+   "bytes": 181250,
+   "kind": "creator-video-frame",
+   "brand": "Halfmile",
+   "category": "跑鞋",
+   "usedIn": [
+    "04-creators"
+   ],
+   "transparent": false
+  },
+  {
+   "file": "img/ugc_pebble.jpg",
+   "width": 768,
+   "height": 1344,
+   "bytes": 154086,
+   "kind": "creator-video-frame",
+   "brand": "Pebblesound",
+   "category": "降噪耳机",
+   "usedIn": [
+    "04-creators"
+   ],
+   "transparent": false,
+   "creatorHandle": "@noor.on.the.go",
+   "note": "达人示例视频的封面，取自视频第 3.5 秒那一帧。视频不能播放时显示它"
+  },
+  {
+   "file": "video/creator-pebble.webm",
+   "width": 768,
+   "height": 1344,
+   "bytes": 1069556,
+   "kind": "creator-video",
+   "brand": "Pebblesound",
+   "category": "降噪耳机",
+   "usedIn": [
+    "04-creators"
+   ],
+   "transparent": false,
+   "creatorHandle": "@noor.on.the.go",
+   "durationSeconds": 8,
+   "fps": 24,
+   "codec": "VP9",
+   "audio": false,
+   "poster": "img/ugc_pebble.jpg",
+   "note": "无声轨。前 4 秒举着打开的耳机盒、耳朵上没有耳机；第 4 秒切镜头；后 4 秒两只耳机在耳朵上、画面里没有盒子"
+  },
+  {
+   "file": "video/creator-pebble.mp4",
+   "width": 768,
+   "height": 1344,
+   "bytes": 1669767,
+   "kind": "creator-video",
+   "brand": "Pebblesound",
+   "category": "降噪耳机",
+   "usedIn": [
+    "04-creators"
+   ],
+   "transparent": false,
+   "creatorHandle": "@noor.on.the.go",
+   "durationSeconds": 8,
+   "fps": 24,
+   "codec": "H.264",
+   "audio": false,
+   "poster": "img/ugc_pebble.jpg",
+   "note": "无声轨。前 4 秒举着打开的耳机盒、耳朵上没有耳机；第 4 秒切镜头；后 4 秒两只耳机在耳朵上、画面里没有盒子"
+  }
+ ]
+}
