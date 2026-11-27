@@ -60,9 +60,11 @@ ClinkAI 官网：Astro 纯静态站 + TypeScript，托管在 Cloudflare Workers 
 
 ## 目录
 
-- `src/pages/`：页面路由。`/parts/` 是部件陈列页（不进导航、不让搜索引擎收录），新部件做好后摆上去。
+- `src/pages/`：页面路由。`/parts/` 是部件陈列页（不进导航、不让搜索引擎收录），新部件做好后摆上去。`/contact/` 是预约沟通页。
 - `src/layouts/BaseLayout.astro`：页面外壳，引入自托管字体、设计规范变量和基础样式。新页面都套它。
 - `src/styles/tokens.css`：照抄 `design/tokens.css`，组件只用这里的变量。交接包的设计规范变了，同步这份文件；`tests/tokens.test.ts` 会比对两边。
 - `src/components/`：公共部件（页头、角落部件、计数块、小节标签、「示例」标签、状态小标签、`form/` 下的表单控件）。部件上的文字照抄 `design/copy.md`，导航的文字和链接集中在 `src/data/site.ts`。
+- `src/data/contact.ts`：预约沟通页的文字、【待填】项和交接包里还没有的文案（都留着 `null`，不要自己写）。
+- `src/contact/`：预约沟通表单的提交脚本。`src/worker/contact/schema.ts` 是表单的字段表，接口、页面和提交脚本共用；接口的约定见 `docs/contact-api.md`。
 - `design/`：设计侧导出的交接包（每屏 HTML 源和参考截图、动效说明、动效小样源码、版本墙生成脚本和变体配置、图片清单、设计规范）。只读；不在格式、lint、类型检查范围内。
 - `tests/`：跨模块测试。单个模块的测试放在它旁边，命名 `*.test.ts`。
