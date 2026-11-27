@@ -1,0 +1,34 @@
+---
+// 单行输入框：标签在上、输入框在下。品牌名、官网或店铺链接、怎么联系你。
+import '../../styles/form.css';
+
+interface Props {
+  label: string;
+  name: string;
+  type?: 'text' | 'url' | 'email' | 'tel';
+  placeholder?: string;
+  required?: boolean;
+  autocomplete?: string;
+}
+
+const {
+  label,
+  name,
+  type = 'text',
+  placeholder,
+  required,
+  autocomplete,
+} = Astro.props;
+---
+
+<label class="field">
+  <span class="field-label">{label}</span>
+  <input
+    class="field-control"
+    type={type}
+    name={name}
+    placeholder={placeholder}
+    required={required}
+    autocomplete={autocomplete}
+  />
+</label>

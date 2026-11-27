@@ -1,0 +1,23 @@
+---
+// 多行文本：补充说明（选填）。高度默认 3 行，可以往下拉长。
+import '../../styles/form.css';
+
+interface Props {
+  label: string;
+  name: string;
+  rows?: number;
+  required?: boolean;
+}
+
+const { label, name, rows = 3, required } = Astro.props;
+---
+
+<label class="field">
+  <span class="field-label">{label}</span>
+  <textarea
+    class="field-control"
+    name={name}
+    rows={rows}
+    required={required}
+  ></textarea>
+</label>

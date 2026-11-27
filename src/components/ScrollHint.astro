@@ -1,0 +1,31 @@
+---
+// 右下角「SCROLL ↓」，在菜单按钮左边。只在 01、04、05 屏出现（design/README.md）。
+import { SCROLL_HINT } from '../data/site';
+
+interface Props {
+  tone?: 'ink' | 'paper';
+}
+
+const { tone = 'ink' } = Astro.props;
+---
+
+<span class:list={['scroll-hint', tone]}>{SCROLL_HINT}</span>
+
+<style>
+  .scroll-hint {
+    position: absolute;
+    right: 104px;
+    bottom: 44px;
+    font-size: var(--text-nav);
+    letter-spacing: 0.04em;
+    z-index: var(--z-chrome);
+  }
+
+  .ink {
+    color: var(--ink);
+  }
+
+  .paper {
+    color: var(--paper);
+  }
+</style>

@@ -1,0 +1,68 @@
+---
+// 左下角计数块：428×146 的纸色块，02、03、03b 屏。
+// 数字 100px；随滚动 40 → 1 → 8，右边两行说明跟着换（动效在第 3 批做，这里是静态的一帧）。
+// 说明的左边位置照设计稿：一位数在 150px，两位数在 214px，即 86px + 每位 64px。
+interface Props {
+  /** 块顶上的小节名，如「03 / 广告投放 · 出素材」 */
+  label: string;
+  value: number;
+  /** 右边两行说明，照抄 design/copy.md */
+  lines: readonly [string, string];
+}
+
+const { label, value, lines } = Astro.props;
+const digits = String(value).length;
+---
+
+<section class="counter-block" style={`--digits: ${digits}`}>
+  <h2 class="label">{label}</h2>
+  <p class="value">{value}</p>
+  <p class="lines">
+    {lines[0]}
+    <br />
+    {lines[1]}
+  </p>
+</section>
+
+<style>
+  .counter-block {
+    position: absolute;
+    left: 2px;
+    bottom: 2px;
+    width: 428px;
+    height: 146px;
+    background: var(--paper);
+    color: var(--ink);
+    z-index: var(--z-chrome);
+  }
+
+  .label {
+    position: absolute;
+    left: 76px;
+    top: 12px;
+    margin: 0;
+    font-size: var(--text-nav);
+    font-weight: var(--weight);
+    letter-spacing: 0.02em;
+  }
+
+  .value {
+    position: absolute;
+    left: 76px;
+    bottom: 16px;
+    margin: 0;
+    font-size: var(--display-counter);
+    line-height: 0.9;
+    letter-spacing: -0.04em;
+  }
+
+  .lines {
+    position: absolute;
+    left: calc(86px + 64px * var(--digits));
+    bottom: 26px;
+    margin: 0;
+    font-size: var(--text-body);
+    line-height: 1.5;
+    white-space: nowrap;
+  }
+</style>

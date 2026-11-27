@@ -1,0 +1,30 @@
+---
+// 全站页面外壳：自托管字体、设计规范变量、基础样式。
+// 字体只有 Inter Tight 400（经 npm 打包，按 unicode-range 分包按需下载）；
+// 中文不加载网络字体，按 tokens.css 的字体栈落到系统字体。
+import '@fontsource/inter-tight/400.css';
+import '../styles/tokens.css';
+import '../styles/base.css';
+
+interface Props {
+  title: string;
+  description?: string;
+  /** 不希望被搜索引擎收录的页面（比如部件陈列页）设为 true */
+  noindex?: boolean;
+}
+
+const { title, description, noindex = false } = Astro.props;
+---
+
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    {description && <meta name="description" content={description} />}
+    {noindex && <meta name="robots" content="noindex, nofollow" />}
+  </head>
+  <body>
+    <slot />
+  </body>
+</html>

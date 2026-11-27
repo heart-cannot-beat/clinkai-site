@@ -1,0 +1,19 @@
+---
+// 一屏的角落部件：左下角圆点、右下角菜单按钮，以及（01、04、05 屏才有的）SCROLL 提示。
+import MenuButton from './MenuButton.astro';
+import ScrollHint from './ScrollHint.astro';
+import SoundDot from './SoundDot.astro';
+
+interface Props {
+  /** 是否显示「SCROLL ↓」 */
+  scroll?: boolean;
+  /** 深色底（04 屏）用 paper：圆点和 SCROLL 换成纸色，菜单按钮不变 */
+  tone?: 'ink' | 'paper';
+}
+
+const { scroll = false, tone = 'ink' } = Astro.props;
+---
+
+<SoundDot tone={tone} />
+{scroll && <ScrollHint tone={tone} />}
+<MenuButton />

@@ -1,0 +1,24 @@
+/* 全站基础样式。颜色、字体都取 tokens.css 的变量，这里不写新数值。 */
+html {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-weight: var(--weight);
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* 设计稿是静态帧，没有画键盘焦点。为了能用键盘操作，补一个跟随文字颜色的焦点框。 */
+:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+}

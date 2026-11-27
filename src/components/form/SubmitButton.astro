@@ -1,0 +1,31 @@
+---
+// 提交按钮：深色实心胶囊。文字放进 slot，照抄 design/copy.md（「提交，预约沟通 →」）。
+interface Props {
+  disabled?: boolean;
+}
+
+const { disabled } = Astro.props;
+---
+
+<button type="submit" class="submit-button" disabled={disabled}>
+  <slot />
+</button>
+
+<style>
+  .submit-button {
+    align-self: flex-start;
+    min-height: 50px;
+    padding: 0 30px;
+    border-radius: var(--radius-pill);
+    border: none;
+    background: var(--ink);
+    color: var(--paper);
+    font: inherit;
+    font-size: var(--text-button);
+    cursor: pointer;
+  }
+
+  .submit-button:disabled {
+    cursor: default;
+  }
+</style>

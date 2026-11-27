@@ -1,0 +1,45 @@
+---
+// 「示例」标签。所有虚构品牌内容旁边都必须有（design/README.md）。两种样子：
+// - text：12px 的次要文字，比如产品页列表行末尾的「示例」
+// - outline：细线框小标签，比如 03 屏广告卡片上的「示例广告 · 非真实客户」；
+//   框线是当前文字颜色的 60%，放在深色或彩色底上也成立
+// 文字默认是「示例」，需要别的写法时放进 slot（照抄 design/copy.md）。
+interface Props {
+  variant?: 'text' | 'outline';
+}
+
+const { variant = 'text' } = Astro.props;
+---
+
+<span class:list={['example-tag', variant]}>
+  <slot>示例</slot>
+</span>
+
+<style>
+  .example-tag {
+    font-size: var(--text-label);
+  }
+
+  .text {
+    color: var(--muted);
+  }
+
+  .outline {
+    position: relative;
+    display: inline-block;
+    padding: 4px 9px;
+    border-radius: var(--radius-tag);
+    letter-spacing: 0.02em;
+  }
+
+  /* 用伪元素画框，这样框线能取文字颜色的 60%，不依赖 color-mix（微信内置浏览器的内核可能较旧） */
+  .outline::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border: 1px solid currentColor;
+    border-radius: inherit;
+    opacity: 0.6;
+    pointer-events: none;
+  }
+</style>
