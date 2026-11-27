@@ -9,6 +9,8 @@
 
 预览名默认取自分支名。PR 上会有 Cloudflare 自动发的评论，写着构建状态和这个 PR 的预览地址；之后每次 push，同一个预览地址会更新。
 
+`wrangler preview` 要求 `wrangler.jsonc` 里有 `previews` 块（可以为空），删掉它 PR 预览就会构建失败。预览不继承生产的绑定和密钥，预览要用的绑定写在这个块里。
+
 **现在只挂在 workers.dev 子域名上。** 把 `clinkai.app` 指到这个 Worker 是单独的 L-01，用户点头之前不在 `wrangler.jsonc` 里加 `routes`，也不在后台绑自定义域名。`tests/wrangler-config.test.ts` 会拦住不小心加上的路由。
 
 账号 ID、API Token 都不进仓库，也不需要放进 GitHub secrets：Workers Builds 用的 Token 存在 Cloudflare 那边。

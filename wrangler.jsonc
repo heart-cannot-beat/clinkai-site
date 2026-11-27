@@ -15,4 +15,7 @@
   },
   // 先只挂在 workers.dev 子域名上。切 clinkai.app 是 L-01，用户点头前不加 routes。
   "workers_dev": true,
+  // PR 预览跑的是 `npx wrangler preview`，配置里没有这个块它会直接报错；块可以为空。
+  // 预览不继承生产的绑定和密钥：预览要用的绑定写在这里，静态资源和兼容日期留在顶层。
+  "previews": {},
 }

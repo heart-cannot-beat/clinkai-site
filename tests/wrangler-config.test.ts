@@ -18,6 +18,10 @@ describe('wrangler.jsonc', () => {
     expect(config.routes).toBeUndefined();
   });
 
+  it('有 previews 块：PR 预览跑的 `wrangler preview` 没有它会直接失败', () => {
+    expect(config.previews).toBeDefined();
+  });
+
   it('不把账号 ID 写进仓库', () => {
     expect(config.account_id).toBeUndefined();
   });
