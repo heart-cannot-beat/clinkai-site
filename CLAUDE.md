@@ -20,8 +20,16 @@ ClinkAI 官网：Astro 纯静态站 + TypeScript，托管在 Cloudflare Workers 
 5. **线上不调用任何 AI 接口。** 版本墙这类内容在构建时用代码生成。
 6. **第三方库只能经 npm 打包进站点。** 不引在线字体地址，不引在线脚本地址。新增任何依赖都要在 PR 里写明理由和协议；下面「不用的库」里列的不加。
 7. **密钥不进仓库。** Turnstile 密钥、收件邮箱放 Cloudflare 的 secret 和变量；本地用 `.dev.vars`（已被 git 忽略）。
-8. **这些事先问再做：** 切域名（把 `clinkai.app` 指到 Worker）、往真实邮箱发信、改 Cloudflare 账号设置、把仓库改成公开。在用户点头前，部署只挂在 workers.dev 子域名上。
+8. **这些事先问再做：** 切域名（把 `clinkai.app` 指到 Worker）、往真实邮箱发信、改 Cloudflare 账号设置。在用户点头前，部署只挂在 workers.dev 子域名上。
 9. **开 PR 前本地跑 `npm run verify`，结果贴进 PR。**
+
+## 公开仓库
+
+本仓库是公开的。每个文件、提交信息、PR 说明和 Issue 评论都当作已经发布的内容。
+
+- 不写真实客户或合作方的名字，不放他们的产品图、素材、账号 ID，也不放生产环境的截图。
+- 示例和测试数据只用虚构品牌（见规则 3），虚构的域名一律用 `*.example`。
+- 提交的作者邮箱用 GitHub 的 noreply 地址，不用个人邮箱。本仓库的本地 git 设置已经这样配好；开工前用 `git config user.email` 确认一下。
 
 ## 技术约定
 
