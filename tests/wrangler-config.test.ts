@@ -1,6 +1,7 @@
 import { unstable_readConfig } from 'wrangler';
 import { describe, expect, it } from 'vitest';
 import astroConfig from '../astro.config.mjs';
+import { RETRY_AFTER_SECONDS } from '../src/worker/contact/handler';
 
 // 用 wrangler 自己的读取器解析 wrangler.jsonc：字段写错、格式不对，这里就会报错。
 // 路径相对仓库根目录（npm run test 在根目录跑 Vitest）。
@@ -28,5 +29,56 @@ describe('wrangler.jsonc', () => {
 
   it('不把账号 ID 写进仓库', () => {
     expect(config.account_id).toBeUndefined();
+  });
+});
+
+describe('wrangler.jsonc：表单接口（S-03）', () => {
+  const SECRET_NAMES = [
+    'TURNSTILE_SECRET_KEY',
+    'TURNSTILE_HOSTNAMES',
+    'CONTACT_TO',
+    'CONTACT_FROM',
+  ];
+
+  it('Worker 脚本是 src/worker/index.ts，只有 /api/* 先进 Worker', () => {
+    // wrangler 读出来的 main 是绝对路径
+    const main = (config.main ?? '').replaceAll('\\', '/');
+    expect(main.endsWith('/src/worker/index.ts')).toBe(true);
+    expect(config.assets?.run_worker_first).toEqual(['/api/*']);
+  });
+
+  it('绑定名和 Worker 代码（src/worker/env.ts）里用的一致', () => {
+    expect(config.assets?.binding).toBe('ASSETS');
+    expect(
+      config.send_email.map((binding: { name: string }) => binding.name),
+    ).toEqual(['EMAIL']);
+    expect(
+      config.ratelimits.map((binding: { name: string }) => binding.name),
+    ).toEqual(['CONTACT_RATE_LIMITER']);
+  });
+
+  it('限流周期和 429 响应里的 Retry-After 一致', () => {
+    expect(config.ratelimits[0]?.simple.period).toBe(RETRY_AFTER_SECONDS);
+  });
+
+  it('发信绑定不加 remote：本地 wrangler dev 只模拟发信', () => {
+    for (const binding of config.send_email) {
+      expect(binding.remote).toBeFalsy();
+    }
+  });
+
+  it('预览不配发信绑定：PR 预览不会往真实邮箱发信', () => {
+    expect(config.previews?.send_email ?? []).toEqual([]);
+  });
+
+  it('收发件地址、Turnstile 密钥和主机名白名单不写进配置', () => {
+    for (const name of SECRET_NAMES) {
+      expect(config.vars).not.toHaveProperty(name);
+      expect(config.previews?.vars ?? {}).not.toHaveProperty(name);
+    }
+    for (const binding of config.send_email) {
+      expect(binding.destination_address).toBeUndefined();
+      expect(binding.allowed_destination_addresses).toBeUndefined();
+    }
   });
 });

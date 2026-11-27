@@ -1,15 +1,21 @@
-// Cloudflare Workers 配置（S-02）。
-// 现在只托管 Astro 的构建产物 dist/，没有 Worker 脚本；表单接口（S-03）会在这里加 main 和绑定。
-// 部署走 Cloudflare 的 Workers Builds，设置步骤见 docs/deploy.md。
-// 账号 ID、API Token、密钥都不写进这个文件。
+// Cloudflare Workers 配置。
+// S-02：托管 Astro 的构建产物 dist/；部署走 Cloudflare 的 Workers Builds，设置步骤见 docs/deploy.md。
+// S-03：加了 Worker 脚本（只接 /api/*）和表单接口要的绑定，说明见 docs/contact-api.md。
+// 账号 ID、API Token、Turnstile 密钥、收发件地址都不写进这个文件。
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
   // 要和 Cloudflare 后台里这个 Worker 的名字一致，否则 Workers Builds 构建会失败
   "name": "clinkai-site",
+  // Worker 脚本：表单接口 POST /api/contact
+  "main": "./src/worker/index.ts",
   // 不能晚于 package.json 里 wrangler 自带的 workerd 支持的日期
   "compatibility_date": "2026-11-13",
   "assets": {
     "directory": "./dist",
+    // Worker 里用 env.ASSETS 把请求交还给静态资源
+    "binding": "ASSETS",
+    // 只有 /api/* 先进 Worker；其余路径由静态资源直接返回
+    "run_worker_first": ["/api/*"],
     // 找不到的路径返回最近的 404.html（以后加了 404 页就会自动用上），状态码 404
     "not_found_handling": "404-page",
   },
@@ -18,7 +24,20 @@
   // PR 预览地址（<预览名>-clinkai-site.<子域名>.workers.dev）。要明确写 true：
   // 不写时 `wrangler deploy` 不会去改 Worker 上现有的开关，而 `wrangler preview` 从来不改它。
   "preview_urls": true,
+  // 表单接口限流：同一个 IP 在同一个 Cloudflare 节点上，60 秒内最多 5 次
+  "ratelimits": [
+    {
+      "name": "CONTACT_RATE_LIMITER",
+      // 账号内唯一的正整数；别的 Worker 用同一个值会共用计数
+      "namespace_id": "3001",
+      "simple": { "limit": 5, "period": 60 },
+    },
+  ],
+  // Cloudflare Email Service 发信绑定。
+  // 不要加 "remote": true：不加时 wrangler dev 只在本地模拟发信，不会真的发出去。
+  "send_email": [{ "name": "EMAIL" }],
   // PR 预览跑的是 `npx wrangler preview`，配置里没有这个块它会直接报错；块可以为空。
   // 预览不继承生产的绑定和密钥：预览要用的绑定写在这里，静态资源和兼容日期留在顶层。
+  // 表单接口的发信、限流绑定和 secret 故意不给预览：预览里提交表单返回 500，不会往真实邮箱发信。
   "previews": {},
 }

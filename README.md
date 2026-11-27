@@ -12,4 +12,6 @@ npm run verify   # 格式、lint、类型、测试、构建，一条命令跑全
 
 部署方式和第一次设置的步骤见 [docs/deploy.md](docs/deploy.md)。
 
+表单接口 `POST /api/contact`（Cloudflare Worker）的请求、响应、配置和套餐说明见 [docs/contact-api.md](docs/contact-api.md)。
+
 工作流程和规则见 [CLAUDE.md](CLAUDE.md)。设计和文案以 `design/` 交接包为准。
