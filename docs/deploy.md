@@ -7,7 +7,9 @@
 | 合并（push）到 `main`         | `npm run build`，然后 `npx wrangler deploy`  | `https://clinkai-site.<账号子域名>.workers.dev`          |
 | 其他分支的 push（含 PR 分支） | `npm run build`，然后 `npx wrangler preview` | `https://<预览名>-clinkai-site.<账号子域名>.workers.dev` |
 
-预览名默认取自分支名。PR 上会有 Cloudflare 自动发的评论，写着构建状态和这个 PR 的预览地址；之后每次 push，同一个预览地址会更新。
+预览名默认取自分支名（`/` 换成 `-`，例如 `claude/issue-3-contact-api` → `claude-issue-3-contact-api`）。之后每次 push，同一个预览地址会更新。
+
+**PR 上不留预览地址。** Cloudflare 会在 PR 下面自动发一条评论，写着构建状态和完整的预览地址；地址里的账号子域名是个人邮箱前缀，而仓库是公开的，所以 `.github/workflows/delete-cloudflare-preview-comments.yml` 会在评论出现后立刻删掉它。要看预览：PR 上的 `Workers Builds: clinkai-site` 检查能看出构建成没成功，地址在 Cloudflare 后台这个 Worker 的 **Deployments** 里，或者按上表自己拼（账号子域名在 **Workers & Pages** 页面的 **Account details** 里）。在 PR、Issue、提交和文档里只写 `<账号子域名>`，不写完整地址。换到 ClinkAI 自己的 Cloudflare 账号后，删掉这个 workflow，这一段也一起改回来。
 
 `wrangler preview` 要求 `wrangler.jsonc` 里有 `previews` 块（可以为空），删掉它 PR 预览就会构建失败。预览不继承生产的绑定和密钥，预览要用的绑定写在这个块里。
 
@@ -60,7 +62,7 @@ Workers Builds 只要 `main` 有 push 就部署，不看 GitHub Actions 的结�
 
 ### 5. 验证
 
-1. 在任意一个开着的 PR 分支上 push 一次（空提交也行），PR 下面会出现 Cloudflare 的评论，里面有预览地址；打开应该是空白首页。
+1. 在任意一个开着的 PR 分支上 push 一次（空提交也行），PR 上的 `Workers Builds: clinkai-site` 检查应该通过。Cloudflare 的评论会被自动删掉，预览地址去后台的 **Deployments** 里找；打开应该是空白首页。
 2. 合并到 `main` 后，Cloudflare 后台这个 Worker 的 **Deployments** 里会出现新的部署，`https://clinkai-site.<账号子域名>.workers.dev` 更新。
 
 ## 本地

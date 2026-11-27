@@ -30,6 +30,7 @@ ClinkAI 官网：Astro 纯静态站 + TypeScript，托管在 Cloudflare Workers 
 - 不写真实客户或合作方的名字，不放他们的产品图、素材、账号 ID，也不放生产环境的截图。
 - 示例和测试数据只用虚构品牌（见规则 3），虚构的域名一律用 `*.example`。
 - 提交的作者邮箱用 GitHub 的 noreply 地址，不用个人邮箱。本仓库的本地 git 设置已经这样配好；开工前用 `git config user.email` 确认一下。
+- 不写完整的 workers.dev 地址：账号子域名是个人邮箱前缀，在 PR、Issue、提交和文档里一律写 `<账号子域名>`。Cloudflare 在 PR 上发的预览评论会被 `delete-cloudflare-preview-comments` workflow 自动删掉，预览地址去 Cloudflare 后台看（见 `docs/deploy.md`）。
 
 ## 技术约定
 
