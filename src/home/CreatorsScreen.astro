@@ -1,0 +1,251 @@
+---
+// 04 达人 · 一条流。静态帧：design/screens/04-creators.html。
+// 达人素材只出现在这一屏。中间那条是真视频（AI 生成的示例内容，人物和产品都是虚构的），
+// 「示例内容」的标注必须保留。两侧的列是静态图。
+// 播放规则和三条退路见 creator-video.ts（design/motion.md「04 达人」）。
+import ScreenCorners from '../components/ScreenCorners.astro';
+import SectionLabel from '../components/SectionLabel.astro';
+import SiteHeader from '../components/SiteHeader.astro';
+import { exampleImageUrl, exampleVideoUrl } from './media';
+import Screen from './Screen.astro';
+
+// 两侧的四列：暗的、糊的。坐标是设计稿画布上的像素，上下伸到画布外面
+const SIDE_FRAMES = [
+  { left: -210, top: 80, file: 'ugc_acme.jpg' },
+  { left: -210, top: 633, file: 'ugc2_dew.jpg' },
+  { left: 150, top: -180, file: 'ugc2_halfmile.jpg' },
+  { left: 150, top: 373, file: 'ugc2_nibbl.jpg' },
+  { left: 150, top: 926, file: 'ugc2_nook.jpg' },
+  { left: 990, top: -60, file: 'ugc_field.jpg' },
+  { left: 990, top: 493, file: 'ugc_dawn.jpg' },
+  { left: 1350, top: -250, file: 'ugc_halfmile.jpg' },
+  { left: 1350, top: 303, file: 'ugc_acme.jpg' },
+  { left: 1350, top: 856, file: 'ugc2_dew.jpg' },
+];
+
+// 中间那一列里，主视频上面和下面的两条
+const CENTER_FRAMES = [
+  { left: 506, top: -710, file: 'ugc2_halfmile.jpg' },
+  { left: 506, top: 850, file: 'ugc2_nibbl.jpg' },
+];
+---
+
+<Screen name="04-creators" background="ink" text="paper">
+  <SiteHeader tone="paper" decorative />
+  {SIDE_FRAMES.map((frame) => (
+    <figure
+      class="frame side"
+      aria-hidden="true"
+      style={`left: ${frame.left}px; top: ${frame.top}px`}
+    >
+      <img src={exampleImageUrl(frame.file)} alt="" />
+    </figure>
+  ))}
+  {CENTER_FRAMES.map((frame) => (
+    <figure
+      class="frame center"
+      aria-hidden="true"
+      style={`left: ${frame.left}px; top: ${frame.top}px`}
+    >
+      <img src={exampleImageUrl(frame.file)} alt="" />
+    </figure>
+  ))}
+  <figure class="main">
+    <img
+      class="cover"
+      src={exampleImageUrl('ugc_pebble.jpg')}
+      alt="示例达人视频的封面：通勤列车上，达人把打开的耳机盒举在脸旁"
+    />
+    <video
+      class="video"
+      muted
+      loop
+      playsinline
+      preload="none"
+      aria-label="示例达人视频，8 秒，无声：通勤列车上，达人先举起耳机盒，再戴上耳机放松下来"
+      data-creator-video
+    >
+      <source src={exampleVideoUrl('creator-pebble.webm')} type="video/webm" />
+      <source src={exampleVideoUrl('creator-pebble.mp4')} type="video/mp4" />
+    </video>
+    <span class="sticker" lang="en">
+      rush hour,
+      <br />
+      but make it quiet
+    </span>
+    <div class="shade" aria-hidden="true"></div>
+    <figcaption class="handle">
+      <img src={exampleImageUrl('avatar_pebble.jpg')} alt="" />
+      @noor.on.the.go
+    </figcaption>
+  </figure>
+  <span class="period" aria-hidden="true"></span>
+  <div class="caption">
+    <SectionLabel as="h2">04 / 达人营销 · 示例内容</SectionLabel>
+    <p>
+      <span lang="en">FROM CHINA TO EVERY FEED.</span> 从中国，到每一条信息流。
+    </p>
+  </div>
+
+  <ScreenCorners scroll tone="paper" decorative />
+</Screen>
+
+<script>
+  import {
+    VISIBLE_RATIO,
+    setupCreatorVideo,
+    type CreatorVideoEnvironment,
+  } from './creator-video';
+
+  // 浏览器没有 IntersectionObserver 时什么都不做：视频不加载，一直显示封面图
+  if ('IntersectionObserver' in window) {
+    const videos = document.querySelectorAll<HTMLVideoElement>(
+      '[data-creator-video]',
+    );
+    for (const video of videos) {
+      const environment: CreatorVideoEnvironment = {
+        matchMedia: (query) => window.matchMedia(query),
+        watchVisibility(onChange) {
+          new IntersectionObserver(
+            (entries) => {
+              for (const entry of entries) onChange(entry.isIntersecting);
+            },
+            { threshold: VISIBLE_RATIO },
+          ).observe(video);
+        },
+      };
+      setupCreatorVideo(video, environment);
+    }
+  }
+</script>
+
+<style>
+  /* 信息流里别的视频：暗的、糊的，竖向拉长 6% 表示还在刷 */
+  .frame {
+    position: absolute;
+    margin: 0;
+    border-radius: 22px;
+    overflow: hidden;
+    transform: scaleY(1.06);
+    z-index: var(--z-back);
+  }
+
+  .side {
+    width: 300px;
+    height: 533px;
+    opacity: 0.3;
+    filter: blur(7px) grayscale(0.4);
+  }
+
+  .center {
+    width: 428px;
+    height: 760px;
+    opacity: 0.45;
+    filter: blur(4px) grayscale(0.4);
+  }
+
+  .frame img,
+  .cover,
+  .video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .main {
+    position: absolute;
+    left: 506px;
+    top: 70px;
+    width: 428px;
+    height: 760px;
+    margin: 0;
+    border-radius: var(--radius-video);
+    overflow: hidden;
+    z-index: var(--z-object);
+  }
+
+  /* 视频真的播起来之前不显示，露出下面的封面图（三条退路都靠这个） */
+  .video {
+    opacity: 0;
+  }
+
+  .video[data-playing] {
+    opacity: 1;
+  }
+
+  /* 口播贴纸 */
+  .sticker {
+    position: absolute;
+    left: 24px;
+    top: 8%;
+    transform: rotate(-2deg);
+    padding: 8px 14px 9px;
+    border-radius: 7px;
+    background: var(--paper-light);
+    color: var(--ink);
+    /* 贴纸是压在示例视频上的字，不是站点自己的字号 */
+    font-size: 22px;
+    line-height: 1.2;
+  }
+
+  .shade {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 30%;
+    background: linear-gradient(
+      0deg,
+      rgba(16, 16, 15, 0.6),
+      rgba(16, 16, 15, 0)
+    );
+  }
+
+  .handle {
+    position: absolute;
+    left: 20px;
+    bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--paper-light);
+    font-size: var(--text-lead);
+  }
+
+  .handle img {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1.5px solid var(--paper-light);
+  }
+
+  /* 停住这条流的句号 */
+  .period {
+    position: absolute;
+    left: 852px;
+    top: 690px;
+    width: 170px;
+    height: 170px;
+    border-radius: 50%;
+    background: var(--paper);
+    z-index: var(--z-card);
+  }
+
+  .caption {
+    position: absolute;
+    left: var(--page-margin);
+    bottom: 82px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    z-index: var(--z-chrome);
+  }
+
+  .caption p {
+    margin: 0;
+    font-size: var(--text-body);
+  }
+</style>

@@ -1,14 +1,48 @@
 ---
-// 空首页：只为让脚手架能构建。页面内容按 design/ 交接包在后续 issue 里做。
+// 首页静态版（桌面，P-01）。6 屏，每屏就是 design/screens/ 里对应文件的那一帧，不带滚动动效；
+// 第 3 屏有两拍（测试、下一轮），静态版里上下排开（design/motion.md「通用规则」的退路）。
+// 滚动动效在第 3 批做，手机版在 P-02 做。
+import CreatorsScreen from '../home/CreatorsScreen.astro';
+import EndingScreen from '../home/EndingScreen.astro';
+import HeroScreen from '../home/HeroScreen.astro';
+import LayersScreen from '../home/LayersScreen.astro';
+import NextRoundScreen from '../home/NextRoundScreen.astro';
+import WallScreen from '../home/WallScreen.astro';
+import WinnerScreen from '../home/WinnerScreen.astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
 ---
 
-<html lang="zh-CN">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>ClinkAI</title>
-  </head>
-  <body>
-    <main></main>
-  </body>
-</html>
+<BaseLayout title="ClinkAI">
+  {/* 每一屏是 1440×900 的画布，按页面宽度整体等比缩放。脚本放在 head 里、内联，
+       这样第一帧画出来之前比例就算好了，不会先按原尺寸闪一下 */}
+  <script is:inline slot="head">
+    (function () {
+      const root = document.documentElement;
+      const fit = function () {
+        root.style.setProperty('--home-scale', String(root.clientWidth / 1440));
+      };
+      fit();
+      // 页面宽度变了（改窗口大小、滚动条出现）就重算
+      if ('ResizeObserver' in window) new ResizeObserver(fit).observe(root);
+      else window.addEventListener('resize', fit);
+    })();
+  </script>
+
+  <main class="home">
+    <HeroScreen />
+    <WallScreen />
+    <WinnerScreen />
+    <NextRoundScreen />
+    <CreatorsScreen />
+    <LayersScreen />
+    <EndingScreen />
+  </main>
+</BaseLayout>
+
+<style>
+  /* 没有脚本时比例是 1：画布按 1440 宽原尺寸居中显示 */
+  .home {
+    width: calc(1440px * var(--home-scale, 1));
+    margin: 0 auto;
+  }
+</style>

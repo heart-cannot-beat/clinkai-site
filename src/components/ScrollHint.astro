@@ -4,12 +4,19 @@ import { SCROLL_HINT } from '../data/site';
 
 interface Props {
   tone?: 'ink' | 'paper';
+  /** 同一页里重复出现的那几个：对读屏软件隐藏 */
+  decorative?: boolean;
 }
 
-const { tone = 'ink' } = Astro.props;
+const { tone = 'ink', decorative = false } = Astro.props;
 ---
 
-<span class:list={['scroll-hint', tone]}>{SCROLL_HINT}</span>
+<span
+  class:list={['scroll-hint', tone]}
+  aria-hidden={decorative ? 'true' : undefined}
+>
+  {SCROLL_HINT}
+</span>
 
 <style>
   .scroll-hint {

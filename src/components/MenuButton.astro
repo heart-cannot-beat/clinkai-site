@@ -1,10 +1,23 @@
 ---
 // 右下角菜单按钮，44×44，圆角 10。每一屏都有，深色屏上也是浅色按钮。
 // 菜单本身还没有设计稿，这里只有按钮；展开的菜单做出来时再加 aria-expanded 和 aria-controls。
+// 同一页里重复出现时（首页静态版每屏一个）加 decorative：对读屏软件隐藏，不进 Tab 顺序。
 import { MENU_LABEL } from '../data/site';
+
+interface Props {
+  decorative?: boolean;
+}
+
+const { decorative = false } = Astro.props;
 ---
 
-<button type="button" class="menu-button" aria-label={MENU_LABEL}>
+<button
+  type="button"
+  class="menu-button"
+  aria-label={MENU_LABEL}
+  aria-hidden={decorative ? 'true' : undefined}
+  tabindex={decorative ? -1 : undefined}
+>
   <svg width="18" height="12" viewBox="0 0 18 12" aria-hidden="true">
     <path
       d="M0 1h18M0 6h18M0 11h18"

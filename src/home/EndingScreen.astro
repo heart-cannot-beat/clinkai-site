@@ -1,0 +1,181 @@
+---
+// 06 结尾 · 一个点。静态帧：design/screens/06-ending.html。
+// 设计稿这一屏没有左下角圆点和菜单按钮，这里照设计稿。文案照抄 design/copy.md。
+import SectionLabel from '../components/SectionLabel.astro';
+import SiteHeader from '../components/SiteHeader.astro';
+import { CONTACT_CTA, NAV_ITEMS } from '../data/site';
+import Screen from './Screen.astro';
+
+// 两个按钮的去处和页头导航里的同一项一致，地址集中在 src/data/site.ts
+const productsHref =
+  NAV_ITEMS.find((item) => item.key === 'products')?.href ?? '#products';
+---
+
+<Screen name="06-ending">
+  <SiteHeader decorative />
+
+  <div class="label">
+    <SectionLabel>工具 / 我们的产品</SectionLabel>
+  </div>
+  <div class="display" lang="en">
+    <div>MAKE IT</div>
+    <div class="last-line">
+      COUNT
+      <span class="period" aria-hidden="true">
+        <span class="period-dot"></span>
+        <span class="period-shadow"></span>
+      </span>
+    </div>
+  </div>
+
+  <div class="footer">
+    <div class="products">
+      <h2>
+        我们自己的 AI 产品，
+        <br />
+        让每一分预算都有据可查。
+      </h2>
+      <ul>
+        <li>
+          <span class="bullet" aria-hidden="true"></span>ClinkAI Ads · 广告测试
+        </li>
+        <li>
+          <span class="bullet" aria-hidden="true"></span>ClinkAI Creators ·
+          达人合作
+        </li>
+      </ul>
+    </div>
+    <div class="actions">
+      <a class="button outline" href={productsHref}>
+        看我们的产品<span aria-hidden="true">↗</span>
+      </a>
+      <a class="button solid" href={CONTACT_CTA.href}>
+        {CONTACT_CTA.label}
+        <span aria-hidden="true">{CONTACT_CTA.arrow}</span>
+      </a>
+    </div>
+  </div>
+</Screen>
+
+<style>
+  .label {
+    position: absolute;
+    left: 48px;
+    top: 150px;
+  }
+
+  /* 英文大标题：纯拉丁字体栈（design/README.md 排版规则 1） */
+  .display {
+    position: absolute;
+    left: 36px;
+    top: 176px;
+    font-family: var(--font-latin);
+    font-size: var(--display-ending);
+    line-height: 0.84;
+    letter-spacing: -0.05em;
+    white-space: nowrap;
+  }
+
+  /* 句号紧跟在 COUNT 后面，底边坐在文字的基线上。用 flex 排这一行：
+     源码里 COUNT 和句号之间的换行不会变成一个 300px 字号的空格 */
+  .last-line {
+    display: flex;
+    align-items: baseline;
+  }
+
+  /* 句号：一个墨色的圆，下面一小片影子 */
+  .period {
+    position: relative;
+    width: 186px;
+    height: 186px;
+    margin-left: 22px;
+  }
+
+  .period-dot {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: var(--ink);
+  }
+
+  .period-shadow {
+    position: absolute;
+    left: -24px;
+    right: -24px;
+    bottom: -40px;
+    height: 24px;
+    border-radius: 50%;
+    background: rgba(28, 28, 27, 0.16);
+    filter: blur(12px);
+  }
+
+  .footer {
+    position: absolute;
+    left: 48px;
+    right: 48px;
+    bottom: 48px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+  }
+
+  .products {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .products h2 {
+    margin: 0;
+    font-size: var(--text-card-title);
+    line-height: 1.2;
+    font-weight: var(--weight);
+    letter-spacing: -0.01em;
+  }
+
+  .products ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    gap: 32px;
+    font-size: var(--text-body);
+  }
+
+  .products li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .bullet {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--ink);
+  }
+
+  .actions {
+    display: flex;
+    gap: 12px;
+  }
+
+  .button {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    border-radius: var(--radius-pill);
+    font-size: var(--text-button);
+  }
+
+  .outline {
+    padding: 16px 26px;
+    border: 1px solid var(--ink);
+  }
+
+  .solid {
+    padding: 16px 28px;
+    background: var(--ink);
+    color: var(--paper);
+  }
+</style>

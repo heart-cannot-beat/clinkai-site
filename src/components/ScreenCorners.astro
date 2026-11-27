@@ -9,11 +9,13 @@ interface Props {
   scroll?: boolean;
   /** 深色底（04 屏）用 paper：圆点和 SCROLL 换成纸色，菜单按钮不变 */
   tone?: 'ink' | 'paper';
+  /** 同一页里重复出现的那几屏：SCROLL 和菜单按钮对读屏软件隐藏，按钮不进 Tab 顺序 */
+  decorative?: boolean;
 }
 
-const { scroll = false, tone = 'ink' } = Astro.props;
+const { scroll = false, tone = 'ink', decorative = false } = Astro.props;
 ---
 
 <SoundDot tone={tone} />
-{scroll && <ScrollHint tone={tone} />}
-<MenuButton />
+{scroll && <ScrollHint tone={tone} decorative={decorative} />}
+<MenuButton decorative={decorative} />

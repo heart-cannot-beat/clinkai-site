@@ -1,0 +1,84 @@
+---
+// 05 其余四层 · 只有字。静态帧：design/screens/05-layers.html（第一行亮，其余三行约三成透明度）。
+// 文案照抄 design/copy.md。关于学习效果只有「结论」一行的那一句。
+import ScreenCorners from '../components/ScreenCorners.astro';
+import SiteHeader from '../components/SiteHeader.astro';
+import Screen from './Screen.astro';
+
+const ROWS = [
+  { no: '01', name: '策略', text: '定位、人群、渠道和节奏，先想清楚再花钱。' },
+  { no: '02', name: '品牌', text: '名字、视觉和语气，按每个市场调整。' },
+  { no: '05', name: '内容', text: '社媒、短视频、详情页，持续产出。' },
+  { no: '06', name: '结论', text: '每一轮测出了什么，都带进下一轮。' },
+];
+---
+
+<Screen name="05-layers">
+  <SiteHeader decorative />
+
+  <h2 class="lead">广告和达人之外，这四件事也是我们做。</h2>
+  <ul class="rows">
+    {ROWS.map((row, index) => (
+      <li class:list={['row', index > 0 && 'dim']}>
+        <span class="no">{row.no}</span>
+        <h3 class="name">{row.name}</h3>
+        <p class="text">{row.text}</p>
+      </li>
+    ))}
+  </ul>
+
+  <ScreenCorners scroll decorative />
+</Screen>
+
+<style>
+  .lead {
+    position: absolute;
+    left: var(--page-margin);
+    top: 108px;
+    margin: 0;
+    font-size: var(--text-lead);
+    font-weight: var(--weight);
+  }
+
+  .rows {
+    position: absolute;
+    left: var(--page-margin);
+    right: var(--page-margin);
+    top: 160px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border-bottom: 1px solid var(--hairline);
+  }
+
+  .row {
+    display: grid;
+    grid-template-columns: 96px minmax(0, 1fr) 470px;
+    align-items: center;
+    height: 152px;
+    border-top: 1px solid var(--hairline);
+  }
+
+  /* 没轮到的三行：墨色的三成。分隔线不跟着变淡 */
+  .dim {
+    color: rgba(28, 28, 27, 0.3);
+  }
+
+  .no {
+    font-size: var(--text-body);
+  }
+
+  .name {
+    margin: 0;
+    font-size: var(--display-zh);
+    line-height: 1;
+    font-weight: var(--weight);
+    letter-spacing: 0.02em;
+  }
+
+  .text {
+    margin: 0;
+    font-size: var(--text-desc);
+    line-height: 1.5;
+  }
+</style>

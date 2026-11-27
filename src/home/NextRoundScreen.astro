@@ -1,0 +1,129 @@
+---
+// 03 下一轮（第 2 拍，和 03 测试是同一屏）。静态帧：design/screens/03b-next-round.html。
+// 静态版里两拍上下排开（design/motion.md「通用规则」的退路），所以它单独占一屏。
+// 关于学习效果只有一句：「每一轮的结果，都喂给下一轮」。新版本的个数从数据里数，不手写。
+import CounterBlock from '../components/CounterBlock.astro';
+import ScreenCorners from '../components/ScreenCorners.astro';
+import SiteHeader from '../components/SiteHeader.astro';
+import { exampleImageUrl } from './media';
+import { NEXT_ROUND_TILES, renderNextRoundTiles } from './next-round';
+import Screen from './Screen.astro';
+
+const count = NEXT_ROUND_TILES.length;
+const tiles = renderNextRoundTiles(NEXT_ROUND_TILES, exampleImageUrl);
+---
+
+<Screen name="03b-next-round" background="ink">
+  <SiteHeader variant="pill" decorative />
+  <p class="round round-1">第 1 轮 · 胜出</p>
+  <figure class="card" aria-label="示例广告：第 1 轮胜出的那一版">
+    <p class="headline" lang="en">
+      Mute
+    </p>
+    <p class="headline faded" lang="en">
+      the city.
+    </p>
+    <img class="product" src={exampleImageUrl('pebble_cut_hero.webp')} alt="" />
+    <p class="brand">PEBBLESOUND</p>
+  </figure>
+  <p class="arrow" aria-hidden="true">
+    →
+  </p>
+  <p class="round round-2">第 2 轮 · 同一个主张，{count} 种新讲法 · 示例</p>
+  <div
+    class="tiles"
+    role="img"
+    aria-label={`示例：第 2 轮的 ${count} 个新版本，都从第 1 轮胜出的“给城市静音”出发，换了场景、画面和语言`}
+    set:html={tiles}
+  />
+  <CounterBlock
+    label="03 / 广告投放 · 下一轮"
+    value={count}
+    lines={['个新版本，从赢的那一张长出来', '每一轮的结果，都喂给下一轮']}
+  />
+  <ScreenCorners decorative />
+</Screen>
+
+<style>
+  .round {
+    position: absolute;
+    top: 136px;
+    margin: 0;
+    font-size: var(--text-body);
+    color: var(--pebble-cream);
+  }
+
+  .round-1 {
+    left: 96px;
+  }
+
+  .round-2 {
+    left: 640px;
+  }
+
+  /* 第 1 轮胜出的那一张，转正、缩到左边 */
+  .card {
+    position: absolute;
+    left: 96px;
+    top: 176px;
+    width: 470px;
+    height: 524px;
+    margin: 0;
+    overflow: hidden;
+    background: var(--pebble-cobalt);
+    color: var(--pebble-cream);
+    z-index: var(--z-object);
+  }
+
+  .headline {
+    position: absolute;
+    left: 26px;
+    top: 18px;
+    margin: 0;
+    font-family: var(--font-latin);
+    font-size: 104px;
+    line-height: 0.9;
+    letter-spacing: -0.045em;
+    white-space: nowrap;
+  }
+
+  .faded {
+    top: 112px;
+    opacity: 0.2;
+  }
+
+  .product {
+    position: absolute;
+    left: 44px;
+    top: 232px;
+    width: 400px;
+    height: 242px;
+    max-width: none;
+    transform: rotate(-9deg);
+  }
+
+  .brand {
+    position: absolute;
+    left: 28px;
+    bottom: 22px;
+    margin: 0;
+    font-size: var(--text-label);
+    letter-spacing: 0.1em;
+  }
+
+  .arrow {
+    position: absolute;
+    left: 584px;
+    top: 404px;
+    margin: 0;
+    font-size: 40px;
+    line-height: 1;
+    color: var(--pebble-cream);
+  }
+
+  .tiles {
+    position: absolute;
+    inset: 0;
+    z-index: var(--z-back);
+  }
+</style>

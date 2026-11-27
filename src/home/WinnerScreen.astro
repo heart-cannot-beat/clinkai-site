@@ -1,0 +1,137 @@
+---
+// 03 测试 · 一张（第 1 拍）。静态帧：design/screens/03-winner.html。
+// 整面墙去色变暗，胜出的那一张被抽出来放大；它在墙里的原位空着（VersionWall decorative）。
+// 这一屏只演示过程，不出现任何效果数字。计数从墙的数据里数，不手写。
+import CounterBlock from '../components/CounterBlock.astro';
+import ExampleTag from '../components/ExampleTag.astro';
+import ScreenCorners from '../components/ScreenCorners.astro';
+import SiteHeader from '../components/SiteHeader.astro';
+import { versionWall } from '../wall';
+import VersionWall from '../wall/VersionWall.astro';
+import { exampleImageUrl } from './media';
+import Screen from './Screen.astro';
+
+const { versions } = versionWall.counts;
+const winners = versionWall.tiles.filter((tile) => tile.winner).length;
+---
+
+<Screen name="03-winner" background="ink">
+  <SiteHeader variant="pill" decorative />
+  <div class="gray-wall">
+    <VersionWall decorative />
+  </div>
+  <figure
+    class="card"
+    aria-label={`示例广告：Pebblesound 降噪耳机，${versions} 个版本里胜出的那一版，正在放大到满屏`}
+  >
+    <p class="headline" lang="en">
+      Mute
+    </p>
+    <p class="headline faded" lang="en">
+      the city.
+    </p>
+    <img class="product" src={exampleImageUrl('pebble_cut_hero.webp')} alt="" />
+    <p class="brand">
+      PEBBLESOUND
+      <ExampleTag variant="outline">示例广告 · 非真实客户</ExampleTag>
+    </p>
+    <p class="badge">
+      <span class="badge-dot" aria-hidden="true"></span>胜出
+    </p>
+  </figure>
+  <CounterBlock
+    label="03 / 广告投放 · 测试"
+    value={winners}
+    lines={[
+      `个胜出，${versions} 个版本里测出来的`,
+      '把预算加到这一张上 · 示例',
+    ]}
+  />
+  <ScreenCorners decorative />
+</Screen>
+
+<style>
+  .gray-wall {
+    position: absolute;
+    inset: 0;
+    filter: grayscale(1) brightness(0.38);
+    z-index: var(--z-back);
+  }
+
+  /* 被抽出来的那一张：示例品牌 Pebblesound 的钴蓝底、奶油色字，歪 2 度 */
+  .card {
+    position: absolute;
+    left: 150px;
+    top: 76px;
+    width: 1210px;
+    height: 654px;
+    margin: 0;
+    overflow: hidden;
+    background: var(--pebble-cobalt);
+    color: var(--pebble-cream);
+    transform: rotate(2deg);
+    box-shadow: 0 50px 90px rgba(0, 0, 0, 0.55);
+    z-index: var(--z-card);
+  }
+
+  .headline {
+    position: absolute;
+    left: 44px;
+    top: 18px;
+    margin: 0;
+    font-family: var(--font-latin);
+    font-size: var(--display-card);
+    line-height: 0.9;
+    letter-spacing: -0.045em;
+    white-space: nowrap;
+  }
+
+  .faded {
+    top: 236px;
+    opacity: 0.2;
+  }
+
+  .product {
+    position: absolute;
+    left: 480px;
+    top: 244px;
+    width: 700px;
+    height: 423px;
+    max-width: none;
+    transform: rotate(-9deg);
+  }
+
+  .brand {
+    position: absolute;
+    left: 48px;
+    bottom: 34px;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font-size: var(--text-small);
+    letter-spacing: 0.1em;
+  }
+
+  .badge {
+    position: absolute;
+    right: 26px;
+    top: 26px;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 14px;
+    border-radius: var(--radius-pill);
+    background: var(--pebble-cream);
+    color: var(--ink);
+    font-size: var(--text-body);
+  }
+
+  .badge-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--ink);
+  }
+</style>

@@ -86,6 +86,23 @@ describe('页头', () => {
 
     expect(html).toMatch(/<span aria-hidden="true"[^>]*>→<\/span>/);
   });
+
+  it('默认是真页头：不隐藏，链接都在 Tab 顺序里', async () => {
+    const html = await container.renderToString(SiteHeader);
+
+    expect(html).not.toMatch(/<header[^>]*aria-hidden/);
+    expect(html).not.toContain('tabindex');
+  });
+
+  it('同一页里重复出现的页头：对读屏隐藏，6 个链接都不进 Tab 顺序', async () => {
+    const html = await container.renderToString(SiteHeader, {
+      props: { variant: 'pill', decorative: true },
+    });
+
+    expect(html).toMatch(/<header[^>]*aria-hidden="true"/);
+    expect(html.match(/<a\b[^>]*>/g)).toHaveLength(6);
+    expect(html.match(/<a\b[^>]*tabindex="-1"/g)).toHaveLength(6);
+  });
 });
 
 describe('角落部件', () => {
@@ -112,6 +129,27 @@ describe('角落部件', () => {
     expect(text(html)).toContain('SCROLL ↓');
     expect(html).toMatch(/class="sound-dot paper/);
     expect(html).toMatch(/class="scroll-hint paper/);
+  });
+
+  it('默认菜单按钮在 Tab 顺序里，SCROLL 不隐藏', async () => {
+    const html = await container.renderToString(ScreenCorners, {
+      props: { scroll: true },
+    });
+
+    expect(html).not.toContain('tabindex');
+    expect(html).not.toMatch(/<button[^>]*aria-hidden/);
+    expect(html).not.toMatch(/class="scroll-hint[^>]*aria-hidden/);
+  });
+
+  it('同一页里重复出现时：SCROLL 和菜单按钮对读屏隐藏，按钮不进 Tab 顺序', async () => {
+    const html = await container.renderToString(ScreenCorners, {
+      props: { scroll: true, decorative: true },
+    });
+
+    expect(html).toMatch(/<button[^>]*aria-hidden="true"/);
+    expect(html).toMatch(/<button[^>]*tabindex="-1"/);
+    expect(html).toMatch(/class="scroll-hint[^>]*aria-hidden="true"/);
+    expect(text(html)).toContain('SCROLL ↓');
   });
 });
 
