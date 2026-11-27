@@ -1,17 +1,18 @@
 ---
-// 版本墙：首页第 2 屏铺满全屏的 40 张示例广告；第 3 屏背后的灰墙是同一份。
-// 小图在构建时生成，这里输出的是静态 HTML，线上不跑任何生成逻辑。
-// 小图的坐标按设计稿 1440×900 的画布写死，所在的屏负责定位、缩放和底色。
-import { renderWallTiles } from './generate';
+// 版本墙：首页第 2 屏的 40 张示例广告；第 3 屏背后的灰墙是同一份，少了胜出的那一张。
+// 小图在构建时从 design/wall/tiles.json 读出来，这里输出的是静态 HTML，线上不跑任何生成逻辑。
+// 小图的坐标按设计稿 1440×900 的画布写死，墙比画布大，四边由所在的屏裁掉；
+// 所在的屏还负责定位、缩放、底色和灰墙的去色。
 import { versionWall } from './index';
+import { renderWallTiles } from './wall';
 
 interface Props {
-  /** 只当背景用（第 3 屏的灰墙）：对读屏软件隐藏 */
+  /** 第 3 屏的灰墙：只当背景用，对读屏软件隐藏；胜出的那一张不输出，它的位置空着 */
   decorative?: boolean;
 }
 
 const { decorative = false } = Astro.props;
-const tiles = renderWallTiles(versionWall);
+const tiles = renderWallTiles(versionWall, { withoutWinner: decorative });
 ---
 
 {decorative ? (
