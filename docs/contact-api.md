@@ -117,6 +117,12 @@
 
 收发件地址也放 secret，不放 `wrangler.jsonc` 的 `vars`：一是地址不进仓库；二是在后台手动加的普通变量，下次 `wrangler deploy` 会被覆盖（[官方说明](https://developers.cloudflare.com/workers/wrangler/configuration/#source-of-truth)），secret 不会。三个值缺任何一个，接口都返回 500 `server_error`，日志记 `missing_config:<名字>`。
 
+### PR 预览（Worker Previews）
+
+[预览不继承生产配置](https://developers.cloudflare.com/workers/previews/configuration/)：绑定要写在 `wrangler.jsonc` 的 `previews` 块里，secret 要在后台的 Previews Base 里重新填。这个接口没有给预览配 `send_email`、`ratelimits` 和 secret，所以在预览里提交表单会直接返回 500 `server_error`（缺配置），走不到发信这一步。这是有意的：预览不会往真实收件箱发信。
+
+以后要在预览里测表单，就在 `previews` 块里加 `send_email` 和 `ratelimits`，把发信绑定用 `destination_address` 锁到一个专门测试用的已验证收件地址，再给预览单独填 secret（Turnstile 可以用测试密钥）。这一步要改 Cloudflare 设置，先问。
+
 ## 需要在 Cloudflare 里做的事
 
 这些是账号设置，由有权限的人来做；agent 不做。
