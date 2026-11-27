@@ -1,0 +1,24 @@
+// Cloudflare Workers 配置（S-02）。
+// 现在只托管 Astro 的构建产物 dist/，没有 Worker 脚本；表单接口（S-03）会在这里加 main 和绑定。
+// 部署走 Cloudflare 的 Workers Builds，设置步骤见 docs/deploy.md。
+// 账号 ID、API Token、密钥都不写进这个文件。
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  // 要和 Cloudflare 后台里这个 Worker 的名字一致，否则 Workers Builds 构建会失败
+  "name": "clinkai-site",
+  // 不能晚于 package.json 里 wrangler 自带的 workerd 支持的日期
+  "compatibility_date": "2026-11-13",
+  "assets": {
+    "directory": "./dist",
+    // 找不到的路径返回最近的 404.html（以后加了 404 页就会自动用上），状态码 404
+    "not_found_handling": "404-page",
+  },
+  // 先只挂在 workers.dev 子域名上。切 clinkai.app 是 L-01，用户点头前不加 routes。
+  "workers_dev": true,
+  // PR 预览地址（<预览名>-clinkai-site.<子域名>.workers.dev）。要明确写 true：
+  // 不写时 `wrangler deploy` 不会去改 Worker 上现有的开关，而 `wrangler preview` 从来不改它。
+  "preview_urls": true,
+  // PR 预览跑的是 `npx wrangler preview`，配置里没有这个块它会直接报错；块可以为空。
+  // 预览不继承生产的绑定和密钥：预览要用的绑定写在这里，静态资源和兼容日期留在顶层。
+  "previews": {},
+}
