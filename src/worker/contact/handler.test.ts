@@ -14,36 +14,46 @@ import {
   handleContact,
   MAX_BODY_BYTES,
 } from './handler';
-import {
-  CONTACT_FIELDS,
-  TURNSTILE_FIELD,
-  type FieldKind,
-  type FieldSpec,
-} from './schema';
-import { SITEVERIFY_URL } from './turnstile';
+import { CONTACT_FIELDS, type FieldSpec, type FieldValue } from './schema';
 
 const IP = '203.0.113.7';
-const TOKEN = 'XXXX.DUMMY.TOKEN.XXXX';
 const URL_ = `https://clinkai.example${CONTACT_PATH}`;
 
-// 按字段类型生成一份能通过校验的示例数据。字段按交接包对齐后这里不用改。
-function sampleValue(field: FieldSpec): string {
-  const samples: Record<FieldKind, string> = {
-    text: `示例 ${field.name}`,
-    email: `${field.name}@pebblesound.example`,
-    multiline: `示例 ${field.name}\n第二行`,
-  };
-  return samples[field.kind];
+// 按字段类型生成一份能通过校验的示例数据。字段表改了这里不用跟着改。
+function sampleValue(field: FieldSpec): FieldValue {
+  switch (field.kind) {
+    case 'text':
+      return `示例 ${field.name}`;
+    case 'email':
+      return `${field.name}@pebblesound.example`;
+    case 'multiline':
+      return `示例 ${field.name}\n第二行`;
+    case 'choices':
+      return field.options.slice(0, 2);
+    case 'choice':
+      return field.options[0]!;
+  }
 }
 
-function validFields(): Record<string, string> {
+function validBody(): Record<string, FieldValue> {
   return Object.fromEntries(
     CONTACT_FIELDS.map((field) => [field.name, sampleValue(field)]),
   );
 }
 
-function validBody(): Record<string, string> {
-  return { ...validFields(), [TURNSTILE_FIELD]: TOKEN };
+/** 表单编码：多选的每个值各占一个同名的键 */
+function formEntries(body: Record<string, FieldValue>): [string, string][] {
+  return Object.entries(body).flatMap(([name, value]) =>
+    (Array.isArray(value) ? value : [value]).map((item): [string, string] => [
+      name,
+      item,
+    ]),
+  );
+}
+
+/** 邮件正文里一个字段的样子：多选的值用顿号连起来 */
+function emailBlock(name: string, value: FieldValue): string {
+  return `${name}:\n${Array.isArray(value) ? value.join('、') : value}`;
 }
 
 function jsonRequest(body: unknown, init: RequestInit = {}): Request {
@@ -55,21 +65,18 @@ function jsonRequest(body: unknown, init: RequestInit = {}): Request {
   });
 }
 
-function siteverifyReply(body: unknown, status = 200) {
-  return vi.fn<typeof fetch>(async () => Response.json(body, { status }));
-}
-
-// 主机名在 TEST_CONFIG.TURNSTILE_HOSTNAMES 的白名单里
-const PASS = { success: true, 'error-codes': [], hostname: 'clinkai.example' };
-
+// 接口不该访问任何外部服务（Turnstile 已经拿掉）：谁调了 fetch，测试就失败
 let fetchMock: MockInstance<typeof fetch>;
 
 beforeEach(() => {
-  fetchMock = siteverifyReply(PASS);
+  fetchMock = vi.fn<typeof fetch>(async () => {
+    throw new Error('接口不应该发起任何外部请求');
+  });
   vi.stubGlobal('fetch', fetchMock);
 });
 
 afterEach(() => {
+  expect(fetchMock).not.toHaveBeenCalled();
   vi.unstubAllGlobals();
   vi.restoreAllMocks();
 });
@@ -80,7 +87,7 @@ async function expectError(response: Response, status: number, error: string) {
 }
 
 describe('POST /api/contact 成功', () => {
-  it('JSON 请求：校验、防刷、发信都过，返回 200', async () => {
+  it('JSON 请求：校验通过就发信，返回 200；不需要 Turnstile token', async () => {
     const { env, send, limit } = createFakeEnv();
 
     const response = await handleContact(jsonRequest(validBody()), env);
@@ -92,57 +99,88 @@ describe('POST /api/contact 成功', () => {
 
     expect(limit).toHaveBeenCalledWith({ key: `contact:${IP}` });
 
-    expect(fetchMock).toHaveBeenCalledTimes(1);
-    const [url, init] = fetchMock.mock.calls[0]!;
-    expect(url).toBe(SITEVERIFY_URL);
-    expect(init?.method).toBe('POST');
-    expect(JSON.parse(String(init?.body))).toEqual({
-      secret: TEST_CONFIG.TURNSTILE_SECRET_KEY,
-      response: TOKEN,
-      remoteip: IP,
-    });
-
     expect(send).toHaveBeenCalledTimes(1);
     const message = send.mock.calls[0]![0];
     expect(message.to).toBe(TEST_CONFIG.CONTACT_TO);
     expect(message.from).toBe(TEST_CONFIG.CONTACT_FROM);
     expect(message.subject).toBe(EMAIL_SUBJECT);
     expect(message.html).toBeUndefined();
-    for (const [name, value] of Object.entries(validFields())) {
-      expect(message.text).toContain(`${name}:\n${value}`);
+    for (const [name, value] of Object.entries(validBody())) {
+      expect(message.text).toContain(emailBlock(name, value));
     }
-    expect(message.text).not.toContain(TOKEN);
   });
 
-  it('回复地址用表单里的邮箱字段', async () => {
+  it('只需要收发件地址两个配置：env 里没有任何 Turnstile 配置也能发', async () => {
     const { env, send } = createFakeEnv();
-    const replyField = CONTACT_FIELDS.find((field: FieldSpec) => field.replyTo);
+
+    expect(Object.keys(env).filter((key) => /turnstile/i.test(key))).toEqual(
+      [],
+    );
+    const response = await handleContact(jsonRequest(validBody()), env);
+
+    expect(response.status).toBe(200);
+    expect(send).toHaveBeenCalledTimes(1);
+  });
+
+  it('多选的值在邮件里按选项表的顺序用顿号连起来', async () => {
+    const { env, send } = createFakeEnv();
+    const body = { ...validBody(), market: ['日韩', '北美'] };
+
+    await handleContact(jsonRequest(body), env);
+
+    expect(send.mock.calls[0]![0].text).toContain('market:\n北美、日韩');
+  });
+
+  it('字段表里没有的键直接丢掉，不进邮件（比如旧页面还在发的 Turnstile token）', async () => {
+    const { env, send } = createFakeEnv();
+    const body = {
+      ...validBody(),
+      'cf-turnstile-response': 'XXXX.DUMMY.TOKEN.XXXX',
+      extra: '多出来的',
+    };
+
+    const response = await handleContact(jsonRequest(body), env);
+
+    expect(response.status).toBe(200);
+    const text = send.mock.calls[0]![0].text;
+    expect(text).not.toContain('DUMMY');
+    expect(text).not.toContain('多出来的');
+  });
+
+  it('回复地址用表单里的邮箱字段；字段表里没有邮箱字段时不设回复地址', async () => {
+    const { env, send } = createFakeEnv();
+    const replyField = CONTACT_FIELDS.find(
+      (field: FieldSpec) => 'replyTo' in field && field.replyTo,
+    );
 
     await handleContact(jsonRequest(validBody()), env);
 
     expect(send.mock.calls[0]![0].replyTo).toBe(
-      replyField ? validFields()[replyField.name] : undefined,
+      replyField ? validBody()[replyField.name] : undefined,
     );
   });
 
-  it('表单编码（urlencoded）也能收', async () => {
+  it('表单编码（urlencoded）也能收，多选是重复的同名键', async () => {
     const { env, send } = createFakeEnv();
     const request = new Request(URL_, {
       method: 'POST',
       headers: { 'cf-connecting-ip': IP },
-      body: new URLSearchParams(validBody()),
+      body: new URLSearchParams(formEntries(validBody())),
     });
 
     const response = await handleContact(request, env);
 
     expect(response.status).toBe(200);
     expect(send).toHaveBeenCalledTimes(1);
+    for (const [name, value] of Object.entries(validBody())) {
+      expect(send.mock.calls[0]![0].text).toContain(emailBlock(name, value));
+    }
   });
 
-  it('multipart 表单也能收', async () => {
+  it('multipart 表单也能收，多选是重复的同名键', async () => {
     const { env, send } = createFakeEnv();
     const form = new FormData();
-    for (const [name, value] of Object.entries(validBody()))
+    for (const [name, value] of formEntries(validBody()))
       form.append(name, value);
 
     const response = await handleContact(
@@ -156,6 +194,9 @@ describe('POST /api/contact 成功', () => {
 
     expect(response.status).toBe(200);
     expect(send).toHaveBeenCalledTimes(1);
+    for (const [name, value] of Object.entries(validBody())) {
+      expect(send.mock.calls[0]![0].text).toContain(emailBlock(name, value));
+    }
   });
 
   it('浏览器发的大小写混合 multipart boundary 也能收', async () => {
@@ -163,7 +204,7 @@ describe('POST /api/contact 成功', () => {
     const { env, send } = createFakeEnv();
     const boundary = '----WebKitFormBoundaryAbCdEfGh12';
     const body =
-      Object.entries(validBody())
+      formEntries(validBody())
         .map(
           ([name, value]) =>
             `--${boundary}\r\nContent-Disposition: form-data; name="${name}"\r\n\r\n${value}\r\n`,
@@ -188,16 +229,17 @@ describe('POST /api/contact 成功', () => {
 });
 
 describe('POST /api/contact 校验失败', () => {
-  it('返回 422 和每个出错字段的错误码，不调 Turnstile、不发信', async () => {
+  it('返回 422 和每个出错字段的错误码，不发信', async () => {
     const { env, send } = createFakeEnv();
     const required = CONTACT_FIELDS.filter(
       (field: FieldSpec) => field.required,
     );
-    const body: Record<string, string> = validBody();
+    const body = validBody();
     for (const field of required) delete body[field.name];
 
     const response = await handleContact(jsonRequest(body), env);
 
+    expect(required.length).toBeGreaterThan(0);
     expect(response.status).toBe(422);
     expect(await response.json()).toEqual({
       ok: false,
@@ -206,7 +248,38 @@ describe('POST /api/contact 校验失败', () => {
         required.map((field) => [field.name, 'required']),
       ),
     });
-    expect(fetchMock).not.toHaveBeenCalled();
+    expect(send).not.toHaveBeenCalled();
+  });
+
+  it('多选里有选项表之外的值时，那个字段报 invalid', async () => {
+    const { env, send } = createFakeEnv();
+    const body = { ...validBody(), service: ['广告', '不在表里'] };
+
+    const response = await handleContact(jsonRequest(body), env);
+
+    expect(response.status).toBe(422);
+    expect(await response.json()).toMatchObject({
+      fields: { service: 'invalid' },
+    });
+    expect(send).not.toHaveBeenCalled();
+  });
+
+  it('表单编码下单行字段出现重复的键时，那个字段报 invalid', async () => {
+    const { env, send } = createFakeEnv();
+    const request = new Request(URL_, {
+      method: 'POST',
+      body: new URLSearchParams([
+        ...formEntries(validBody()),
+        ['brand', '第二个品牌名'],
+      ]),
+    });
+
+    const response = await handleContact(request, env);
+
+    expect(response.status).toBe(422);
+    expect(await response.json()).toMatchObject({
+      fields: { brand: 'invalid' },
+    });
     expect(send).not.toHaveBeenCalled();
   });
 
@@ -236,6 +309,18 @@ describe('POST /api/contact 校验失败', () => {
       'payload_too_large',
     );
     expect(send).not.toHaveBeenCalled();
+  });
+
+  it('所有字段都填到上限也不超过请求体上限', () => {
+    const full = Object.fromEntries(
+      CONTACT_FIELDS.map((field) => [
+        field.name,
+        'options' in field ? field.options : '字'.repeat(field.maxLength),
+      ]),
+    );
+    const bytes = new TextEncoder().encode(JSON.stringify(full)).byteLength;
+
+    expect(bytes).toBeLessThan(MAX_BODY_BYTES);
   });
 
   it('没有 Content-Length 的流式请求体超过上限时立刻返回 413，不读完整个请求体', async () => {
@@ -282,157 +367,8 @@ describe('POST /api/contact 校验失败', () => {
   });
 });
 
-describe('POST /api/contact 防刷失败', () => {
-  it('没带 Turnstile token 时返回 403，不调 siteverify', async () => {
-    const { env, send } = createFakeEnv();
-    const body: Record<string, string> = validBody();
-    delete body[TURNSTILE_FIELD];
-
-    await expectError(
-      await handleContact(jsonRequest(body), env),
-      403,
-      'turnstile_failed',
-    );
-    expect(fetchMock).not.toHaveBeenCalled();
-    expect(send).not.toHaveBeenCalled();
-  });
-
-  it('token 超过 2048 个字符时返回 403，不调 siteverify', async () => {
-    const { env } = createFakeEnv();
-    const body = { ...validBody(), [TURNSTILE_FIELD]: 'x'.repeat(2049) };
-
-    await expectError(
-      await handleContact(jsonRequest(body), env),
-      403,
-      'turnstile_failed',
-    );
-    expect(fetchMock).not.toHaveBeenCalled();
-  });
-
-  it.each(['invalid-input-response', 'timeout-or-duplicate', 'bad-request'])(
-    'siteverify 判定失败（%s）时返回 403，不发信',
-    async (code) => {
-      vi.stubGlobal(
-        'fetch',
-        siteverifyReply({ success: false, 'error-codes': [code] }),
-      );
-      const { env, send } = createFakeEnv();
-
-      await expectError(
-        await handleContact(jsonRequest(validBody()), env),
-        403,
-        'turnstile_failed',
-      );
-      expect(send).not.toHaveBeenCalled();
-    },
-  );
-
-  it('siteverify 连不上时返回 503，不发信', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn(async () => {
-        throw new TypeError('network down');
-      }),
-    );
-    const { env, send } = createFakeEnv();
-
-    await expectError(
-      await handleContact(jsonRequest(validBody()), env),
-      503,
-      'turnstile_unavailable',
-    );
-    expect(send).not.toHaveBeenCalled();
-  });
-
-  it.each([
-    ['HTTP 500', siteverifyReply({}, 500)],
-    [
-      'internal-error',
-      siteverifyReply({ success: false, 'error-codes': ['internal-error'] }),
-    ],
-  ])('siteverify 自己出错（%s）时返回 503', async (_label, reply) => {
-    vi.stubGlobal('fetch', reply);
-    const { env } = createFakeEnv();
-
-    await expectError(
-      await handleContact(jsonRequest(validBody()), env),
-      503,
-      'turnstile_unavailable',
-    );
-  });
-
-  it('Turnstile 密钥配错时返回 500', async () => {
-    vi.stubGlobal(
-      'fetch',
-      siteverifyReply({
-        success: false,
-        'error-codes': ['invalid-input-secret'],
-      }),
-    );
-    const { env, send } = createFakeEnv();
-
-    await expectError(
-      await handleContact(jsonRequest(validBody()), env),
-      500,
-      'server_error',
-    );
-    expect(send).not.toHaveBeenCalled();
-  });
-});
-
-describe('POST /api/contact Turnstile 主机名白名单', () => {
-  it.each([
-    ['不在白名单里的主机名', { ...PASS, hostname: 'evil.example' }],
-    ['白名单里主机名的子域名', { ...PASS, hostname: 'x.clinkai.example' }],
-    ['没有 hostname 字段', { success: true, 'error-codes': [] }],
-  ])('siteverify 通过但%s时返回 403，不发信', async (_label, reply) => {
-    vi.stubGlobal('fetch', siteverifyReply(reply));
-    const { env, send } = createFakeEnv();
-
-    await expectError(
-      await handleContact(jsonRequest(validBody()), env),
-      403,
-      'turnstile_failed',
-    );
-    expect(send).not.toHaveBeenCalled();
-  });
-
-  it('白名单里的任意一个主机名都通过，不分大小写、忽略空白', async () => {
-    vi.stubGlobal(
-      'fetch',
-      siteverifyReply({ ...PASS, hostname: 'Preview.Clinkai.Example' }),
-    );
-    const { env, send } = createFakeEnv({
-      TURNSTILE_HOSTNAMES: ' clinkai.example ,  PREVIEW.clinkai.example ',
-    });
-
-    const response = await handleContact(jsonRequest(validBody()), env);
-
-    expect(response.status).toBe(200);
-    expect(send).toHaveBeenCalledTimes(1);
-  });
-
-  it.each(['', '  ', ' , ,'])(
-    '白名单为空（%j）时当作缺配置：返回 500，不调 siteverify、不发信',
-    async (value) => {
-      const { env, send, limit } = createFakeEnv({
-        TURNSTILE_HOSTNAMES: value,
-      });
-
-      await expectError(
-        await handleContact(jsonRequest(validBody()), env),
-        500,
-        'server_error',
-      );
-      expect(limit).not.toHaveBeenCalled();
-      expect(fetchMock).not.toHaveBeenCalled();
-      expect(send).not.toHaveBeenCalled();
-    },
-  );
-});
-
 describe('POST /api/contact 限流', () => {
-  it('超过阈值时返回 429 和 Retry-After，不读请求体、不调 Turnstile、不发信', async () => {
+  it('超过阈值时返回 429 和 Retry-After，不读请求体、不发信', async () => {
     const { env, send, limit } = createFakeEnv();
     limit.mockResolvedValue({ success: false });
 
@@ -440,11 +376,10 @@ describe('POST /api/contact 限流', () => {
 
     await expectError(response, 429, 'rate_limited');
     expect(response.headers.get('retry-after')).toBe('60');
-    expect(fetchMock).not.toHaveBeenCalled();
     expect(send).not.toHaveBeenCalled();
   });
 
-  it('限流绑定本身出错时放行，靠 Turnstile 兜底', async () => {
+  it('限流绑定本身出错时放行，不把真实用户全挡掉', async () => {
     const { env, send, limit } = createFakeEnv();
     limit.mockRejectedValue(new Error('binding unavailable'));
 
@@ -485,81 +420,76 @@ describe('POST /api/contact 发送失败', () => {
     expect(send).toHaveBeenCalledTimes(1);
   });
 
-  it.each([
-    'TURNSTILE_SECRET_KEY',
-    'TURNSTILE_HOSTNAMES',
-    'CONTACT_TO',
-    'CONTACT_FROM',
-  ] as const)('缺少 %s 配置时返回 500，不发信', async (name) => {
-    const { env, send } = createFakeEnv({ [name]: undefined });
+  it.each(['CONTACT_TO', 'CONTACT_FROM'] as const)(
+    '缺少 %s 配置时返回 500，不限流计数、不发信',
+    async (name) => {
+      const { env, send, limit } = createFakeEnv({ [name]: undefined });
 
-    await expectError(
-      await handleContact(jsonRequest(validBody()), env),
-      500,
-      'server_error',
-    );
-    expect(send).not.toHaveBeenCalled();
-  });
+      await expectError(
+        await handleContact(jsonRequest(validBody()), env),
+        500,
+        'server_error',
+      );
+      expect(limit).not.toHaveBeenCalled();
+      expect(send).not.toHaveBeenCalled();
+    },
+  );
 });
 
 describe('日志', () => {
-  it('任何结果下都不记录表单内容、联系方式、token 和 IP', async () => {
+  it('任何结果下都不记录表单内容、联系方式和 IP', async () => {
     const logged: unknown[][] = [];
     for (const level of ['log', 'info', 'warn', 'error', 'debug'] as const) {
       vi.spyOn(console, level).mockImplementation((...args: unknown[]) => {
         logged.push(args);
       });
     }
+    // 每个字段都用别处不会出现的示例值，多选也算表单内容
+    const body = validBody();
+    const contact = 'lin@pebblesound.example';
+    body.contact = contact;
 
     const scenarios: Array<() => Promise<unknown>> = [
       // 成功
-      () => handleContact(jsonRequest(validBody()), createFakeEnv().env),
+      () => handleContact(jsonRequest(body), createFakeEnv().env),
       // 校验失败
       () => {
-        const body: Record<string, string> = validBody();
-        const required = CONTACT_FIELDS.find(
-          (field: FieldSpec) => field.required,
-        );
-        if (required) delete body[required.name];
-        return handleContact(jsonRequest(body), createFakeEnv().env);
+        const broken: Record<string, FieldValue> = {
+          ...body,
+          service: ['不在表里的服务'],
+        };
+        delete broken.brand;
+        return handleContact(jsonRequest(broken), createFakeEnv().env);
       },
-      // 防刷失败
+      // 限流
       () => {
-        vi.stubGlobal(
-          'fetch',
-          siteverifyReply({
-            success: false,
-            'error-codes': ['timeout-or-duplicate'],
-          }),
-        );
-        return handleContact(jsonRequest(validBody()), createFakeEnv().env);
-      },
-      // 发送失败：错误信息里带了收件人，也不能进日志
-      () => {
-        vi.stubGlobal('fetch', siteverifyReply(PASS));
         const fake = createFakeEnv();
-        const address = Object.values(validFields()).find((value) =>
-          value.includes('@'),
-        );
+        fake.limit.mockResolvedValue({ success: false });
+        return handleContact(jsonRequest(body), fake.env);
+      },
+      // 发送失败：错误信息里带了联系方式，也不能进日志
+      () => {
+        const fake = createFakeEnv();
         fake.send.mockRejectedValue(
-          Object.assign(new Error(`cannot deliver to ${address}`), {
+          Object.assign(new Error(`cannot deliver to ${contact}`), {
             code: 'E_DELIVERY_FAILED',
           }),
         );
-        return handleContact(jsonRequest(validBody()), fake.env);
+        return handleContact(jsonRequest(body), fake.env);
       },
     ];
     for (const run of scenarios) await run();
 
-    expect(logged.length).toBeGreaterThan(0);
+    expect(logged).toHaveLength(scenarios.length);
     const output = logged
       .map((args) => args.map((arg) => String(arg)).join(' '))
       .join('\n');
     const secrets = [
-      ...Object.values(validFields()),
-      TOKEN,
+      ...Object.values(body).flat(),
+      '不在表里的服务',
       IP,
-      TEST_CONFIG.TURNSTILE_SECRET_KEY,
+      TEST_CONFIG.CONTACT_TO,
+      TEST_CONFIG.CONTACT_FROM,
     ];
     for (const value of secrets) {
       for (const line of value.split('\n')) expect(output).not.toContain(line);
