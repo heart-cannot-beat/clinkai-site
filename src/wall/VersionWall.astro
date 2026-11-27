@@ -1,0 +1,33 @@
+---
+// 版本墙：首页第 2 屏铺满全屏的 40 张示例广告；第 3 屏背后的灰墙是同一份。
+// 小图在构建时生成，这里输出的是静态 HTML，线上不跑任何生成逻辑。
+// 小图的坐标按设计稿 1440×900 的画布写死，所在的屏负责定位、缩放和底色。
+import { renderWallTiles } from './generate';
+import { versionWall } from './index';
+
+interface Props {
+  /** 只当背景用（第 3 屏的灰墙）：对读屏软件隐藏 */
+  decorative?: boolean;
+}
+
+const { decorative = false } = Astro.props;
+const tiles = renderWallTiles(versionWall);
+---
+
+{decorative ? (
+  <div class="version-wall" aria-hidden="true" set:html={tiles} />
+) : (
+  <div
+    class="version-wall"
+    role="img"
+    aria-label={versionWall.label}
+    set:html={tiles}
+  />
+)}
+
+<style>
+  .version-wall {
+    position: absolute;
+    inset: 0;
+  }
+</style>
