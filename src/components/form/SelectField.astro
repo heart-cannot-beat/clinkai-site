@@ -1,5 +1,6 @@
 ---
 // 下拉：月预算。选项照抄 design/copy.md。
+// 最下面一行是放错误提示的位置，平时藏着，由提交脚本（src/contact/form.ts）填。
 import '../../styles/form.css';
 
 interface Props {
@@ -12,11 +13,22 @@ interface Props {
 const { label, name, options, required } = Astro.props;
 ---
 
-<label class="field">
+<label class="field" data-field={name}>
   <span class="field-label">{label}</span>
-  <select class="field-control" name={name} required={required}>
+  <select
+    class="field-control"
+    name={name}
+    required={required}
+    aria-describedby={`${name}-error`}
+  >
     {options.map((option) => (
       <option>{option}</option>
     ))}
   </select>
+  <span
+    class="field-error"
+    id={`${name}-error`}
+    data-error-for={name}
+    hidden
+  ></span>
 </label>

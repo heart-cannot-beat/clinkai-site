@@ -1,5 +1,6 @@
 ---
 // 多行文本：补充说明（选填）。高度默认 3 行，可以往下拉长。
+// 最下面一行是放错误提示的位置，平时藏着，由提交脚本（src/contact/form.ts）填。
 import '../../styles/form.css';
 
 interface Props {
@@ -7,17 +8,26 @@ interface Props {
   name: string;
   rows?: number;
   required?: boolean;
+  maxlength?: number;
 }
 
-const { label, name, rows = 3, required } = Astro.props;
+const { label, name, rows = 3, required, maxlength } = Astro.props;
 ---
 
-<label class="field">
+<label class="field" data-field={name}>
   <span class="field-label">{label}</span>
   <textarea
     class="field-control"
     name={name}
     rows={rows}
     required={required}
+    maxlength={maxlength}
+    aria-describedby={`${name}-error`}
   ></textarea>
+  <span
+    class="field-error"
+    id={`${name}-error`}
+    data-error-for={name}
+    hidden
+  ></span>
 </label>

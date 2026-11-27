@@ -1,0 +1,124 @@
+---
+// 预约沟通页（P-04）。照 design/screens/page-contact.html：左边大标题和一句介绍，右边表单。
+// 文字在 src/data/contact.ts（照抄 design/copy.md），表单在 ContactForm，提交逻辑在 src/contact/。
+import ScreenCorners from '../components/ScreenCorners.astro';
+import SiteHeader from '../components/SiteHeader.astro';
+import ContactDetails from '../components/contact/ContactDetails.astro';
+import ContactForm from '../components/contact/ContactForm.astro';
+import { CONTACT_HEADING, CONTACT_INTRO, CONTACT_TITLE } from '../data/contact';
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title={CONTACT_TITLE}>
+  <div class="contact-page">
+    <SiteHeader current="contact" />
+    <main class="contact-main">
+      <div class="lead">
+        <h1 lang="en">
+          <span class="line">{CONTACT_HEADING[0]}</span>
+          <span class="line last">
+            {CONTACT_HEADING[1]}
+            <span class="period" aria-hidden="true"></span>
+          </span>
+        </h1>
+        <p class="intro">{CONTACT_INTRO}</p>
+      </div>
+      <ContactDetails />
+      <ContactForm />
+    </main>
+    <ScreenCorners />
+  </div>
+</BaseLayout>
+
+<script>
+  import { initContactForm } from '../contact/form';
+
+  const form = document.querySelector<HTMLFormElement>('[data-contact-form]');
+  if (form) initContactForm(form);
+</script>
+
+<style>
+  /* 设计稿是 1440×900 的一帧：页头贴顶，标题和表单都从 104px 开始，
+     左栏 40–760，表单 760–1400（640 宽），角落部件贴底。
+     表单出错时会变高，所以这里用网格排版，让这一帧能跟着内容长高，不裁内容。 */
+  .contact-page {
+    position: relative;
+    isolation: isolate;
+    box-sizing: border-box;
+    min-height: max(100vh, 900px);
+    background: var(--paper);
+    color: var(--ink);
+  }
+
+  .contact-main {
+    display: grid;
+    /* 比 1440 宽的屏幕上表单保持 640 宽（暂定，Issue #15 第 13 问） */
+    grid-template-columns: 720px minmax(0, 640px);
+    align-items: start;
+    padding: 104px var(--page-margin) 120px;
+  }
+
+  /* 英文大标题用纯拉丁字体栈（design/README.md 排版规则 1） */
+  h1 {
+    margin: 0;
+    font-family: var(--font-latin);
+    font-size: var(--display-contact);
+    line-height: 0.9;
+    font-weight: var(--weight);
+    letter-spacing: -0.04em;
+  }
+
+  /* 标题两行各占一行。第二行用 flex 把字和句号排在一条基线上：
+     flex 容器里标签之间的换行和空格不占位置，代码怎么排版都不会在 TALK 和句号之间多出一个空格 */
+  .line {
+    display: block;
+  }
+
+  .line.last {
+    display: flex;
+    align-items: baseline;
+  }
+
+  /* 标题后面的句号：190px 字号下是 110px 的圆，离字 14px。用 em 写，标题缩小时跟着缩 */
+  .period {
+    flex: none;
+    width: calc(1em * 110 / 190);
+    height: calc(1em * 110 / 190);
+    margin-left: calc(1em * 14 / 190);
+    border-radius: 50%;
+    background: var(--ink);
+    letter-spacing: 0;
+  }
+
+  /* 设计稿里介绍文字在 480px：标题两行高 342px，从 104px 开始，中间空 34px */
+  .intro {
+    width: 520px;
+    max-width: 100%;
+    margin: 34px 0 0;
+    font-size: var(--text-lead);
+    line-height: 1.5;
+  }
+
+  /* ---------- 窄屏 ----------
+     设计稿只有 1440 宽的桌面稿，窄屏和手机没有稿（Issue #15 第 13 问）。
+     暂定的降级：改成单列，标题按屏宽缩小；页头只留标志和「预约沟通」，
+     四个导航项放不下，菜单还没有设计稿。这一页没有动效，不用为「减少动态效果」另做处理。 */
+  @media (max-width: 1199px) {
+    .contact-page {
+      min-height: 100svh;
+    }
+
+    .contact-main {
+      grid-template-columns: minmax(0, 640px);
+      row-gap: 48px;
+    }
+
+    h1 {
+      font-size: clamp(88px, 26vw, 190px);
+    }
+
+    .contact-page :global(.site-header .nav-link) {
+      display: none;
+    }
+  }
+</style>
