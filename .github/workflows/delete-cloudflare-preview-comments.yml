@@ -1,0 +1,37 @@
+name: Delete Cloudflare preview comments
+
+# Cloudflare Workers Builds 在 PR 上发的预览评论里有完整的预览地址，
+# 地址里的账号子域名是个人邮箱前缀。仓库是公开的，所以评论一出现就删掉。
+# 预览本身照常构建，地址去 Cloudflare 后台看（见 docs/deploy.md）。
+# 换到 ClinkAI 自己的 Cloudflare 账号、子域名不再是个人信息之后，删掉这个 workflow。
+#
+# issue_comment 事件只运行默认分支（main）上的这个文件。
+
+on:
+  issue_comment:
+    types: [created, edited]
+
+permissions:
+  issues: write
+  pull-requests: write
+
+jobs:
+  delete:
+    if: github.event.issue.pull_request && github.event.comment.user.login == 'cloudflare-workers-and-pages[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete the comment
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          COMMENT_ID: ${{ github.event.comment.id }}
+        # created 和 edited 可能先后触发，第二次时评论已经删了：查不到就算成功
+        run: |
+          if gh api -X DELETE "repos/$REPO/issues/comments/$COMMENT_ID"; then
+            echo "已删除评论 $COMMENT_ID"
+          elif ! gh api "repos/$REPO/issues/comments/$COMMENT_ID" --silent 2>/dev/null; then
+            echo "评论 $COMMENT_ID 已经不在了"
+          else
+            echo "删除评论 $COMMENT_ID 失败" >&2
+            exit 1
+          fi
