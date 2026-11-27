@@ -33,7 +33,12 @@ describe('wrangler.jsonc', () => {
 });
 
 describe('wrangler.jsonc：表单接口（S-03）', () => {
-  const SECRET_NAMES = ['TURNSTILE_SECRET_KEY', 'CONTACT_TO', 'CONTACT_FROM'];
+  const SECRET_NAMES = [
+    'TURNSTILE_SECRET_KEY',
+    'TURNSTILE_HOSTNAMES',
+    'CONTACT_TO',
+    'CONTACT_FROM',
+  ];
 
   it('Worker 脚本是 src/worker/index.ts，只有 /api/* 先进 Worker', () => {
     // wrangler 读出来的 main 是绝对路径
@@ -66,7 +71,7 @@ describe('wrangler.jsonc：表单接口（S-03）', () => {
     expect(config.previews?.send_email ?? []).toEqual([]);
   });
 
-  it('收发件地址和 Turnstile 密钥不写进配置', () => {
+  it('收发件地址、Turnstile 密钥和主机名白名单不写进配置', () => {
     for (const name of SECRET_NAMES) {
       expect(config.vars).not.toHaveProperty(name);
       expect(config.previews?.vars ?? {}).not.toHaveProperty(name);

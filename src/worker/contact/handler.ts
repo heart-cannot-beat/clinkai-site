@@ -10,7 +10,7 @@ import {
   validateFields,
   type FieldSpec,
 } from './schema';
-import { MAX_TOKEN_LENGTH, verifyTurnstile } from './turnstile';
+import { MAX_TOKEN_LENGTH, parseHostnames, verifyTurnstile } from './turnstile';
 
 export const CONTACT_PATH = '/api/contact';
 
@@ -92,6 +92,7 @@ function errorCode(error: unknown): string {
 
 const REQUIRED_CONFIG = [
   'TURNSTILE_SECRET_KEY',
+  'TURNSTILE_HOSTNAMES',
   'CONTACT_TO',
   'CONTACT_FROM',
 ] as const;
@@ -104,6 +105,39 @@ type BodyResult =
       error: 'bad_request' | 'payload_too_large';
     };
 
+/**
+ * 边读边数字节，超过 limit 就停下并取消读取，返回 null。
+ * 没有 Content-Length 的分块上传也不会被整个读进内存。
+ */
+async function readLimited(
+  body: ReadableStream<Uint8Array> | null,
+  limit: number,
+): Promise<Uint8Array<ArrayBuffer> | null> {
+  if (body === null) return new Uint8Array(0);
+
+  const reader = body.getReader();
+  const chunks: Uint8Array[] = [];
+  let total = 0;
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    total += value.byteLength;
+    if (total > limit) {
+      await reader.cancel().catch(() => undefined);
+      return null;
+    }
+    chunks.push(value);
+  }
+
+  const bytes = new Uint8Array(total);
+  let offset = 0;
+  for (const chunk of chunks) {
+    bytes.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  return bytes;
+}
+
 async function readBody(request: Request): Promise<BodyResult> {
   const tooLarge = {
     ok: false,
@@ -115,20 +149,22 @@ async function readBody(request: Request): Promise<BodyResult> {
   const declared = Number(request.headers.get('content-length'));
   if (declared > MAX_BODY_BYTES) return tooLarge;
 
-  const contentType = (request.headers.get('content-type') ?? '').toLowerCase();
-  const isJson = contentType.startsWith('application/json');
+  // 只在判断类型时转小写；解析时用原值，multipart 的 boundary 区分大小写
+  const contentType = request.headers.get('content-type') ?? '';
+  const type = contentType.toLowerCase();
+  const isJson = type.startsWith('application/json');
   const isForm =
-    contentType.startsWith('application/x-www-form-urlencoded') ||
-    contentType.startsWith('multipart/form-data');
+    type.startsWith('application/x-www-form-urlencoded') ||
+    type.startsWith('multipart/form-data');
   if (!isJson && !isForm) return badRequest;
 
-  let bytes: ArrayBuffer;
+  let bytes: Uint8Array<ArrayBuffer> | null;
   try {
-    bytes = await request.arrayBuffer();
+    bytes = await readLimited(request.body, MAX_BODY_BYTES);
   } catch {
     return badRequest;
   }
-  if (bytes.byteLength > MAX_BODY_BYTES) return tooLarge;
+  if (bytes === null) return tooLarge;
 
   // 用没有原型的对象接表单，键名是 __proto__ 之类的也只是普通键
   const data: Record<string, unknown> = Object.create(null);
@@ -208,8 +244,14 @@ export async function handleContact(
     CONTACT_TO: to,
     CONTACT_FROM: from,
   } = env;
-  if (!secret || !to || !from) {
-    const missing = REQUIRED_CONFIG.filter((name) => !env[name]);
+  // 主机名白名单为空时不跳过校验，当作缺配置：宁可接口报错，也不悄悄放过
+  const allowedHostnames = parseHostnames(env.TURNSTILE_HOSTNAMES);
+  if (!secret || !to || !from || allowedHostnames.length === 0) {
+    const missing = REQUIRED_CONFIG.filter((name) =>
+      name === 'TURNSTILE_HOSTNAMES'
+        ? allowedHostnames.length === 0
+        : !env[name],
+    );
     log('error', 'server_error', `missing_config:${missing.join(',')}`);
     return fail(500, 'server_error');
   }
@@ -249,7 +291,12 @@ export async function handleContact(
     return fail(403, 'turnstile_failed');
   }
 
-  const verdict = await verifyTurnstile(token, secret, ip);
+  const verdict = await verifyTurnstile({
+    token,
+    secret,
+    remoteIp: ip,
+    allowedHostnames,
+  });
   if (verdict.result !== 'passed') {
     const detail = verdict.codes.join(',');
     switch (verdict.result) {

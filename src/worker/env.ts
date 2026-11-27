@@ -35,6 +35,11 @@ export interface Env {
   CONTACT_RATE_LIMITER: RateLimit;
   /** Turnstile 密钥。Cloudflare secret；本地放 .dev.vars */
   TURNSTILE_SECRET_KEY?: string;
+  /**
+   * 允许签发 Turnstile token 的主机名，逗号分隔，完全匹配、不分大小写。
+   * 为空时接口返回 500。Cloudflare secret（里面有账号子域名，不进仓库）；本地放 .dev.vars
+   */
+  TURNSTILE_HOSTNAMES?: string;
   /** 收件地址。Cloudflare secret；本地放 .dev.vars */
   CONTACT_TO?: string;
   /** 发件地址，必须在已接入 Email Service 的域名下。Cloudflare secret；本地放 .dev.vars */

@@ -59,7 +59,8 @@ function siteverifyReply(body: unknown, status = 200) {
   return vi.fn<typeof fetch>(async () => Response.json(body, { status }));
 }
 
-const PASS = { success: true, 'error-codes': [], hostname: 'example.com' };
+// 主机名在 TEST_CONFIG.TURNSTILE_HOSTNAMES 的白名单里
+const PASS = { success: true, 'error-codes': [], hostname: 'clinkai.example' };
 
 let fetchMock: MockInstance<typeof fetch>;
 
@@ -156,6 +157,34 @@ describe('POST /api/contact 成功', () => {
     expect(response.status).toBe(200);
     expect(send).toHaveBeenCalledTimes(1);
   });
+
+  it('浏览器发的大小写混合 multipart boundary 也能收', async () => {
+    // Chrome / Safari 的 boundary 形如 ----WebKitFormBoundaryAbCdEf，大小写敏感
+    const { env, send } = createFakeEnv();
+    const boundary = '----WebKitFormBoundaryAbCdEfGh12';
+    const body =
+      Object.entries(validBody())
+        .map(
+          ([name, value]) =>
+            `--${boundary}\r\nContent-Disposition: form-data; name="${name}"\r\n\r\n${value}\r\n`,
+        )
+        .join('') + `--${boundary}--\r\n`;
+
+    const response = await handleContact(
+      new Request(URL_, {
+        method: 'POST',
+        headers: {
+          'content-type': `multipart/form-data; boundary=${boundary}`,
+          'cf-connecting-ip': IP,
+        },
+        body,
+      }),
+      env,
+    );
+
+    expect(response.status).toBe(200);
+    expect(send).toHaveBeenCalledTimes(1);
+  });
 });
 
 describe('POST /api/contact 校验失败', () => {
@@ -206,6 +235,39 @@ describe('POST /api/contact 校验失败', () => {
       413,
       'payload_too_large',
     );
+    expect(send).not.toHaveBeenCalled();
+  });
+
+  it('没有 Content-Length 的流式请求体超过上限时立刻返回 413，不读完整个请求体', async () => {
+    const { env, send } = createFakeEnv();
+    const chunk = new TextEncoder().encode('x'.repeat(1024));
+    let pulls = 0;
+    let cancelled = false;
+    // 一个永远不结束的流：要是先把整个请求体读进内存，这个测试会一直卡住
+    const stream = new ReadableStream<Uint8Array>({
+      pull(controller) {
+        pulls += 1;
+        controller.enqueue(chunk);
+      },
+      cancel() {
+        cancelled = true;
+      },
+    });
+    const request = new Request(URL_, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: stream,
+      duplex: 'half',
+    } as RequestInit & { duplex: 'half' });
+    expect(request.headers.get('content-length')).toBeNull();
+
+    await expectError(
+      await handleContact(request, env),
+      413,
+      'payload_too_large',
+    );
+    expect(pulls).toBeLessThan(MAX_BODY_BYTES / chunk.byteLength + 5);
+    expect(cancelled).toBe(true);
     expect(send).not.toHaveBeenCalled();
   });
 
@@ -318,6 +380,57 @@ describe('POST /api/contact 防刷失败', () => {
   });
 });
 
+describe('POST /api/contact Turnstile 主机名白名单', () => {
+  it.each([
+    ['不在白名单里的主机名', { ...PASS, hostname: 'evil.example' }],
+    ['白名单里主机名的子域名', { ...PASS, hostname: 'x.clinkai.example' }],
+    ['没有 hostname 字段', { success: true, 'error-codes': [] }],
+  ])('siteverify 通过但%s时返回 403，不发信', async (_label, reply) => {
+    vi.stubGlobal('fetch', siteverifyReply(reply));
+    const { env, send } = createFakeEnv();
+
+    await expectError(
+      await handleContact(jsonRequest(validBody()), env),
+      403,
+      'turnstile_failed',
+    );
+    expect(send).not.toHaveBeenCalled();
+  });
+
+  it('白名单里的任意一个主机名都通过，不分大小写、忽略空白', async () => {
+    vi.stubGlobal(
+      'fetch',
+      siteverifyReply({ ...PASS, hostname: 'Preview.Clinkai.Example' }),
+    );
+    const { env, send } = createFakeEnv({
+      TURNSTILE_HOSTNAMES: ' clinkai.example ,  PREVIEW.clinkai.example ',
+    });
+
+    const response = await handleContact(jsonRequest(validBody()), env);
+
+    expect(response.status).toBe(200);
+    expect(send).toHaveBeenCalledTimes(1);
+  });
+
+  it.each(['', '  ', ' , ,'])(
+    '白名单为空（%j）时当作缺配置：返回 500，不调 siteverify、不发信',
+    async (value) => {
+      const { env, send, limit } = createFakeEnv({
+        TURNSTILE_HOSTNAMES: value,
+      });
+
+      await expectError(
+        await handleContact(jsonRequest(validBody()), env),
+        500,
+        'server_error',
+      );
+      expect(limit).not.toHaveBeenCalled();
+      expect(fetchMock).not.toHaveBeenCalled();
+      expect(send).not.toHaveBeenCalled();
+    },
+  );
+});
+
 describe('POST /api/contact 限流', () => {
   it('超过阈值时返回 429 和 Retry-After，不读请求体、不调 Turnstile、不发信', async () => {
     const { env, send, limit } = createFakeEnv();
@@ -372,19 +485,21 @@ describe('POST /api/contact 发送失败', () => {
     expect(send).toHaveBeenCalledTimes(1);
   });
 
-  it.each(['TURNSTILE_SECRET_KEY', 'CONTACT_TO', 'CONTACT_FROM'] as const)(
-    '缺少 %s 配置时返回 500，不发信',
-    async (name) => {
-      const { env, send } = createFakeEnv({ [name]: undefined });
+  it.each([
+    'TURNSTILE_SECRET_KEY',
+    'TURNSTILE_HOSTNAMES',
+    'CONTACT_TO',
+    'CONTACT_FROM',
+  ] as const)('缺少 %s 配置时返回 500，不发信', async (name) => {
+    const { env, send } = createFakeEnv({ [name]: undefined });
 
-      await expectError(
-        await handleContact(jsonRequest(validBody()), env),
-        500,
-        'server_error',
-      );
-      expect(send).not.toHaveBeenCalled();
-    },
-  );
+    await expectError(
+      await handleContact(jsonRequest(validBody()), env),
+      500,
+      'server_error',
+    );
+    expect(send).not.toHaveBeenCalled();
+  });
 });
 
 describe('日志', () => {

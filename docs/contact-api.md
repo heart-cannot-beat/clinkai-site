@@ -8,7 +8,7 @@
 
 - 方法和路径：`POST /api/contact`
 - 请求体：`application/json`，或者 `application/x-www-form-urlencoded` / `multipart/form-data`。
-- 请求体上限：16 KB。
+- 请求体上限：16 KB。边读边数字节，超过就停下返回 413；没有 `Content-Length` 的分块上传也一样，不会先把整个请求体读进内存。
 - Turnstile token 放在 `cf-turnstile-response` 字段里。Turnstile 组件放在 `<form>` 里时会自动加这个隐藏字段；用 JSON 提交时用同一个键名。必填，不超过 2048 个字符。
 - 字段表里没有的键直接丢掉，不进邮件。
 
@@ -37,20 +37,22 @@
 
 响应体都是 JSON，带 `Cache-Control: no-store`。前端界面上的提示文案以交接包为准，这里只约定状态码和错误码。
 
-| 情况                   | 状态码 | 响应体                                                                  | 前端怎么处理                      |
-| :--------------------- | :----- | :---------------------------------------------------------------------- | :-------------------------------- |
-| 成功                   | 200    | `{"ok":true}`                                                           | 显示提交成功                      |
-| 校验失败               | 422    | `{"ok":false,"error":"validation_failed","fields":{"email":"invalid"}}` | 按字段标错，见下面的字段错误码    |
-| 防刷失败               | 403    | `{"ok":false,"error":"turnstile_failed"}`                               | 重置 Turnstile 组件，让用户再提交 |
-| 限流                   | 429    | `{"ok":false,"error":"rate_limited"}`，带 `Retry-After: 60`             | 提示稍后再试                      |
-| 发送失败               | 502    | `{"ok":false,"error":"send_failed"}`                                    | 提示稍后再试                      |
-| Turnstile 服务不可用   | 503    | `{"ok":false,"error":"turnstile_unavailable"}`                          | 提示稍后再试                      |
-| 请求体格式不对         | 400    | `{"ok":false,"error":"bad_request"}`                                    | 前端代码有问题，正常不会出现      |
-| 请求体太大             | 413    | `{"ok":false,"error":"payload_too_large"}`                              | 同上                              |
-| 不是 POST              | 405    | `{"ok":false,"error":"method_not_allowed"}`，带 `Allow: POST`           | 同上                              |
-| 服务端配置缺失或密钥错 | 500    | `{"ok":false,"error":"server_error"}`                                   | 提示稍后再试；需要我们查配置      |
+| 情况                   | 状态码 | 响应体                                                                  | 前端怎么处理                                          |
+| :--------------------- | :----- | :---------------------------------------------------------------------- | :---------------------------------------------------- |
+| 成功                   | 200    | `{"ok":true}`                                                           | 显示提交成功                                          |
+| 校验失败               | 422    | `{"ok":false,"error":"validation_failed","fields":{"email":"invalid"}}` | 按字段标错，见下面的字段错误码                        |
+| 防刷失败               | 403    | `{"ok":false,"error":"turnstile_failed"}`                               | **重置 Turnstile 组件**，让用户再提交                 |
+| 限流                   | 429    | `{"ok":false,"error":"rate_limited"}`，带 `Retry-After: 60`             | 提示稍后再试（token 还没用掉）                        |
+| 发送失败               | 502    | `{"ok":false,"error":"send_failed"}`                                    | 提示稍后再试，**重置 Turnstile 组件**后再让用户提交   |
+| Turnstile 服务不可用   | 503    | `{"ok":false,"error":"turnstile_unavailable"}`                          | 提示稍后再试，**重置 Turnstile 组件**后再让用户提交   |
+| 请求体格式不对         | 400    | `{"ok":false,"error":"bad_request"}`                                    | 前端代码有问题，正常不会出现                          |
+| 请求体太大             | 413    | `{"ok":false,"error":"payload_too_large"}`                              | 同上                                                  |
+| 不是 POST              | 405    | `{"ok":false,"error":"method_not_allowed"}`，带 `Allow: POST`           | 同上                                                  |
+| 服务端配置缺失或密钥错 | 500    | `{"ok":false,"error":"server_error"}`                                   | 提示稍后再试，**重置 Turnstile 组件**；需要我们查配置 |
 
 字段错误码：`required`（必填没填或只有空白）、`too_long`（超长）、`invalid`（格式不对、单行字段有换行，或者值不是字符串）。
+
+**什么时候要重置 Turnstile 组件：** token 只能用一次。收到 403、500、502、503 时，token 可能已经被 siteverify 用掉了（比如发信失败的 502 一定是校验通过以后才出的），原样再提交会得到 403。所以前端收到这四个状态码时，先重置组件（`turnstile.reset()`）拿新 token，再让用户提交。422 和 429 在调 siteverify 之前就返回了，token 还能用，不用重置；但 token 的有效期只有 5 分钟。
 
 处理顺序：方法 → 配置 → 限流 → 读请求体 → 字段校验 → Turnstile → 发信。字段校验在 Turnstile 前面，这样字段填错时不会白白用掉一个 token（token 只能用一次）。
 
@@ -58,14 +60,23 @@
 
 服务端调 [siteverify](https://developers.cloudflare.com/turnstile/get-started/server-side-validation/) 校验 token，带上 `CF-Connecting-IP` 作为 `remoteip`，5 秒超时。
 
+siteverify 判定通过后，再按官方指南核对返回的 `hostname`，挡住别的站点用同一个 sitekey 签出来的 token：
+
+- 白名单来自 `TURNSTILE_HOSTNAMES`（Cloudflare secret），逗号分隔，比如 `clinkai-site.<账号子域名>.workers.dev`；切到 `clinkai.app` 以后再把它加进去。
+- 完全匹配，不分大小写，不含子域名：`clinkai.app` 不会放过 `www.clinkai.app`，要的话单独列出来。
+- 主机名不在白名单里，或者返回里没有 `hostname`，按防刷失败处理：403 `turnstile_failed`，日志记 `hostname-mismatch`。
+- **白名单为空时当作缺配置**：没设、空字符串或者只有逗号和空格，接口都直接返回 500 `server_error`（日志记 `missing_config:TURNSTILE_HOSTNAMES`），不调 siteverify、不发信。不选「为空就跳过主机名校验」：配置漏了应该一眼看出来，而不是悄悄少一道检查。这一步在限流和读请求体之前，配置漏了也不会白白用掉用户的 token。
+- 白名单里有账号的 workers.dev 子域名，所以放 secret，不写进 `wrangler.jsonc`；`tests/wrangler-config.test.ts` 会拦住写进配置的改动。
+
 | siteverify 的结果                                                                            | 接口返回                    |
 | :------------------------------------------------------------------------------------------- | :-------------------------- |
-| `success: true`                                                                              | 继续发信                    |
+| `success: true`，`hostname` 在白名单里                                                       | 继续发信                    |
+| `success: true`，`hostname` 不在白名单里或缺失                                               | 403 `turnstile_failed`      |
 | `invalid-input-response`、`timeout-or-duplicate`、`missing-input-response`、`bad-request` 等 | 403 `turnstile_failed`      |
 | `internal-error`、连不上、超时、非 2xx                                                       | 503 `turnstile_unavailable` |
 | `missing-input-secret`、`invalid-input-secret`（我们的密钥问题）                             | 500 `server_error`          |
 
-本地开发用官方[测试密钥](https://developers.cloudflare.com/turnstile/troubleshooting/testing/)：密钥 `1x0000000000000000000000000000000AA` 永远通过，配合测试 sitekey `1x00000000000000000000AA`（它生成的 token 是 `XXXX.DUMMY.TOKEN.XXXX`）。想在本地看防刷失败，把 `.dev.vars` 里的密钥换成 `2x0000000000000000000000000000000AA`（永远失败，返回 403）或 `3x0000000000000000000000000000000AA`（token 已用过，返回 403）。
+本地开发用官方[测试密钥](https://developers.cloudflare.com/turnstile/troubleshooting/testing/)：密钥 `1x0000000000000000000000000000000AA` 永远通过，配合测试 sitekey `1x00000000000000000000AA`（它生成的 token 是 `XXXX.DUMMY.TOKEN.XXXX`）。测试密钥返回的 `hostname` 永远是 `example.com`，所以 `.dev.vars.example` 里的白名单写的是 `example.com`。想在本地看防刷失败，把 `.dev.vars` 里的密钥换成 `2x0000000000000000000000000000000AA`（永远失败，返回 403）或 `3x0000000000000000000000000000000AA`（token 已用过，返回 403）。
 
 ## 限流
 
@@ -109,13 +120,14 @@
 | 名字                   | 种类   | 放在哪                              | 说明                                          |
 | :--------------------- | :----- | :---------------------------------- | :-------------------------------------------- |
 | `TURNSTILE_SECRET_KEY` | secret | Cloudflare secret；本地 `.dev.vars` | Turnstile 组件的密钥                          |
+| `TURNSTILE_HOSTNAMES`  | secret | Cloudflare secret；本地 `.dev.vars` | 允许签发 token 的主机名，逗号分隔，不能为空   |
 | `CONTACT_TO`           | secret | Cloudflare secret；本地 `.dev.vars` | 收件地址，必须是已验证收件地址                |
 | `CONTACT_FROM`         | secret | Cloudflare secret；本地 `.dev.vars` | 发件地址，在已接入 Email Service 发信的域名下 |
 | `ASSETS`               | 绑定   | `wrangler.jsonc`                    | 静态资源                                      |
 | `EMAIL`                | 绑定   | `wrangler.jsonc`                    | 发信                                          |
 | `CONTACT_RATE_LIMITER` | 绑定   | `wrangler.jsonc`                    | 限流                                          |
 
-收发件地址也放 secret，不放 `wrangler.jsonc` 的 `vars`：一是地址不进仓库；二是在后台手动加的普通变量，下次 `wrangler deploy` 会被覆盖（[官方说明](https://developers.cloudflare.com/workers/wrangler/configuration/#source-of-truth)），secret 不会。三个值缺任何一个，接口都返回 500 `server_error`，日志记 `missing_config:<名字>`。
+收发件地址和主机名白名单也放 secret，不放 `wrangler.jsonc` 的 `vars`：一是地址和账号子域名不进仓库；二是在后台手动加的普通变量，下次 `wrangler deploy` 会被覆盖（[官方说明](https://developers.cloudflare.com/workers/wrangler/configuration/#source-of-truth)），secret 不会。四个值缺任何一个（白名单解析出来是空的也算缺），接口都返回 500 `server_error`，日志记 `missing_config:<名字>`。
 
 ### PR 预览（Worker Previews）
 
@@ -129,11 +141,12 @@
 
 1. **接入发信域名。** 在 Email Service 里接入发件域名（按提示加 DNS 记录），定一个发件地址作为 `CONTACT_FROM`。发件域名如果是 `clinkai.app`，先确认（切域名要先问）。
 2. **验证收件地址。** 把收件邮箱加成已验证收件地址（Email Routing → Destination addresses，收件箱里点验证链接），作为 `CONTACT_TO`。
-3. **建 Turnstile 组件。** 主机名先填 workers.dev 子域名，切域名以后再加 `clinkai.app`。sitekey 给前端（P-04）用，密钥作为 `TURNSTILE_SECRET_KEY`。
+3. **建 Turnstile 组件。** 主机名先填 workers.dev 子域名，切域名以后再加 `clinkai.app`。sitekey 给前端（P-04）用，密钥作为 `TURNSTILE_SECRET_KEY`，同一组主机名用逗号连起来作为 `TURNSTILE_HOSTNAMES`（形如 `clinkai-site.<账号子域名>.workers.dev`）。以后组件里加主机名时，这个 secret 也要跟着加。
 4. **设置 secret：**
 
    ```sh
    npx wrangler secret put TURNSTILE_SECRET_KEY
+   npx wrangler secret put TURNSTILE_HOSTNAMES
    npx wrangler secret put CONTACT_TO
    npx wrangler secret put CONTACT_FROM
    ```
@@ -151,7 +164,7 @@
 
 ```sh
 npm run build                       # Worker 的静态资源目录是 dist/
-cp .dev.vars.example .dev.vars      # Turnstile 测试密钥 + 虚构的收发件地址
+cp .dev.vars.example .dev.vars      # Turnstile 测试密钥和白名单 + 虚构的收发件地址
 npx wrangler dev
 ```
 

@@ -2,8 +2,10 @@
 #   cp .dev.vars.example .dev.vars
 # 不要把真实密钥或真实邮箱写进这个示例文件。线上的值用 wrangler secret put 设置，见 docs/contact-api.md。
 
-# Turnstile 官方测试密钥：永远通过校验，只认测试 sitekey 生成的假 token（XXXX.DUMMY.TOKEN.XXXX）
+# Turnstile 官方测试密钥：永远通过校验。配合测试 sitekey 用，它生成的 token 是 XXXX.DUMMY.TOKEN.XXXX
 TURNSTILE_SECRET_KEY="1x0000000000000000000000000000000AA"
+# 测试密钥返回的 hostname 永远是 example.com。线上填真实主机名，逗号分隔，不能为空
+TURNSTILE_HOSTNAMES="example.com"
 
 # 本地 wrangler dev 只模拟发信，不会真发；这里用虚构的 *.example 地址
 CONTACT_TO="inbox@clinkai.example"
