@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ClinkAI 03 铺满 · 动效小样</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400&family=Noto+Sans+SC:wght@400&display=swap" rel="stylesheet">
+<style>
+/*
+IDEA    one idea becomes forty versions: the key visual stands alone, then the versions fly out of it in depth and settle into a wall
+MOTION  scroll drives everything; near cards pass the camera large and soft, far cards stay small and sharp; nothing loops
+END     the settled wall is exactly the static frame (screens/02-wall), which is also the fallback for phones and reduced motion
+*/
+:root{color-scheme:dark;--ink:#1C1C1B;--paper:#E6E4DF}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--ink);color:var(--ink)}
+body{font:16px/1.5 'Inter Tight','Noto Sans SC',system-ui,sans-serif;font-weight:400;overflow-x:clip}
+a{color:#1C1C1B;text-decoration:none}
+.track{position:relative;height:520vh}
+.pin{position:sticky;top:0;height:100vh;overflow:hidden;background:var(--ink)}
+.stage{position:absolute;left:50%;top:50%;width:1440px;height:900px;margin:-450px 0 0 -720px;overflow:hidden;isolation:isolate;background:var(--ink);transform-origin:50% 50%;perspective:1300px;perspective-origin:50% 48%}
+.wall{position:absolute;inset:0;transform-style:preserve-3d;z-index:1}
+.t{will-change:transform,opacity,filter;backface-visibility:hidden}
+.t img{user-select:none;-webkit-user-drag:none}
+.counter{position:absolute;left:2px;top:752px;width:428px;height:146px;background:#E6E4DF;z-index:4}
+.counter h2{position:absolute;left:76px;top:12px;margin:0;font-size:13px;font-weight:400;letter-spacing:.02em}
+.counter .n{position:absolute;left:76px;bottom:16px;margin:0;font-size:100px;line-height:.9;letter-spacing:-.04em;font-variant-numeric:tabular-nums;min-width:128px}
+.counter .s{position:absolute;left:214px;bottom:26px;margin:0;font-size:15px;line-height:1.5}
+.play{position:absolute;left:50%;bottom:22px;transform:translateX(-50%);z-index:20;display:flex;align-items:center;gap:10px;min-height:44px;padding:10px 18px;border-radius:999px;border:1px solid rgba(230,228,223,.35);background:rgba(28,28,27,.72);color:var(--paper);font:inherit;font-size:14px;cursor:pointer;backdrop-filter:blur(6px);transition:opacity .4s}
+.play:focus-visible{outline:2px solid var(--paper);outline-offset:3px}
+.play.quiet{opacity:.38} .play.quiet:hover,.play.quiet:focus-visible{opacity:1}
+.end{padding:26px 24px 60px;color:rgba(230,228,223,.7);font-size:14px;line-height:1.7;max-width:760px;margin:0 auto}
+.end b{color:var(--paper);font-weight:400}
+@media (prefers-reduced-motion: reduce){.track{height:auto}.pin{position:relative}.play{display:none}}
+</style>
+</head>
+<body>
+<main>
+<div class="track" id="track">
+<div class="pin" id="pin">
+<div class="stage" id="stage">
+<header style="position: absolute; left: 20px; right: 20px; top: 18px; display: flex; align-items: center; justify-content: space-between; z-index: 6">
+<a href="#top" aria-label="ClinkAI 首页" style="display: flex; align-items: baseline; gap: 3px; padding: 8px 16px; font-size: 22px; letter-spacing: -0.01em; background: #E6E4DF; border-radius: 999px"><span>CLINKAI</span><span aria-hidden="true" style="width: 8px; height: 8px; border-radius: 50%; background: #1C1C1B"></span></a>
+<div style="display: flex; align-items: center; gap: 24px; padding: 6px 6px 6px 22px; font-size: 13px; letter-spacing: 0.02em; background: #E6E4DF; border-radius: 999px">
+<a href="#services">增长服务 ↗</a><a href="#work">作品 ↗</a><a href="#products">我们的产品 ↗</a><a href="#about">关于我们 ↗</a>
+<a href="#pilot" style="padding: 9px 16px; border-radius: 999px; background: #1C1C1B; color: #E6E4DF; display: flex; gap: 8px; align-items: center">预约沟通<span aria-hidden="true">→</span></a>
+</div>
+</header>
+<div class="wall" id="wall" role="img" aria-label="示例：同一个降噪耳机广告创意的 40 个版本。开始只有中间的母版，往下滚动时其余版本从它背后飞出来，最后铺成一面墙">
+<div class="t" data-x="76" data-y="563" data-w="354" data-h="185" data-r="1.91:1" data-l="en" style="position: absolute; left: 76px; top: 563px; width: 354px; height: 185px; overflow: hidden; background: #2A2A28; color: #1C1C1B"><img src="../../assets/img/pebble_scene_roadworks.jpg" alt="" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 35%"><span style="position: absolute; left: 106px; top: 13px; width: 191px; font-size: 23px; line-height: 1.08; letter-spacing: -0.01em"><span lang="en">Commute, minus the noise.</span></span></div>
+<div class="t" data-x="-84" data-y="471" data-w="156" data-h="277" data-r="9:16" data-l="" style="position: absolute; left: -84px; top: 471px; width: 156px; height: 277px; overflow: hidden; background: #16205A; color: #F3EEE2"><img src="../../assets/img/pebble_cut_single.webp" alt="" style="position: absolute; left: 17px; top: 27px; width: 234px; height: 235px; max-width: none; transform: rotate(-10deg)"></div>
+<div class="t" data-x="-84" data-y="311" data-w="156" data-h="156" data-r="1:1" data-l="en" style="position: absolute; left: -84px; top: 311px; width: 156px; height: 156px; overflow: hidden; background: #CBC7BE; color: #1C1C1B"><span style="position: absolute; left: 12px; right: 12px; bottom: 12px; font-size: 21px; line-height: 1.08; letter-spacing: -0.01em; text-align: right"><span lang="en">Rush hour, on silent.</span></span></div>
+<div class="t" data-x="-84" data-y="112" data-w="156" data-h="195" data-r="4:5" data-l="" style="position: absolute; left: -84px; top: 112px; width: 156px; height: 195px; overflow: hidden; background: #2A2A28; color: #F3EEE2"><img src="../../assets/img/pebble_cairn_pebbles.jpg" alt="" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 50%"></div>
+<div class="t" data-x="-84" data-y="-48" data-w="156" data-h="156" data-r="1:1" data-l="" style="position: absolute; left: -84px; top: -48px; width: 156px; height: 156px; overflow: hidden; background: #2A2A28; color: #F3EEE2"></div>
+<div class="t" data-x="76" data-y="354" data-w="164" data-h="205" data-r="4:5" data-l="en" style="position: absolute; left: 76px; top: 354px; width: 164px; height: 205px; overflow: hidden; background: #2A2A28; color: #1C1C1B"><img src="../../assets/img/pebble_pocket_denim.jpg" alt="" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 50%"><span style="position: absolute; left: 36px; top: 12px; width: 121px; font-size: 17px; line-height: 1.08; letter-spacing: -0.01em"><span lang="en">Quiet fits in a pocket.</span></span></div>
+<div class="t" data-x="76" data-y="208" data-w="80" data-h="142" data-r="9:16" data-l="" style="position: absolute; left: 76px; top: 208px; width: 80px; height: 142px; overflow: hidden; background: #2743C9; color: #F3EEE2"><img src="../../assets/img/pebble_cut_single.webp" alt="" style="position: absolute; left: -8px; top: 30px; width: 100px; height: 100px; max-width: none; transform: rotate(12deg)"></div>
+<div class="t" data-x="160" data-y="208" data-w="80" data-h="142" data-r="9:16" data-l="" style="position: absolute; left: 160px; top: 208px; width: 80px; height: 142px; overflow: hidden; background: #2A2A28; color: #F3EEE2"><img src="../../assets/img/pebble_cut_closed.webp" alt="" style="position: absolute; left: -2px; top: 66px; width: 84px; height: 67px; max-width: none"></div>
+<div class="t" data-x="76" data-y="40" data-w="164" data-h="164" data-r="1:1" data-l="ko" style="position: absolute; left: 76px; top: 40px; width: 164px; height: 164px; overflow: hidden; background: #2A2A28; color: #F3EEE2"><img src="../../assets/img/pebble_mute_whistle.jpg" alt="" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 50%"><span style="position: absolute; left: 13px; top: 33px; width: 141px; font-size: 17px; line-height: 1.08; letter-spacing: -0.01em"><span lang="ko"><span style="display: inline-block">도시를</span> <span style="display: inline-block">음소거.</span></span></span></div>
+<div class="t" data-x="76" data-y="-50" data-w="164" data-h="86" data-r="1.91:1" data-l="" style="position: absolute; left: 76px; top: -50px; width: 164px; height: 86px; overflow: hidden; background: #16205A; color: #F3EEE2"></div>
+<div class="t" data-x="244" data-y="327" data-w="186" data-h="232" data-r="4:5" data-l="es" style="position: absolute; left: 244px; top: 327px; width: 186px; height: 232px; overflow: hidden; background: #2A2A28; color: #1C1C1B"><img src="../../assets/img/pebble_portrait_profile.jpg" alt="" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 50%"><span style="position: absolute; left: 15px; top: 14px; width: 160px; font-size: 20px; line-height: 1.08; letter-spacing: -0.01em"><span lang="es">Silencia la ciudad.</span></span></div>
+<div class="t" data-x="244" data-y="226" data-w="186" data-h="97" data-r="1.91:1" data-l="ar" style="position: absolute; left: 244px; top: 226px; width: 186px; height: 97px; overflow: hidden; background: #2A2A28; color: #F3EEE2"><span style="position: absolute; left: 8px; right: 8px; bottom: 8px; font-size: 21px; line-height: 1.08; letter-spacing: -0.01em; text-align: right"><span lang="ar" dir="rtl">اكتم ضجيج المدينة.</span></span></div>
+<div class="t" data-x="244" data-y="60" data-w="91" data-h="162" data-r="9:16" data-l="" style="position: absolute; left: 244px; top: 60px; width: 91px; height: 162px; overflow: hidden; background: #B9C8EC; color: #1C1C1B"><img src="../../assets/img/pebble_cut_pinch.webp" alt="" style="position: absolute; left: -7px; top: 0px; width: 105px; height: 129px; max-width: none"></div>
+<div class="t" data-x="339" data-y="60" data-w="91" data-h="162" data-r="9:16" data-l="" style="position: absolute; left: 339px; top: 60px; width: 91px; height: 162px; overflow: hidden; background: #2743C9; color: #F3EEE2"><img src="../../assets/img/pebble_cut_float.webp" alt="" style="position: absolute; left: 8px; top: 19px; width: 76px; height: 131px; max-width: none"></div>
+<div class="t" data-x="244" data-y="-130" data-w="186" data-h="186" data-r="1:1" data-l="" style="position: absolute; left: 244px; top: -130px; width: 186px; height: 186px; overflow: hidden; background: #CBC7BE; color: #1C1C1B"></div>
+<div class="t m" data-x="434" data-y="170" data-w="500" data-h="500" data-r="1:1" data-l="en" style="position: absolute; left: 434px; top: 170px; width: 500px; height: 500px; overflow: hidden; background: #1B35B0; color: #F3EEE2"><img src="../../assets/img/pebble_trumpet.jpg" alt="" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 80% 50%"><span lang="en" style="position: absolute; left: 28px; top: 24px; font-size: 84px; line-height: 0.94; letter-spacing: -0.035em">Mute<br>the city.</span><span style="position: absolute; left: 30px; bottom: 28px; font-size: 12px; letter-spacing: 0.1em">PEBBLESOUND</span><span style="position: absolute; right: 22px; top: 22px; display: flex; align-items: center; gap: 8px; padding: 6px 13px; border-radius: 999px; background: #F3EEE2; color: #1C1C1B; font-size: 14px"><span aria-hidden="true" style="width: 7px; height: 7px; border-radius: 50%; background: #1C1C1B"></span>母版</span></div>
+<div class="t" data-x="434" data-y="42" data-w="236" data-h="124" data-r="1.91:1" data-l="en" style="position: absolute; left: 434px; top: 42px; width: 236px; height: 124px; overflow: hidden; background: #2A2A28; color: #1C1C1B"><img src="../../assets/img/pebble_mute_megaphone.jpg" alt="" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 50%"><span style="position: absolute; left: 14px; top: 15px; width: 85px; font-size: 17px; line-height: 1.08; letter-spacing: -0.01em"><span lang="en">Mute<br>the city.</span></span></div>
+<div class="t" data-x="434" data-y="-198" data-w="236" data-h="236" data-r="1:1" data-l="" style="position: absolute; left: 434px; top: -198px; width: 236px; height: 236px; overflow: hidden; background: #2743C9; color: #F3EEE2"></div>
+<div class="t" data-x="674" data-y="-62" data-w="128" data-h="228" data-r="9:16" data-l="" style="position: absolute; left: 674px; top: -62px; width: 128px; height: 228px; overflow: hidden; background: #2A2A28; color: #F3EEE2"><img src="../../assets/img/pebble_subway.jpg" alt="" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 50%"></div>
+<div class="t" data-x="806" data-y="-62" data-w="128" data-h="228" data-r="9:16" data-l="ko" style="position: absolute; left: 806px; top: -62px; width: 128px; height: 228px; overflow: hidden; background: #2A2A28; color: #F3EEE2"><span style="position: absolute; left: 10px; top: 10px; font-size: 9px; letter-spacing: 0.1em">PEBBLESOUND</span><span style="position: absolute; left: 10px; right: 10px; bottom: 10px; font-size: 19px; line-height: 1.08; letter-spacing: -0.01em"><span lang="ko"><span style="display: inline-block">도시를</span> <span style="display: inline-block">음소거.</span></span></span></div>
+<div class="t" data-x="434" data-y="674" data-w="236" data-h="124" data-r="1.91:1" data-l="ja" style="position: absolute; left: 434px; top: 674px; width: 236px; height: 124px; overflow: hidden; background: #2A2A28; color: #F3EEE2"><img src="../../assets/img/pebble_mute_cymbals.jpg" alt="" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 50%"><span style="position: absolute; left: 132px; top: 17px; width: 94px; font-size: 18px; line-height: 1.08; letter-spacing: -0.01em"><span lang="ja"><span style="display: inline-block">街を、</span><span style="display: inline-block">ミュート。</span></span></span></div>
+<div class="t" data-x="434" data-y="802" data-w="116" data-h="145" data-r="4:5" data-l="" style="position: absolute; left: 434px; top: 802px; width: 116px; height: 145px; overflow: hidden; background: #CBC7BE; color: #1C1C1B"><img src="../../assets/img/pebble_cut_side.webp" alt="" style="position: absolute; left: -3px; top: 24px; width: 122px; height: 68px; max-width: none"></div>
+<div class="t" data-x="554" data-y="802" data-w="116" data-h="145" data-r="4:5" data-l="" style="position: absolute; left: 554px; top: 802px; width: 116px; height: 145px; overflow: hidden; background: #2743C9; color: #F3EEE2"><img src="../../assets/img/pebble_cut_open.webp" alt="" style="position: absolute; left: 6px; top: 10px; width: 104px; height: 102px; max-width: none"></div>
+<div class="t" data-x="674" data-y="674" data-w="260" data-h="325" data-r="4:5" data-l="" style="position: absolute; left: 674px; top: 674px; width: 260px; height: 325px; overflow: hidden; background: #2A2A28; color: #F3EEE2"><img src="../../assets/img/pebble_flatlay_pockets.jpg" alt="" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 50%"></div>
+<div class="t" data-x="938" data-y="236" data-w="400" data-h="209" data-r="1.91:1" data-l="de" style="position: absolute; left: 938px; top: 236px; width: 400px; height: 209px; overflow: hidden; background: #CBC7BE; color: #1C1C1B"><span style="position: absolute; right: 22px; top: 22px; font-size: 11px; letter-spacing: 0.1em">PEBBLESOUND</span><span style="position: absolute; left: 22px; right: 22px; bottom: 22px; font-size: 58px; line-height: 1.08; letter-spacing: -0.01em; letter-spacing: -0.025em; line-height: 1"><span lang="de">Stadt auf stumm.</span></span></div>
+<div class="t" data-x="938" data-y="-43" data-w="220" data-h="275" data-r="4:5" data-l="" style="position: absolute; left: 938px; top: -43px; width: 220px; height: 275px; overflow: hidden; background: #2A2A28; color: #F3EEE2"><img src="../../assets/img/pebble_photo_ear.jpg" alt="" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 45% 30%"></div>
+<div class="t" data-x="938" data-y="449" data-w="127" data-h="159" data-r="4:5" data-l="" style="position: absolute; left: 938px; top: 449px; width: 127px; height: 159px; overflow: hidden; background: #2A2A28; color: #F3EEE2"><img src="../../assets/img/pebble_mute_horn.jpg" alt="" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 50%"></div>
+<div class="t" data-x="1069" data-y="449" data-w="89" data-h="159" data-r="9:16" data-l="" style="position: absolute; left: 1069px; top: 449px; width: 89px; height: 159px; overflow: hidden; background: #CDA349; color: #1C1C1B"><img src="../../assets/img/pebble_cut_hand.webp" alt="" style="position: absolute; left: -3px; top: 22px; width: 87px; height: 139px; max-width: none"></div>
+<div class="t" data-x="938" data-y="612" data-w="220" data-h="220" data-r="1:1" data-l="fr" style="position: absolute; left: 938px; top: 612px; width: 220px; height: 220px; overflow: hidden; background: #2A2A28; color: #F3EEE2"><img src="../../assets/img/pebble_scene_bus_night.jpg" alt="" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 55% 0%"><span style="position: absolute; left: 44px; top: 15px; width: 163px; font-size: 19px; line-height: 1.08; letter-spacing: -0.01em"><span lang="fr">Coupe le son de la ville.</span></span></div>
+<div class="t" data-x="938" data-y="836" data-w="220" data-h="115" data-r="1.91:1" data-l="" style="position: absolute; left: 938px; top: 836px; width: 220px; height: 115px; overflow: hidden; background: #B9C8EC; color: #1C1C1B"><span style="position: absolute; left: 9px; top: 9px; font-size: 10px; letter-spacing: 0.1em">PEBBLESOUND</span></div>
+<div class="t" data-x="1162" data-y="79" data-w="86" data-h="153" data-r="9:16" data-l="" style="position: absolute; left: 1162px; top: 79px; width: 86px; height: 153px; overflow: hidden; background: #2743C9; color: #F3EEE2"><img src="../../assets/img/pebble_cut_closed.webp" alt="" style="position: absolute; left: -4px; top: 57px; width: 95px; height: 76px; max-width: none"></div>
+<div class="t" data-x="1252" data-y="79" data-w="86" data-h="153" data-r="9:16" data-l="" style="position: absolute; left: 1252px; top: 79px; width: 86px; height: 153px; overflow: hidden; background: #CBC7BE; color: #1C1C1B"><img src="../../assets/img/pebble_cut_single.webp" alt="" style="position: absolute; left: -6px; top: 39px; width: 99px; height: 99px; max-width: none; transform: rotate(-12deg)"></div>
+<div class="t" data-x="1162" data-y="-17" data-w="176" data-h="92" data-r="1.91:1" data-l="" style="position: absolute; left: 1162px; top: -17px; width: 176px; height: 92px; overflow: hidden; background: #2A2A28; color: #F3EEE2"></div>
+<div class="t" data-x="1162" data-y="449" data-w="176" data-h="92" data-r="1.91:1" data-l="" style="position: absolute; left: 1162px; top: 449px; width: 176px; height: 92px; overflow: hidden; background: #2A2A28; color: #F3EEE2"><img src="../../assets/img/pebble_macro_ring.jpg" alt="" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 100% 50%"></div>
+<div class="t" data-x="1162" data-y="545" data-w="316" data-h="165" data-r="1.91:1" data-l="en" style="position: absolute; left: 1162px; top: 545px; width: 316px; height: 165px; overflow: hidden; background: #2743C9; color: #F3EEE2"><img src="../../assets/img/pebble_cut_hero.webp" alt="" style="position: absolute; left: 139px; top: 44px; width: 158px; height: 96px; max-width: none; transform: rotate(-8deg)"><span style="position: absolute; left: 13px; width: 133px; top: 13px; font-size: 30px; line-height: 1.06; letter-spacing: -0.015em"><span lang="en">Mute<br>the city.</span></span></div>
+<div class="t" data-x="1162" data-y="714" data-w="176" data-h="220" data-r="4:5" data-l="ar" style="position: absolute; left: 1162px; top: 714px; width: 176px; height: 220px; overflow: hidden; background: #2A2A28; color: #1C1C1B"><img src="../../assets/img/pebble_mute_alarm.jpg" alt="" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 45% 50%"><span style="position: absolute; left: 14px; top: 13px; width: 148px; font-size: 18px; line-height: 1.08; letter-spacing: -0.01em; text-align: right"><span lang="ar" dir="rtl">اكتم ضجيج المدينة.</span></span></div>
+<div class="t" data-x="1342" data-y="299" data-w="136" data-h="242" data-r="9:16" data-l="" style="position: absolute; left: 1342px; top: 299px; width: 136px; height: 242px; overflow: hidden; background: #2A2A28; color: #F3EEE2"><img src="../../assets/img/pebble_scene_crosswalk.jpg" alt="" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 50%"></div>
+<div class="t" data-x="1342" data-y="159" data-w="136" data-h="136" data-r="1:1" data-l="" style="position: absolute; left: 1342px; top: 159px; width: 136px; height: 136px; overflow: hidden; background: #2A2A28; color: #F3EEE2"><img src="../../assets/img/pebble_photo_table.jpg" alt="" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 50%"></div>
+<div class="t" data-x="1342" data-y="-15" data-w="136" data-h="170" data-r="4:5" data-l="" style="position: absolute; left: 1342px; top: -15px; width: 136px; height: 170px; overflow: hidden; background: #2743C9; color: #F3EEE2"></div>
+<div class="t" data-x="1342" data-y="714" data-w="136" data-h="242" data-r="9:16" data-l="" style="position: absolute; left: 1342px; top: 714px; width: 136px; height: 242px; overflow: hidden; background: #2A2A28; color: #F3EEE2"><img src="../../assets/img/pebble_cut_open.webp" alt="" style="position: absolute; left: -41px; top: -7px; width: 163px; height: 160px; max-width: none"></div>
+</div>
+<section class="counter">
+<h2>03 / 广告投放 · 出素材</h2>
+<p class="n" id="n">1</p>
+<p class="s">个版本，同一个创意<br><span id="nl">1</span> 种语言 · <span id="ns">1</span> 种尺寸 · 示例</p>
+</section>
+
+<span aria-hidden="true" style="position: absolute; left: 40px; bottom: 40px; width: 10px; height: 10px; border-radius: 50%; background: #1C1C1B; z-index: 5"></span>
+<button type="button" aria-label="打开菜单" style="position: absolute; right: 40px; bottom: 32px; width: 44px; height: 44px; border-radius: 10px; border: 1px solid rgba(28,28,27,0.25); background: #EEEDE9; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 5">
+<svg width="18" height="12" viewBox="0 0 18 12" aria-hidden="true"><path d="M0 1h18M0 6h18M0 11h18" stroke="#1C1C1B" stroke-width="1.4"></path></svg>
+</button>
+
+</div>
+<button class="play" id="play" type="button"><span aria-hidden="true">▶</span><span id="playt">往下滚动，或点这里自动播放</span></button>
+</div>
+</div>
+<p class="end"><b>这是动效小样，不是成品。</b>滚动进度驱动全部画面：开始只有母版一张；其余 39 个版本从它背后飞出来，分四层纵深，最近的一层会从镜头前模糊掠过；最后落定成一面平的墙，和静态稿完全一致。手机、微信和「减少动态效果」下不做这段动画，直接显示落定后的墙。图片都是 AI 生成的示例，Pebblesound 是虚构品牌。</p>
+</main>
+<script>
+(function(){
+const $=id=>document.getElementById(id);
+const stage=$('stage'),wall=$('wall'),track=$('track'),pin=$('pin'),btn=$('play'),btnT=$('playt');
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const tiles=[...wall.querySelectorAll('.t')];
+const mother=wall.querySelector('.t.m');
+const MC=[+mother.dataset.x+mother.dataset.w/2,+mother.dataset.y+mother.dataset.h/2];
+const clamp=(v,a,b)=>Math.min(b,Math.max(a,v)),lerp=(a,b,t)=>a+(b-a)*t;
+const outCubic=t=>1-Math.pow(1-t,3),inOut=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
+// stable pseudo-random per tile, so every load plays the same
+const rnd=i=>{const x=Math.sin(i*127.1+311.7)*43758.5453;return x-Math.floor(x)};
+const fly=tiles.filter(t=>t!==mother).map((el,i)=>{
+  const x=+el.dataset.x,y=+el.dataset.y,w=+el.dataset.w,h=+el.dataset.h;
+  const c=[x+w/2,y+h/2],d=Math.hypot(c[0]-MC[0],c[1]-MC[1]);
+  return {el,c,d,i,r:el.dataset.r,l:el.dataset.l};
+});
+// launch order: the ones that land near the key visual first, the far edges last
+fly.sort((a,b)=>(a.d+rnd(a.i)*160)-(b.d+rnd(b.i)*160));
+const PEAK=[0,0,0,90,90,90,240,240,520,520];   // how far a card swings toward the camera on its way
+fly.forEach((f,k)=>{
+  f.t0=0.10+0.52*Math.pow(k/(fly.length-1),0.92);
+  f.dur=0.30;
+  f.peak=PEAK[Math.floor(rnd(f.i+50)*PEAK.length)];
+  f.rx=(rnd(f.i+7)-.5)*46;f.ry=(rnd(f.i+13)-.5)*84;f.rz=(rnd(f.i+29)-.5)*18;
+  f.jx=(rnd(f.i+3)-.5)*120;f.jy=(rnd(f.i+5)-.5)*120;
+});
+const nEl=$('n'),nlEl=$('nl'),nsEl=$('ns');
+let lastN=-1,lastL=-1,lastS=-1;
+function render(p){
+  // the key visual: alone and larger in the middle, then it takes its place in the wall
+  const m=inOut(clamp(p/0.24,0,1));
+  mother.style.transform=`translate3d(${lerp(720-MC[0],0,m)}px,${lerp(450-MC[1],0,m)}px,0) scale(${lerp(1.24,1,m)})`;
+  let n=1;const langs=new Set(['en']),sizes=new Set(['1:1']);
+  for(const f of fly){
+    const s=clamp((p-f.t0)/f.dur,0,1),st=f.el.style;
+    if(s<=0){st.visibility='hidden';continue}
+    if(s>.22){n++;if(f.l)langs.add(f.l);sizes.add(f.r)}
+    if(s>=1){st.visibility='visible';st.opacity=1;st.transform='none';st.filter='none';continue}
+    const e=outCubic(s);
+    const z=-950*(1-e)+f.peak*Math.sin(Math.PI*s)*(1-s*.2);
+    const blur=clamp((Math.abs(z)-70)/60,0,12);
+    st.visibility='visible';
+    st.opacity=clamp(s*5,0,1);
+    st.transform=`translate3d(${lerp(MC[0]-f.c[0]+f.jx,0,e)}px,${lerp(MC[1]-f.c[1]+f.jy,0,e)}px,${z}px) rotateX(${f.rx*(1-e)}deg) rotateY(${f.ry*(1-e)}deg) rotateZ(${f.rz*(1-e)}deg) scale(${lerp(.6,1,e)})`;
+    st.filter=blur>.4?`blur(${blur.toFixed(1)}px)`:'none';
+  }
+  if(n!==lastN){nEl.textContent=n;lastN=n}
+  if(langs.size!==lastL){nlEl.textContent=langs.size;lastL=langs.size}
+  if(sizes.size!==lastS){nsEl.textContent=sizes.size;lastS=sizes.size}
+}
+function fit(){
+  const s=Math.min(innerWidth/1440,innerHeight/900);
+  stage.style.transform=`scale(${s})`;
+}
+function progress(){
+  const max=track.offsetHeight-innerHeight;
+  return max>0?clamp((scrollY-track.offsetTop)/max,0,1):1;
+}
+let ticking=false;
+function onScroll(){if(!ticking){ticking=true;requestAnimationFrame(()=>{ticking=false;const p=progress();render(p);btn.classList.toggle('quiet',p>.02&&!auto)})}}
+// auto-play: scrolls the page for people who would rather watch
+let auto=false,raf=0;
+function stop(){auto=false;cancelAnimationFrame(raf);btnT.textContent=progress()>.98?'重播':'往下滚动，或点这里自动播放'}
+function play(){
+  if(auto){stop();return}
+  const max=track.offsetHeight-innerHeight,from=progress()>.98?0:scrollY-track.offsetTop,T=9000*(1-from/max),t0=performance.now();
+  if(progress()>.98)scrollTo(0,track.offsetTop);
+  auto=true;btnT.textContent='暂停';
+  const step=now=>{const k=clamp((now-t0)/T,0,1);scrollTo(0,track.offsetTop+lerp(from,max,k));if(k<1&&auto)raf=requestAnimationFrame(step);else stop()};
+  raf=requestAnimationFrame(step);
+}
+btn.addEventListener('click',play);
+addEventListener('wheel',()=>{if(auto)stop()},{passive:true});
+addEventListener('touchstart',()=>{if(auto)stop()},{passive:true});
+addEventListener('resize',()=>{fit();onScroll()});
+fit();
+if(reduce){render(1);pin.style.height=(900*Math.min(innerWidth/1440,innerHeight/900))+'px'}
+else{addEventListener('scroll',onScroll,{passive:true});render(progress())}
+})();
+</script>
+</body>
+</html>

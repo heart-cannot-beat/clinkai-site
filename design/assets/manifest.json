@@ -4,7 +4,8 @@
   "kind 为 creator-video、creator-video-frame 和 creator-avatar 的素材只能出现在达人屏（04）和产品页的达人列表里",
   "kind 为 ad-image 和 product-cutout 的图用在广告屏（02、03、03b）和首屏叠板",
   "线上版本转成 AVIF/WebP、多尺寸、按需加载（P-05）",
-  "视频先给 webm、再给 mp4，两个都要带；永远静音，不带声轨；播放规则见 motion.md 的 04 屏"
+  "视频先给 webm、再给 mp4，两个都要带；永远静音，不带声轨；播放规则见 motion.md 的 04 屏",
+  "usedIn 为空的图现在没有任何一屏在用，不用进线上；留着是因为以后的版本可能用到"
  ],
  "generatedWith": "图片：OpenAI 图像接口。达人示例视频：Canva 的视频生成。提示词、分镜和带声轨的原片留在设计侧，不进本仓库",
  "assets": [
@@ -120,6 +121,21 @@
    "transparent": false
   },
   {
+   "file": "img/pebble_cairn_pebbles.jpg",
+   "width": 1024,
+   "height": 1280,
+   "bytes": 108584,
+   "kind": "ad-image",
+   "brand": "Pebblesound",
+   "category": "降噪耳机",
+   "usedIn": [
+    "02-wall",
+    "03-winner"
+   ],
+   "transparent": false,
+   "note": "鹅卵石堆顶上的耳机盒"
+  },
+  {
    "file": "img/pebble_cut_closed.webp",
    "width": 640,
    "height": 510,
@@ -133,6 +149,21 @@
     "03b-next-round"
    ],
    "transparent": true
+  },
+  {
+   "file": "img/pebble_cut_float.webp",
+   "width": 600,
+   "height": 1038,
+   "bytes": 73530,
+   "kind": "product-cutout",
+   "brand": "Pebblesound",
+   "category": "降噪耳机",
+   "usedIn": [
+    "02-wall",
+    "03-winner"
+   ],
+   "transparent": true,
+   "note": "两只耳机悬在打开的空盒上方"
   },
   {
    "file": "img/pebble_cut_hand.webp",
@@ -188,11 +219,39 @@
    "brand": "Pebblesound",
    "category": "降噪耳机",
    "usedIn": [
-    "02-wall",
-    "03-winner",
     "03b-next-round"
    ],
    "transparent": true
+  },
+  {
+   "file": "img/pebble_cut_pinch.webp",
+   "width": 640,
+   "height": 786,
+   "bytes": 67326,
+   "kind": "product-cutout",
+   "brand": "Pebblesound",
+   "category": "降噪耳机",
+   "usedIn": [
+    "02-wall",
+    "03-winner"
+   ],
+   "transparent": true,
+   "note": "手指从上方捏着一只耳机，另一只在盒里"
+  },
+  {
+   "file": "img/pebble_cut_side.webp",
+   "width": 760,
+   "height": 421,
+   "bytes": 45538,
+   "kind": "product-cutout",
+   "brand": "Pebblesound",
+   "category": "降噪耳机",
+   "usedIn": [
+    "02-wall",
+    "03-winner"
+   ],
+   "transparent": true,
+   "note": "合上的耳机盒，正侧面"
   },
   {
    "file": "img/pebble_cut_single.webp",
@@ -217,11 +276,113 @@
    "kind": "product-cutout",
    "brand": "Pebblesound",
    "category": "降噪耳机",
+   "usedIn": [],
+   "transparent": true
+  },
+  {
+   "file": "img/pebble_flatlay_pockets.jpg",
+   "width": 1024,
+   "height": 1024,
+   "bytes": 170710,
+   "kind": "ad-image",
+   "brand": "Pebblesound",
+   "category": "降噪耳机",
    "usedIn": [
     "02-wall",
     "03-winner"
    ],
-   "transparent": true
+   "transparent": false,
+   "note": "口袋里的东西平铺"
+  },
+  {
+   "file": "img/pebble_macro_ring.jpg",
+   "width": 1536,
+   "height": 1024,
+   "bytes": 134831,
+   "kind": "ad-image",
+   "brand": "Pebblesound",
+   "category": "降噪耳机",
+   "usedIn": [
+    "02-wall",
+    "03-winner"
+   ],
+   "transparent": false,
+   "note": "耳机蓝线的微距"
+  },
+  {
+   "file": "img/pebble_mute_alarm.jpg",
+   "width": 1024,
+   "height": 1024,
+   "bytes": 82939,
+   "kind": "ad-image",
+   "brand": "Pebblesound",
+   "category": "降噪耳机",
+   "usedIn": [
+    "02-wall",
+    "03-winner"
+   ],
+   "transparent": false,
+   "note": "「静音」系列：垫了毛毡的闹钟"
+  },
+  {
+   "file": "img/pebble_mute_cymbals.jpg",
+   "width": 1536,
+   "height": 1024,
+   "bytes": 141720,
+   "kind": "ad-image",
+   "brand": "Pebblesound",
+   "category": "降噪耳机",
+   "usedIn": [
+    "02-wall",
+    "03-winner"
+   ],
+   "transparent": false,
+   "note": "「静音」系列：夹着枕头的大镲"
+  },
+  {
+   "file": "img/pebble_mute_horn.jpg",
+   "width": 1024,
+   "height": 1280,
+   "bytes": 105456,
+   "kind": "ad-image",
+   "brand": "Pebblesound",
+   "category": "降噪耳机",
+   "usedIn": [
+    "02-wall",
+    "03-winner"
+   ],
+   "transparent": false,
+   "note": "「静音」系列：塞了棉花的老式喇叭"
+  },
+  {
+   "file": "img/pebble_mute_megaphone.jpg",
+   "width": 1536,
+   "height": 1024,
+   "bytes": 169323,
+   "kind": "ad-image",
+   "brand": "Pebblesound",
+   "category": "降噪耳机",
+   "usedIn": [
+    "02-wall",
+    "03-winner"
+   ],
+   "transparent": false,
+   "note": "「静音」系列：套着毛线袜的扩音器"
+  },
+  {
+   "file": "img/pebble_mute_whistle.jpg",
+   "width": 1024,
+   "height": 1024,
+   "bytes": 72496,
+   "kind": "ad-image",
+   "brand": "Pebblesound",
+   "category": "降噪耳机",
+   "usedIn": [
+    "02-wall",
+    "03-winner"
+   ],
+   "transparent": false,
+   "note": "「静音」系列：塞了软木塞的哨子"
   },
   {
    "file": "img/pebble_photo_ear.jpg",
@@ -252,6 +413,81 @@
     "03b-next-round"
    ],
    "transparent": false
+  },
+  {
+   "file": "img/pebble_pocket_denim.jpg",
+   "width": 1024,
+   "height": 1280,
+   "bytes": 342082,
+   "kind": "ad-image",
+   "brand": "Pebblesound",
+   "category": "降噪耳机",
+   "usedIn": [
+    "02-wall",
+    "03-winner"
+   ],
+   "transparent": false,
+   "note": "牛仔裤零钱袋里的耳机盒"
+  },
+  {
+   "file": "img/pebble_portrait_profile.jpg",
+   "width": 1024,
+   "height": 1280,
+   "bytes": 146009,
+   "kind": "ad-image",
+   "brand": "Pebblesound",
+   "category": "降噪耳机",
+   "usedIn": [
+    "02-wall",
+    "03-winner"
+   ],
+   "transparent": false,
+   "note": "银发女士的侧脸"
+  },
+  {
+   "file": "img/pebble_scene_bus_night.jpg",
+   "width": 1024,
+   "height": 940,
+   "bytes": 133465,
+   "kind": "ad-image",
+   "brand": "Pebblesound",
+   "category": "降噪耳机",
+   "usedIn": [
+    "02-wall",
+    "03-winner"
+   ],
+   "transparent": false,
+   "note": "夜班公交靠窗的人。原图下方腿上还有一个装着两只耳机的盒子，和她耳朵上那只对不上，已经裁掉；不要换回未裁的原图"
+  },
+  {
+   "file": "img/pebble_scene_crosswalk.jpg",
+   "width": 864,
+   "height": 1536,
+   "bytes": 170918,
+   "kind": "ad-image",
+   "brand": "Pebblesound",
+   "category": "降噪耳机",
+   "usedIn": [
+    "02-wall",
+    "03-winner"
+   ],
+   "transparent": false,
+   "note": "车流里站着不动的人"
+  },
+  {
+   "file": "img/pebble_scene_roadworks.jpg",
+   "width": 1536,
+   "height": 1024,
+   "bytes": 173012,
+   "kind": "ad-image",
+   "brand": "Pebblesound",
+   "category": "降噪耳机",
+   "usedIn": [
+    "02-wall",
+    "03-winner"
+   ],
+   "transparent": false,
+   "note": "工地旁边看书的人"
   },
   {
    "file": "img/pebble_subway.jpg",
@@ -410,26 +646,6 @@
    "note": "达人示例视频的封面，取自视频第 3.5 秒那一帧。视频不能播放时显示它"
   },
   {
-   "file": "video/creator-pebble.webm",
-   "width": 768,
-   "height": 1344,
-   "bytes": 1069556,
-   "kind": "creator-video",
-   "brand": "Pebblesound",
-   "category": "降噪耳机",
-   "usedIn": [
-    "04-creators"
-   ],
-   "transparent": false,
-   "creatorHandle": "@noor.on.the.go",
-   "durationSeconds": 8,
-   "fps": 24,
-   "codec": "VP9",
-   "audio": false,
-   "poster": "img/ugc_pebble.jpg",
-   "note": "无声轨。前 4 秒举着打开的耳机盒、耳朵上没有耳机；第 4 秒切镜头；后 4 秒两只耳机在耳朵上、画面里没有盒子"
-  },
-  {
    "file": "video/creator-pebble.mp4",
    "width": 768,
    "height": 1344,
@@ -445,6 +661,26 @@
    "durationSeconds": 8,
    "fps": 24,
    "codec": "H.264",
+   "audio": false,
+   "poster": "img/ugc_pebble.jpg",
+   "note": "无声轨。前 4 秒举着打开的耳机盒、耳朵上没有耳机；第 4 秒切镜头；后 4 秒两只耳机在耳朵上、画面里没有盒子"
+  },
+  {
+   "file": "video/creator-pebble.webm",
+   "width": 768,
+   "height": 1344,
+   "bytes": 1069556,
+   "kind": "creator-video",
+   "brand": "Pebblesound",
+   "category": "降噪耳机",
+   "usedIn": [
+    "04-creators"
+   ],
+   "transparent": false,
+   "creatorHandle": "@noor.on.the.go",
+   "durationSeconds": 8,
+   "fps": 24,
+   "codec": "VP9",
    "audio": false,
    "poster": "img/ugc_pebble.jpg",
    "note": "无声轨。前 4 秒举着打开的耳机盒、耳朵上没有耳机；第 4 秒切镜头；后 4 秒两只耳机在耳朵上、画面里没有盒子"
