@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { pebblesoundWall } from './config';
 import { wallImageUrl } from './images';
+import { designWallImageFiles } from './test-helpers';
 
 // 站点自己的图片放在 src/assets/wall/，是从设计交接包 design/assets/img/ 原样拷过来的。
 // 设计侧换了图，这里的测试会挂，重新拷一份即可。
@@ -16,21 +16,23 @@ const designImages = import.meta.glob<string>('../../design/assets/img/*', {
   import: 'default',
 });
 
-const configured = [
-  ...Object.values(pebblesoundWall.cutouts),
-  ...Object.values(pebblesoundWall.photos),
-].map((image) => image.file);
+// design/wall/tiles.json 的小图里用到的那几张
+const used = designWallImageFiles();
 
 describe('版本墙的图片：站点自己的一份', () => {
-  it('src/assets/wall/ 里正好是配置登记的那几张，没有别的', () => {
+  it('墙里用到 25 张不同的图', () => {
+    expect(used).toHaveLength(25);
+  });
+
+  it('src/assets/wall/ 里正好是墙里用到的那几张，没有别的', () => {
     const files = Object.keys(siteImages).map((path) =>
       path.replace('../assets/wall/', ''),
     );
 
-    expect(files.sort()).toEqual([...configured].sort());
+    expect(files.sort()).toEqual(used);
   });
 
-  it.each(configured)('%s 和交接包里的同名文件逐字节一致', async (file) => {
+  it.each(used)('%s 和交接包里的同名文件逐字节一致', async (file) => {
     const site = siteImages[`../assets/wall/${file}`];
     const design = await designImages[`../../design/assets/img/${file}`]?.();
 
@@ -38,7 +40,7 @@ describe('版本墙的图片：站点自己的一份', () => {
     expect(site).toBe(design);
   });
 
-  it.each(configured)('%s 能换成站点上的地址', (file) => {
+  it.each(used)('%s 能换成站点上的地址', (file) => {
     const url = wallImageUrl(file);
 
     expect(url).toMatch(/^\//);
@@ -46,7 +48,7 @@ describe('版本墙的图片：站点自己的一份', () => {
     expect(url).not.toContain('design/');
   });
 
-  it('没登记的图片报错，不会输出一个打不开的地址', () => {
+  it('不在墙里的图片报错，不会输出一个打不开的地址', () => {
     expect(() => wallImageUrl('ugc_pebble.jpg')).toThrow(/ugc_pebble\.jpg/);
   });
 });
