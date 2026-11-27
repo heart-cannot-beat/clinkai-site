@@ -1,0 +1,6 @@
+dist/
+.astro/
+.wrangler/
+package-lock.json
+# 设计交接包以设计侧导出为准，不重排格式
+design/
