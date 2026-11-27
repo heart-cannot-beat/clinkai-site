@@ -1,0 +1,24 @@
+import { unstable_readConfig } from 'wrangler';
+import { describe, expect, it } from 'vitest';
+import astroConfig from '../astro.config.mjs';
+
+// 用 wrangler 自己的读取器解析 wrangler.jsonc：字段写错、格式不对，这里就会报错。
+// 路径相对仓库根目录（npm run test 在根目录跑 Vitest）。
+const config = unstable_readConfig({ config: 'wrangler.jsonc' });
+
+describe('wrangler.jsonc', () => {
+  it('托管的正是 Astro 构建输出的目录', () => {
+    const outDir = astroConfig.outDir ?? './dist';
+    expect(config.assets?.directory).toBe(outDir);
+  });
+
+  it('先只挂在 workers.dev 上，不绑任何自定义域名（切 clinkai.app 是 L-01）', () => {
+    expect(config.workers_dev).toBe(true);
+    expect(config.route).toBeUndefined();
+    expect(config.routes).toBeUndefined();
+  });
+
+  it('不把账号 ID 写进仓库', () => {
+    expect(config.account_id).toBeUndefined();
+  });
+});
