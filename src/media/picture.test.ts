@@ -23,7 +23,7 @@ function candidates(srcset: string) {
 
 describe('每张示例图都转成 AVIF 和 WebP，每种都有多个尺寸', () => {
   it('图片目录里有图', () => {
-    expect(exampleImageFiles.length).toBe(28);
+    expect(exampleImageFiles.length).toBe(43);
   });
 
   it.each(exampleImageFiles)('%s', async (file) => {

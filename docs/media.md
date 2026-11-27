@@ -4,19 +4,27 @@
 
 ## 文件
 
-| 路径                              | 内容                                                                                          |
-| :-------------------------------- | :-------------------------------------------------------------------------------------------- |
-| `src/assets/img/`                 | 28 张示例图，从 `design/assets/img/` 原样拷来，逐字节一致（测试守着）。站点构建不读 `design/` |
-| `src/assets/video/`               | 达人示例视频的 webm 和 mp4，从 `design/assets/video/` 原样拷来                                |
-| `src/media/catalog.ts`            | 按文件名取图片（宽高、格式）和视频地址                                                        |
-| `src/media/responsive.ts`         | 每张图出哪几种宽度、显示多大、`sizes` 怎么写                                                  |
-| `src/media/picture.ts`            | 构建时出图（AVIF 和 WebP、多尺寸），拼 `<picture>`。版本墙和组件都走这里                      |
-| `src/media/ExampleImage.astro`    | 示例图组件                                                                                    |
-| `src/media/ExampleVideo.astro`    | 示例视频组件，带播放规则和退路                                                                |
-| `src/media/hero.ts`               | 首屏叠板上的三张图和它们的显示大小，和 `design/screens/01-hero.html` 对照                     |
-| `src/media/budget.ts`             | 首屏图片体积上限，以及检查构建产物里图片的规则                                                |
-| `src/media/integration.ts`        | 构建检查：`astro build` 写完 `dist/` 后跑，不合格就让构建失败                                 |
-| `src/pages/media.astro`（/media） | 示例素材陈列页：每张图、版本墙、视频都摆在上面，给开发和设计核对。不进导航，不让搜索引擎收录  |
+| 路径                              | 内容                                                                                                                           |
+| :-------------------------------- | :----------------------------------------------------------------------------------------------------------------------------- |
+| `src/assets/img/`                 | 43 张示例图：图片清单里有屏在用的那些，从 `design/assets/img/` 原样拷来，逐字节一致（测试守着）。站点构建不读 `design/` 里的图 |
+| `src/assets/video/`               | 达人示例视频的 webm 和 mp4，从 `design/assets/video/` 原样拷来                                                                 |
+| `src/media/catalog.ts`            | 按文件名取图片（宽高、格式）和视频地址                                                                                         |
+| `src/media/responsive.ts`         | 每张图出哪几种宽度、显示多大、`sizes` 怎么写                                                                                   |
+| `src/media/picture.ts`            | 构建时出图（AVIF 和 WebP、多尺寸），拼 `<picture>`。版本墙和组件都走这里                                                       |
+| `src/media/ExampleImage.astro`    | 示例图组件                                                                                                                     |
+| `src/media/ExampleVideo.astro`    | 示例视频组件，带播放规则和退路                                                                                                 |
+| `src/media/hero.ts`               | 首屏叠板上的三张图和它们的显示大小，和 `design/screens/01-hero.html` 对照                                                      |
+| `src/media/budget.ts`             | 首屏图片体积上限，以及检查构建产物里图片的规则                                                                                 |
+| `src/media/integration.ts`        | 构建检查：`astro build` 写完 `dist/` 后跑，不合格就让构建失败                                                                  |
+| `src/pages/media.astro`（/media） | 示例素材陈列页：每张图、版本墙、视频都摆在上面，给开发和设计核对。不进导航，不让搜索引擎收录                                   |
+
+## 哪些素材进站点
+
+以 `design/assets/manifest.json` 为准，测试会比对：
+
+- **`usedIn` 不为空的才进站点。** 清单的规则是「`usedIn` 为空的图现在没有任何一屏在用，不用进线上」。这样的图不拷进 `src/assets/`，构建产物里也就没有它。现在清单里有 44 张图，43 张在用；没人用的一张是 `pebble_cut_top.webp`。
+- `src/assets/` 里不能有清单以外的文件。
+- 达人素材（`kind` 是 `creator-…`）只能出现在达人屏和产品页的达人列表里；版本墙的测试会拦住它们进墙。
 
 ## 图片
 
@@ -105,8 +113,8 @@ import ExampleVideo from '../media/ExampleVideo.astro';
 
 图片或视频换了、加了，`npm run test` 里逐字节对照的测试会挂。按下面的顺序同步：
 
-1. 把 `design/assets/img/`、`design/assets/video/` 里变了的文件拷到 `src/assets/img/`、`src/assets/video/`。
-2. 版本墙用的图换了，同步 `src/wall/config.ts`（见 `docs/version-wall.md`）；首屏叠板的图换了，同步 `src/media/hero.ts`。
+1. 对照 `design/assets/manifest.json`：把变了的、新加的文件从 `design/assets/img/`、`design/assets/video/` 拷到 `src/assets/img/`、`src/assets/video/`。只拷 `usedIn` 不为空的；`usedIn` 变成空的，从 `src/assets/` 里删掉。
+2. 版本墙直接读 `design/wall/tiles.json`，墙里用到的图只要在 `src/assets/img/` 里就行（见 `docs/version-wall.md`）；首屏叠板的图换了，同步 `src/media/hero.ts`。
 3. 跑 `npm run verify`：测试、首屏体积上限和图片管线检查都过了才算同步完。
 
 不改 `design/`。交接包里的图有问题，在 Issue 里报。
