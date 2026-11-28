@@ -22,6 +22,10 @@
   --status-wait-ink: #7a4800;
   --status-unknown-bg: rgba(28, 28, 27, 0.08);
   --status-unknown-ink: #5c5a55;
+  /* 深色底上的状态（产品页第 3 屏的星图）：一个 7px 的小圆点加文字，不用底色块 */
+  --status-ok-on-dark: #7fd39a;
+  --status-wait-on-dark: #e6b450;
+  --status-unknown-on-dark: rgba(230, 228, 223, 0.55);
 
   /* ---------- 示例品牌 Pebblesound 的色板：只用在示例广告里，不是站点配色 ---------- */
   --pebble-cobalt: #2743c9;
@@ -31,6 +35,11 @@
   --pebble-brass: #cda349;
   --pebble-dark: #2a2a28;
   --pebble-cream: #f3eee2;   /* 钴蓝和深色底上的字 */
+
+  /* ---------- 示例品牌 Halfmile 的色板：只用在产品页第 2 屏中间那张示例广告里，不是站点配色 ---------- */
+  --halfmile-orange: #e8542f;
+  --sample-card-dark: #2a2a28;   /* 示例广告图片加载前的底色 */
+  --sample-card-cream: #f3eee2;  /* 咖啡袋抠图那张的底色；「胜出」小标签的底色 */
 
   /* ---------- 字体：全站只有一种字重 ---------- */
   --font-sans: 'Inter Tight', 'Noto Sans SC', system-ui, sans-serif;
@@ -51,7 +60,9 @@
   --display-counter: 100px;  /* 计数块里的数字，字距 -0.04em，行高 0.9 */
   --display-hero: 120px;     /* 首屏三行大字，字距 -0.025em，行高 1 */
   --display-zh: 124px;       /* 05 屏的中文大字，字距 0.02em */
-  --display-page: 140px;     /* 关于我们标题 */
+  --display-row: 92px;       /* 产品页第 1 屏的两行产品名，字距 -0.035em */
+  --display-product: 132px;  /* 产品页第 2、3 屏的产品名，字距 -0.04em，行高 1 */
+  --display-page: 190px;     /* 我们的产品、关于我们的标题，和预约沟通同一个写法：字距 -0.04em，行高 0.9（11-28 之前是 140px） */
   --display-contact: 190px;  /* 预约沟通标题，字距 -0.04em，行高 0.9 */
   --display-card: 250px;     /* 03 屏大卡片里的 Mute，字距 -0.045em */
   --display-ending: 300px;   /* 结尾两行 */
