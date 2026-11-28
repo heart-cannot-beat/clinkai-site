@@ -1,0 +1,41 @@
+---
+// 由一屏一屏 1440×900 画布组成的页面的外壳（子页面「我们的产品」「关于我们」）。
+// 每一屏用 src/home/Screen.astro，照设计稿的像素定位；整页按「页面宽度 ÷ 1440」等比缩放，
+// 和首页静态版是同一个办法（--home-scale）。手机稿出来之前，窄屏上也是整页等比缩小。
+import BaseLayout from './BaseLayout.astro';
+
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const { title, description } = Astro.props;
+---
+
+<BaseLayout title={title} description={description}>
+  {/* 脚本放在 head 里、内联：第一帧画出来之前比例就算好了，不会先按原尺寸闪一下 */}
+  <script is:inline slot="head">
+    (function () {
+      const root = document.documentElement;
+      const fit = function () {
+        root.style.setProperty('--home-scale', String(root.clientWidth / 1440));
+      };
+      fit();
+      // 页面宽度变了（改窗口大小、滚动条出现）就重算
+      if ('ResizeObserver' in window) new ResizeObserver(fit).observe(root);
+      else window.addEventListener('resize', fit);
+    })();
+  </script>
+
+  <main class="canvas-page">
+    <slot />
+  </main>
+</BaseLayout>
+
+<style>
+  /* 没有脚本时比例是 1：画布按 1440 宽原尺寸居中显示 */
+  .canvas-page {
+    width: calc(1440px * var(--home-scale, 1));
+    margin: 0 auto;
+  }
+</style>

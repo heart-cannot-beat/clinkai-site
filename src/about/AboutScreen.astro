@@ -1,0 +1,138 @@
+---
+// 关于我们：只有字。静态帧：design/screens/page-about.html。文案照抄 design/copy.md。
+// WHO WE ARE 加一个平面的句号，左边一段介绍，右边六行清单。
+// 底部四项事实是【待填】，没补齐之前整块不渲染（AboutFacts、src/data/about.ts）。
+// 03 广告、04 达人两行的说明是设计侧新写的，等用户确认（design/README.md 已知问题第 12 条）。
+import ScreenCorners from '../components/ScreenCorners.astro';
+import SiteHeader from '../components/SiteHeader.astro';
+import { ABOUT_INTRO } from '../data/about';
+import Screen from '../home/Screen.astro';
+import AboutFacts from './AboutFacts.astro';
+
+const ROWS = [
+  { no: '01', name: '策略', text: '定位、人群、渠道和节奏，先想清楚再花钱。' },
+  { no: '02', name: '品牌', text: '名字、视觉和语气，按每个市场调整。' },
+  {
+    no: '03',
+    name: '广告',
+    text: '一个创意做出多个版本，小预算测出赢的那一版。',
+  },
+  {
+    no: '04',
+    name: '达人',
+    text: '找达人、发邀约、收作品，把品牌带进每一条信息流。',
+  },
+  { no: '05', name: '内容', text: '社媒、短视频、详情页，持续产出。' },
+  { no: '06', name: '结论', text: '每一轮测出了什么，都带进下一轮。' },
+];
+---
+
+<Screen name="page-about">
+  <SiteHeader current="about" />
+
+  <h1 class="title" lang="en">
+    <span class="line">WHO</span>
+    <span class="line last">
+      WE ARE
+      <span class="period" aria-hidden="true"></span>
+    </span>
+  </h1>
+  <p class="intro">{ABOUT_INTRO}</p>
+  <ul class="rows" aria-label="我们做的六件事">
+    {ROWS.map((row) => (
+      <li class="row">
+        <span class="no">{row.no}</span>
+        <h3 class="name">{row.name}</h3>
+        <p class="text">{row.text}</p>
+      </li>
+    ))}
+  </ul>
+  <AboutFacts />
+
+  <ScreenCorners />
+</Screen>
+
+<style>
+  /* 英文大标题：纯拉丁字体栈（design/README.md 排版规则 1） */
+  .title {
+    position: absolute;
+    left: var(--page-margin);
+    top: 100px;
+    margin: 0;
+    font-family: var(--font-latin);
+    font-size: var(--display-page);
+    line-height: 0.9;
+    font-weight: var(--weight);
+    letter-spacing: -0.04em;
+  }
+
+  .line {
+    display: block;
+  }
+
+  /* 第二行用 flex 把字和句号排在一条基线上：flex 容器里标签之间的换行不占位置，
+     源码怎么排版都不会在 WE ARE 和句号之间多出一个空格（和预约沟通页的标题同一个写法） */
+  .line.last {
+    display: flex;
+    align-items: baseline;
+  }
+
+  /* 标题后面的句号：平面的圆，是图形不是字符 */
+  .period {
+    flex: none;
+    width: 110px;
+    height: 110px;
+    margin-left: 14px;
+    border-radius: 50%;
+    background: var(--ink);
+  }
+
+  .intro {
+    position: absolute;
+    left: var(--page-margin);
+    top: 478px;
+    width: 640px;
+    margin: 0;
+    font-size: var(--text-intro);
+    line-height: 1.45;
+  }
+
+  .rows {
+    position: absolute;
+    left: 860px;
+    right: var(--page-margin);
+    top: 118px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border-bottom: 1px solid var(--hairline);
+  }
+
+  .row {
+    display: grid;
+    grid-template-columns: 44px 112px minmax(0, 1fr);
+    align-items: center;
+    height: 75px;
+    border-top: 1px solid var(--hairline);
+  }
+
+  .no {
+    font-size: var(--text-nav);
+    color: var(--muted);
+  }
+
+  /* 六件事的名字：36px，设计规范里没有对应的变量，照设计稿写 */
+  .name {
+    margin: 0;
+    font-size: 36px;
+    line-height: 1;
+    font-weight: var(--weight);
+    letter-spacing: 0.02em;
+  }
+
+  .text {
+    margin: 0;
+    font-size: var(--text-body);
+    line-height: 1.5;
+  }
+</style>

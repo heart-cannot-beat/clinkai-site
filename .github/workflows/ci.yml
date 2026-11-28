@@ -23,3 +23,37 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run verify
+
+  # 截图对比：站点的每一屏和 design/screens/ 里的设计稿逐像素比。说明见 docs/visual-compare.md
+  visual:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      # 站点不自托管中文字体，中文、日文、韩文、阿拉伯文都落到系统字体。
+      # 装一套有这些字的字体，免得两边都画成方框、比了等于没比
+      - name: 装浏览器和系统字体
+        run: |
+          npx playwright install --with-deps chromium
+          sudo apt-get install --yes --no-install-recommends fonts-noto-cjk
+      - name: 确认各种文字都有字体可用
+        run: |
+          for lang in zh-cn ja ko ar; do
+            fonts=$(fc-list ":lang=$lang" family | sort -u | head -n 3 | paste -sd ';' -)
+            echo "$lang: ${fonts:-没有字体}"
+            test -n "$fonts"
+          done
+      - run: npm run test:visual
+      # 失败时把基准图、站点截图、差异图和报告传上来
+      - uses: actions/upload-artifact@v7
+        if: failure()
+        with:
+          name: visual-compare
+          path: |
+            test-results/
+            playwright-report/
+          retention-days: 14
