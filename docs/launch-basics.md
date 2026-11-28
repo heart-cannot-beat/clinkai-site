@@ -26,13 +26,15 @@ BaseLayout 据此写出：`<title>`、描述、canonical、Open Graph（`og:type
 
 现在各页用的文案：
 
-| 页面                 | 标题                 | 描述                                                   | 出处                                  |
-| :------------------- | :------------------- | :----------------------------------------------------- | :------------------------------------ |
-| `/`                  | `ClinkAI`            | 首屏的中文说明（两行连成一句）                         | `design/copy.md`「01 首屏」           |
-| `/contact/`          | `ClinkAI 预约沟通`   | 这一页标题下面的介绍                                   | `design/copy.md`「子页面 · 预约沟通」 |
-| `/privacy/`          | `ClinkAI 隐私说明`   | 草稿                                                   | `src/data/privacy.ts`，交接包里没有   |
-| 404                  | `ClinkAI 页面不存在` | 草稿                                                   | `src/data/not-found.ts`，交接包里没有 |
-| `/parts/`、`/media/` | 各自的内部标题       | 没有自己的，用首屏那一句（这两页不收录，不是站点文案） |                                       |
+| 页面                                  | 标题                 | 描述                                                   | 出处                                    |
+| :------------------------------------ | :------------------- | :----------------------------------------------------- | :-------------------------------------- |
+| `/`                                   | `ClinkAI`            | 首屏的中文说明（两行连成一句）                         | `design/copy.md`「01 首屏」             |
+| `/contact/`                           | `ClinkAI 预约沟通`   | 这一页标题下面的介绍                                   | `design/copy.md`「子页面 · 预约沟通」   |
+| `/products/`                          | `ClinkAI 我们的产品` | 这一页大标题下面的那一句                               | `design/copy.md`「子页面 · 我们的产品」 |
+| `/about/`                             | `ClinkAI 关于我们`   | 这一页大标题下面的介绍                                 | `design/copy.md`「子页面 · 关于我们」   |
+| `/privacy/`                           | `ClinkAI 隐私说明`   | 草稿                                                   | `src/data/privacy.ts`，交接包里没有     |
+| 404                                   | `ClinkAI 页面不存在` | 草稿                                                   | `src/data/not-found.ts`，交接包里没有   |
+| `/parts/`、`/parts/scene/`、`/media/` | 各自的内部标题       | 没有自己的，用首屏那一句（这几页不收录，不是站点文案） |                                         |
 
 **新加一个页面：** 套 BaseLayout，传 `title` 和（照抄 `copy.md` 的）`description`，就自动有分享卡片、进站点地图。不想被收录就加 `noindex`，它会自动从站点地图里拿掉、写进 `robots.txt`。不用改 `src/seo/` 里的任何东西。
 
@@ -54,8 +56,8 @@ node scripts/share-image.mjs
 
 构建时生成，不是手写的文件：`astro build` 写完 `dist/` 之后，`src/seo/integration.ts` 把每个页面的 `<head>` 读一遍，写出 `dist/sitemap.xml` 和 `dist/robots.txt`。本地开发服务器（`npm run dev`）里没有这两个文件，要看就 `npm run build` 之后看 `dist/`，或者 `npx wrangler dev`。
 
-- **站点地图：** 只列会被收录的页面，带完整地址。标了 `noindex` 的页面和 404 页不进。现在是 `/`、`/contact/`、`/privacy/`。
-- **robots.txt：** 不让抓 `/api/`（表单接口）和标了 `noindex` 的页面（现在是 `/parts/`、`/media/`），其余放开，最后一行指出站点地图。
+- **站点地图：** 只列会被收录的页面，带完整地址。标了 `noindex` 的页面和 404 页不进。现在是 `/`、`/about/`、`/contact/`、`/privacy/`、`/products/`。
+- **robots.txt：** 不让抓 `/api/`（表单接口）和标了 `noindex` 的页面（现在是 `/parts/`、`/parts/scene/`、`/media/`），其余放开，最后一行指出站点地图。
 - 页面收不收录只看它自己的 `noindex`，没有另外维护的名单。
 - 被 `robots.txt` 拦住的页面，搜索引擎抓不到页面上的 `noindex` 标记；要是别的网站链接了它，地址本身仍可能出现在搜索结果里（没有内容）。这两页没有任何站内链接指过去，现在两层都留着。
 
