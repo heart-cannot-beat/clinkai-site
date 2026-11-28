@@ -1,19 +1,39 @@
 ---
-// 全站页面外壳：自托管字体、设计规范变量、基础样式。
+// 全站页面外壳：自托管字体、设计规范变量、基础样式，以及每个页面的标题、描述和分享卡片（P-06）。
 // 字体只有 Inter Tight 400（经 npm 打包，按 unicode-range 分包按需下载）；
 // 中文不加载网络字体，按 tokens.css 的字体栈落到系统字体。
 import '@fontsource/inter-tight/400.css';
 import '../styles/tokens.css';
 import '../styles/base.css';
+import { canonicalUrl } from '../seo/meta';
+import {
+  absoluteUrl,
+  DEFAULT_DESCRIPTION,
+  SHARE_IMAGE,
+  SITE_LOCALE,
+  SITE_NAME,
+} from '../seo/site';
 
 interface Props {
   title: string;
+  /**
+   * 这一页的描述，显示在搜索结果和分享卡片上。文案照抄 design/copy.md，不要自己写；
+   * 不传时用首屏的那一句（src/seo/site.ts）。
+   */
   description?: string;
-  /** 不希望被搜索引擎收录的页面（比如部件陈列页）设为 true */
+  /** 不希望被搜索引擎收录的页面（比如部件陈列页）设为 true：不进站点地图，robots.txt 里也不让抓 */
   noindex?: boolean;
 }
 
-const { title, description, noindex = false } = Astro.props;
+const {
+  title,
+  description = DEFAULT_DESCRIPTION,
+  noindex = false,
+} = Astro.props;
+
+// 不收录的页面不写 canonical 和 og:url；404 页也是这一类，它没有固定的地址
+const canonical = noindex ? null : canonicalUrl(Astro.url.pathname);
+const shareImage = absoluteUrl(SHARE_IMAGE.path);
 ---
 
 <html lang="zh-CN">
@@ -21,8 +41,26 @@ const { title, description, noindex = false } = Astro.props;
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
-    {description && <meta name="description" content={description} />}
+    <meta name="description" content={description} />
     {noindex && <meta name="robots" content="noindex, nofollow" />}
+    {canonical && <link rel="canonical" href={canonical} />}
+
+    {/* 分享卡片：Open Graph（微信、领英等）和 Twitter Card。全站共用一张分享图 */}
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={SITE_NAME} />
+    <meta property="og:locale" content={SITE_LOCALE} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    {canonical && <meta property="og:url" content={canonical} />}
+    <meta property="og:image" content={shareImage} />
+    <meta property="og:image:width" content={String(SHARE_IMAGE.width)} />
+    <meta property="og:image:height" content={String(SHARE_IMAGE.height)} />
+    <meta property="og:image:alt" content={SHARE_IMAGE.alt} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={shareImage} />
+
     {/* 个别页面要在画出第一帧之前跑的小段内联脚本（比如首页算画布的缩放比例） */}
     <slot name="head" />
   </head>

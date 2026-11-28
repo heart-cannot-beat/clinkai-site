@@ -1,0 +1,133 @@
+---
+// 隐私说明页（P-06）。文字在 src/data/privacy.ts：交接包里没有，是等用户确认的草稿。版式见 TextPage。
+// 表单收的那几项不手写，从接口的字段表读：表单改了，这一页跟着变。
+import { CONTACT_TODO, FIELD_LABELS } from '../data/contact';
+import {
+  PRIVACY_DESCRIPTION,
+  PRIVACY_HEADING,
+  PRIVACY_LEAD,
+  PRIVACY_TITLE,
+  PRIVACY_UPDATED,
+  PRIVACY_UPDATED_LABEL,
+  privacySections,
+} from '../data/privacy';
+import { CONTACT_CTA } from '../data/site';
+import TextPage from '../layouts/TextPage.astro';
+import { CONTACT_FIELDS } from '../worker/contact/schema';
+
+const labels: Record<string, string> = FIELD_LABELS;
+const sections = privacySections({
+  fieldLabels: CONTACT_FIELDS.map((field) => labels[field.name] ?? field.name),
+  email: CONTACT_TODO.email,
+});
+---
+
+<TextPage
+  title={PRIVACY_TITLE}
+  description={PRIVACY_DESCRIPTION}
+  heading={PRIVACY_HEADING}
+  lead={PRIVACY_LEAD}
+>
+  <div class="sections">
+    {sections.map((section) => (
+      <section class="section" aria-labelledby={section.id}>
+        <h2 id={section.id}>{section.title}</h2>
+        {section.blocks.map((block) =>
+          typeof block === 'string' ? (
+            <p>{block}</p>
+          ) : (
+            <ul>
+              {block.map((item) => (
+                <li>{item}</li>
+              ))}
+            </ul>
+          ),
+        )}
+        {section.contactLink && (
+          <a class="contact-link" href={CONTACT_CTA.href}>
+            {CONTACT_CTA.label}
+            <span aria-hidden="true">{CONTACT_CTA.arrow}</span>
+          </a>
+        )}
+      </section>
+    ))}
+    <p class="updated">
+      {PRIVACY_UPDATED_LABEL}：
+      <time datetime={PRIVACY_UPDATED}>{PRIVACY_UPDATED}</time>
+    </p>
+  </div>
+</TextPage>
+
+<style>
+  /* 每一节上面一条细线、一个小标题，照「关于我们」底部那一排的做法（细线、13px 的灰色标签） */
+  .sections {
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+  }
+
+  .section {
+    border-top: 1px solid var(--hairline);
+    padding-top: 14px;
+  }
+
+  h2 {
+    margin: 0 0 14px;
+    font-size: var(--text-nav);
+    font-weight: var(--weight);
+    color: var(--muted);
+  }
+
+  p,
+  ul {
+    margin: 0;
+    font-size: var(--text-lead);
+    line-height: 1.6;
+  }
+
+  p + p,
+  p + ul,
+  ul + p {
+    margin-top: 12px;
+  }
+
+  ul {
+    padding: 0;
+    list-style: none;
+  }
+
+  /* 列表项前面的小圆点，和首页结尾屏产品名前面的一样（7px 的墨色圆） */
+  li {
+    position: relative;
+    padding-left: 18px;
+  }
+
+  li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: calc(0.8em - 3.5px);
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--ink);
+  }
+
+  /* 描边按钮，和页头的「预约沟通」是同一个样子 */
+  .contact-link {
+    display: inline-flex;
+    gap: 8px;
+    align-items: center;
+    margin-top: 18px;
+    padding: 10px 18px;
+    border: 1px solid var(--outline-button);
+    border-radius: var(--radius-pill);
+    font-size: var(--text-nav);
+    letter-spacing: 0.02em;
+  }
+
+  .updated {
+    font-size: var(--text-nav);
+    color: var(--muted);
+  }
+</style>

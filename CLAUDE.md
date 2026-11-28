@@ -61,12 +61,13 @@ ClinkAI 官网：Astro 纯静态站 + TypeScript，托管在 Cloudflare Workers 
 
 ## 目录
 
-- `src/pages/`：页面路由。`/parts/` 是部件陈列页（不进导航、不让搜索引擎收录），新部件做好后摆上去。`/contact/` 是预约沟通页。
+- `src/pages/`：页面路由。`/parts/` 是部件陈列页（不进导航、不让搜索引擎收录），新部件做好后摆上去。`/contact/` 是预约沟通页。`/privacy/` 是隐私说明页，`404.astro` 是 404 页；这两页的文字是等用户确认的草稿（`src/data/privacy.ts`、`src/data/not-found.ts`）。
+- `src/seo/`：每页的标题、描述和分享卡片，站点地图和 `robots.txt`（构建时生成）。站点的正式地址只写在 `src/seo/site.ts`。新页面传给 BaseLayout 的 `description` 照抄 `design/copy.md`。说明见 `docs/launch-basics.md`。
 - `src/home/`：首页的各屏，每屏一个组件，对应 `design/screens/` 里的一个文件。现在是静态版：每屏是一张 1440×900 的画布，照设计稿的像素定位，整页按宽度等比缩放（`Screen.astro`）。
 - `src/scenes/`：滚动场景的骨架（场景外壳 `Scene.astro`、退路规则、按需加载 GSAP 的运行时）。每屏的动效写在自己的 `<场景名>.scene.ts` 里，放在 `src/` 下会被自动找到；只有 `src/scenes/gsap.ts` 直接引 GSAP。示例场景在 `/parts/scene/`。说明见 `docs/scenes.md`。
 - `src/products/`、`src/about/`：子页面「我们的产品」（`/products/`，一页三屏）和「关于我们」（`/about/`）的各屏，对应 `design/screens/page-*.html`；和首页一样是 1440×900 的画布，外壳是 `src/layouts/CanvasLayout.astro`。广告那一圈和星图的位置数据在 `ads-ring.ts`、`star-map.ts`，`tests/subpages.test.ts` 会和设计稿逐个对照。关于我们底部四项【待填】事实在 `src/data/about.ts`（留着 `null`，不要自己写），没补齐时整块不渲染。
 - `src/media/`、`src/assets/`：示例图片和视频的管线和素材。页面上的图一律用 `ExampleImage`，视频用 `ExampleVideo`，不直接写 `<img>`；构建时会检查。说明见 `docs/media.md`。
-- `src/layouts/BaseLayout.astro`：页面外壳，引入自托管字体、设计规范变量和基础样式。新页面都套它。
+- `src/layouts/BaseLayout.astro`：页面外壳，引入自托管字体、设计规范变量和基础样式，写出每页的标题、描述和分享卡片。新页面都套它。`TextPage.astro` 是 404 和隐私说明这两个没有设计稿的文字页共用的版式。
 - `src/styles/tokens.css`：照抄 `design/tokens.css`，组件只用这里的变量。交接包的设计规范变了，同步这份文件；`tests/tokens.test.ts` 会比对两边。
 - `src/components/`：公共部件（页头、角落部件、计数块、小节标签、「示例」标签、状态小标签、`form/` 下的表单控件）。部件上的文字照抄 `design/copy.md`，导航的文字和链接集中在 `src/data/site.ts`。
 - `src/data/contact.ts`：预约沟通页的文字、【待填】项和交接包里还没有的文案（都留着 `null`，不要自己写）。
