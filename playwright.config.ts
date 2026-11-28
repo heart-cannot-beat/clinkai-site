@@ -18,6 +18,11 @@ export default defineConfig({
   ],
   use: {
     browserName: 'chromium',
+    launchOptions: {
+      // 文字一律用灰度抗锯齿。Linux 上 Chromium 会按图层决定小字用不用 LCD 次像素抗锯齿（带彩边），
+      // 站点整页和设计稿单屏的图层不一样，同样的字能画成两种样子；macOS 本来就不用 LCD，不受影响。
+      args: ['--disable-lcd-text'],
+    },
     viewport: VIEWPORT,
     deviceScaleFactor: 1,
     colorScheme: 'light',
