@@ -1,0 +1,302 @@
+---
+// 01 首屏 · 一摞。静态帧：design/screens/01-hero.html（六块板炸开的状态）。
+// 落板、换层、视差在 M-02 做，这里没有脚本。文案照抄 design/copy.md。
+import ScreenCorners from '../components/ScreenCorners.astro';
+import SiteHeader from '../components/SiteHeader.astro';
+import ExampleImage from '../media/ExampleImage.astro';
+import { HERO_BOARD_IMAGES, HERO_IMAGE_SIZE } from '../media/hero';
+import Screen from './Screen.astro';
+
+// 六层，从下往上叠。板上的示例图来自四个虚构品牌（design/README.md「还没做的和已知问题」第 5 条）。
+// 三张图是整站仅有的首屏图片：立即加载，总体积有上限（src/media/hero.ts、docs/media.md）
+const [adImage, creatorImage, contentImage] = HERO_BOARD_IMAGES;
+const LAYERS = [
+  { no: '01', name: '策略' },
+  { no: '02', name: '品牌' },
+  { no: '03', name: '广告', image: adImage },
+  { no: '04', name: '达人', image: creatorImage },
+  { no: '05', name: '内容', image: contentImage },
+  { no: '06', name: '结论' },
+];
+
+// 图例从上往下是 06 到 01，每一行的细线连到对应那块板的左角
+const LEGEND = [
+  { no: '06', name: '结论', top: 240 },
+  { no: '05', name: '内容', top: 301 },
+  { no: '04', name: '达人', top: 362 },
+  { no: '03', name: '广告', top: 424 },
+  { no: '02', name: '品牌', top: 485 },
+  { no: '01', name: '策略', top: 546 },
+];
+---
+
+<Screen name="01-hero" background="hero-light">
+  <SiteHeader />
+
+  <div class="grain" aria-hidden="true"></div>
+  <div class="shadow shadow-wide" aria-hidden="true"></div>
+  <div class="shadow shadow-core" aria-hidden="true"></div>
+  <div class="stack" aria-hidden="true">
+    {LAYERS.map((layer, index) => (
+      <div class={`slab slab-${layer.no}`} style={`--i: ${index}`}>
+        {layer.image && (
+          <ExampleImage
+            file={layer.image}
+            width={HERO_IMAGE_SIZE}
+            height={HERO_IMAGE_SIZE}
+            priority
+            class="slab-image"
+          />
+        )}
+        <span class="slab-label">
+          {layer.no} {layer.name}
+        </span>
+        {layer.no === '01' && <div class="rules" />}
+        {layer.no === '02' && <span class="brand">HALFMILE</span>}
+        {layer.no === '06' && (
+          <div class="bars">
+            <span style="height: 60px" />
+            <span style="height: 90px" />
+            <span style="height: 74px" />
+            <span style="height: 128px" />
+            <span style="height: 170px" />
+          </div>
+        )}
+      </div>
+    ))}
+  </div>
+  <ol class="legend" aria-label="全案的六层">
+    {LEGEND.map((row) => (
+      <li style={`top: ${row.top}px`}>
+        <span class="legend-no">{row.no}</span>
+        {row.name}
+        <span class="legend-line" aria-hidden="true" />
+        <span class="legend-dot" aria-hidden="true" />
+      </li>
+    ))}
+  </ol>
+
+  <h1 class="title" lang="en">
+    <span class="hero-word word-1">ONE TEAM.</span>
+    <span class="hero-word word-2">EVERY</span>
+    <span class="hero-word word-3">LAYER.</span>
+  </h1>
+  <p class="intro">
+    从策略、品牌、广告、达人、内容到结论，
+    <br />
+    出海营销的每一层，一个团队做完。
+  </p>
+
+  <ScreenCorners scroll />
+</Screen>
+
+<style>
+  /* 背景的细颗粒：一张内联的 SVG 噪点，不是外部资源 */
+  .grain {
+    position: absolute;
+    inset: 0;
+    background-image: url('data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27240%27%20height%3D%27240%27%3E%3Cfilter%20id%3D%27n%27%3E%3CfeTurbulence%20type%3D%27fractalNoise%27%20baseFrequency%3D%270.9%27%20numOctaves%3D%272%27%20stitchTiles%3D%27stitch%27%2F%3E%3CfeColorMatrix%20values%3D%270%200%200%200%200%20%200%200%200%200%200%20%200%200%200%200%200%20%200%200%200%200.6%200%27%2F%3E%3C%2Ffilter%3E%3Crect%20width%3D%27100%25%27%20height%3D%27100%25%27%20filter%3D%27url%28%23n%29%27%2F%3E%3C%2Fsvg%3E');
+    background-size: 240px 240px;
+    opacity: 0.1;
+    mix-blend-mode: multiply;
+    pointer-events: none;
+    z-index: var(--z-back);
+  }
+
+  /* 叠板落在地上的影子：一大片淡的，中间一小片深的 */
+  .shadow {
+    position: absolute;
+    border-radius: 50%;
+    z-index: var(--z-back);
+  }
+
+  .shadow-wide {
+    left: 360px;
+    top: 676px;
+    width: 720px;
+    height: 96px;
+    background: rgba(28, 28, 27, 0.14);
+    filter: blur(44px);
+  }
+
+  .shadow-core {
+    left: 500px;
+    top: 700px;
+    width: 440px;
+    height: 44px;
+    background: rgba(28, 28, 27, 0.26);
+    filter: blur(18px);
+  }
+
+  /* 叠板：CSS 3D 变换，没有透视。六块板沿 Z 轴排开，层间距 72px */
+  .stack {
+    position: absolute;
+    left: 580px;
+    top: 270px;
+    width: 280px;
+    height: 280px;
+    transform: rotateX(58deg) rotateZ(-42deg) scale(1.36);
+    transform-style: preserve-3d;
+    z-index: var(--z-object);
+  }
+
+  .slab {
+    position: absolute;
+    inset: 0;
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--paper-light);
+    color: var(--ink);
+    transform: translateZ(calc((var(--i) - 2.5) * 72px));
+    box-shadow:
+      0 0 0 1px var(--hairline-soft),
+      0 20px 40px rgba(28, 28, 27, 0.12);
+  }
+
+  /* 01 策略的板是奶油色；02 品牌的板是示例品牌 Halfmile 的橙色（只在这块板上用） */
+  .slab-01 {
+    background: #f3eee2;
+  }
+
+  .slab-02 {
+    background: #e8542f;
+  }
+
+  .slab-02,
+  .slab-03,
+  .slab-04 {
+    color: var(--paper-light);
+  }
+
+  .slab-image {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .slab-label {
+    position: absolute;
+    left: 14px;
+    top: 12px;
+    font-size: var(--text-nav);
+  }
+
+  .rules {
+    position: absolute;
+    left: 14px;
+    right: 14px;
+    top: 46px;
+    bottom: 16px;
+    background: repeating-linear-gradient(
+      180deg,
+      rgba(28, 28, 27, 0.18) 0 1px,
+      transparent 1px 18px
+    );
+  }
+
+  .brand {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 46%;
+    text-align: center;
+    font-size: 34px;
+    letter-spacing: -0.02em;
+  }
+
+  .bars {
+    position: absolute;
+    left: 30px;
+    right: 30px;
+    bottom: 30px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+  }
+
+  .bars span {
+    width: 26px;
+    background: var(--ink);
+  }
+
+  .legend {
+    position: absolute;
+    left: var(--page-margin);
+    top: 0;
+    width: 420px;
+    height: 900px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: var(--text-body);
+    pointer-events: none;
+    z-index: var(--z-chrome);
+  }
+
+  .legend li {
+    position: absolute;
+    left: 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    white-space: nowrap;
+  }
+
+  .legend-no {
+    color: var(--muted);
+  }
+
+  .legend-line {
+    width: 322px;
+    height: 1px;
+    margin-left: 6px;
+    background: var(--hairline);
+  }
+
+  .legend-dot {
+    width: 5px;
+    height: 5px;
+    margin-left: -12px;
+    border-radius: 50%;
+    background: var(--ink);
+  }
+
+  /* 三行错位大字，全页只在这里出现一次。反色的样式是 tokens.css 里的 .hero-word */
+  .title {
+    margin: 0;
+    font-weight: var(--weight);
+  }
+
+  .hero-word {
+    position: absolute;
+    z-index: var(--z-type);
+  }
+
+  .word-1 {
+    left: 90px;
+    top: 92px;
+  }
+
+  .word-2 {
+    right: 140px;
+    top: 380px;
+  }
+
+  .word-3 {
+    left: 360px;
+    top: 652px;
+  }
+
+  .intro {
+    position: absolute;
+    left: var(--page-margin);
+    bottom: 86px;
+    width: 430px;
+    margin: 0;
+    font-size: var(--text-body);
+    line-height: 1.5;
+    z-index: var(--z-chrome);
+  }
+</style>

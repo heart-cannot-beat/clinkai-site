@@ -56,7 +56,7 @@ import ExampleImage from '../media/ExampleImage.astro';
 />
 ```
 
-外层是 `<picture>`（行内元素），`class`、`style` 都落在里面的 `<img>` 上。图要直接参加 flex 或 grid 排版时，给 `picture` 设 `display: contents`。
+外层是 `<picture>`（行内元素），`class`、`style` 都落在里面的 `<img>` 上。图要直接参加 flex 或 grid 排版时，给 `picture` 设 `display: contents`；但容器有 `gap` 时不行，里面的 `<source>` 也会变成一项、多占一个间距，这时给 `picture` 设 `display: flex`，让它自己当那一项（首页 04 屏的头像是这么做的）。
 
 `alt` 默认是空的：示例图在页面上大多是装饰，说明写在外层（比如整面墙的 `aria-label`）。需要的时候照 `design/copy.md` 传 `alt`。
 
@@ -82,7 +82,7 @@ import ExampleImage from '../media/ExampleImage.astro';
 
 超了怎么办：先看是不是有不该立即加载的图忘了延迟加载；确实是首屏的图，就减小显示尺寸或换图。上限要改，在 PR 里写清理由。
 
-首页还没做（P-01）。现在检查跑在示例素材陈列页上：它的首屏就是叠板上的三张，按首屏的大小和 `priority` 输出。首页做好后，同一个检查自动覆盖首页。
+检查跑在每一个页面上。首页（`src/home/HeroScreen.astro`）和示例素材陈列页的首屏都是叠板上的这三张，按首屏的大小和 `priority` 输出；首页其余几屏的图全部延迟加载。
 
 ## 视频
 

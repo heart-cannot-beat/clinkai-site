@@ -1,0 +1,36 @@
+---
+// 02 出素材 · 铺满。静态帧：design/screens/02-wall.html（进场动画结束、墙落定的样子）。
+// 这一屏只出现广告图片。版本数、语言数、尺寸数从墙的数据里数（versionWall.counts），不手写。
+import CounterBlock from '../components/CounterBlock.astro';
+import ScreenCorners from '../components/ScreenCorners.astro';
+import SiteHeader from '../components/SiteHeader.astro';
+import { versionWall } from '../wall';
+import VersionWall from '../wall/VersionWall.astro';
+import Screen from './Screen.astro';
+
+const { versions, languages, sizes } = versionWall.counts;
+---
+
+<Screen name="02-wall" background="ink">
+  <SiteHeader variant="pill" decorative />
+  <div class="wall">
+    <VersionWall />
+  </div>
+  <CounterBlock
+    label="03 / 广告投放 · 出素材"
+    value={versions}
+    lines={[
+      '个版本，同一个创意',
+      `${languages} 种语言 · ${sizes} 种尺寸 · 示例`,
+    ]}
+  />
+  <ScreenCorners decorative />
+</Screen>
+
+<style>
+  .wall {
+    position: absolute;
+    inset: 0;
+    z-index: var(--z-back);
+  }
+</style>

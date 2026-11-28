@@ -14,6 +14,8 @@ npm run verify   # 格式、lint、类型、测试、构建，一条命令跑全
 
 表单接口 `POST /api/contact`（Cloudflare Worker）的请求、响应、配置和套餐说明见 [docs/contact-api.md](docs/contact-api.md)。
 
+首页现在是桌面静态版：6 屏，每屏对应 `design/screens/` 里的一帧，各屏的组件在 `src/home/`，整页按宽度等比缩放。滚动动效和手机版还没做。
+
 首页的版本墙（示例广告小图）在构建时生成，做法和设计侧更新后的同步步骤见 [docs/version-wall.md](docs/version-wall.md)。
 
 工作流程和规则见 [CLAUDE.md](CLAUDE.md)。设计和文案以 `design/` 交接包为准。

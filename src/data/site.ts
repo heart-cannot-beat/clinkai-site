@@ -1,8 +1,9 @@
 // 页头上的导航。文字照抄 design/copy.md「所有页面共用」，不要改写。
 //
 // 导航项的链接地址现在先照设计稿里的锚点写（#services、#work、#products、#about）。
-// 首页和子页面做出来以后（P-01、P-03），在这里改成真实地址，页头组件不用动。
+// 子页面做出来以后（P-03），在这里改成真实地址，页头组件和首页结尾屏的两个按钮不用动。
 // 「预约沟通」已经是真实地址（P-04，src/pages/contact.astro）。
+// 「增长服务」「作品」在交接包里还没有对应的页面或屏，去处等设计侧定（见 Issue #12）。
 
 export type NavKey = 'services' | 'work' | 'products' | 'about';
 

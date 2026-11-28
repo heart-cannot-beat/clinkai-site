@@ -24,10 +24,12 @@ const { variant = 'text' } = Astro.props;
     color: var(--muted);
   }
 
+  /* 设计稿是 4px 9px 的内边距外加 1px 的框线。这里的框线是伪元素画的、不占位置，
+     所以内边距每边多算 1px，标签的大小才和设计稿一样 */
   .outline {
     position: relative;
     display: inline-block;
-    padding: 4px 9px;
+    padding: 5px 10px;
     border-radius: var(--radius-tag);
     letter-spacing: 0.02em;
   }

@@ -1,0 +1,217 @@
+---
+// 04 达人 · 一条流。静态帧：design/screens/04-creators.html。
+// 达人素材只出现在这一屏。中间那条是真视频（AI 生成的示例内容，人物和产品都是虚构的），
+// 「示例内容」的标注必须保留。两侧的列是静态图。
+// 视频的播放规则和三条退路在 ExampleVideo 里（design/motion.md「04 达人」，说明见 docs/media.md）：
+// 进入视口才加载并从头播，离开就暂停，永远静音；减少动态效果、手机、加载失败时只显示封面图。
+import ScreenCorners from '../components/ScreenCorners.astro';
+import SectionLabel from '../components/SectionLabel.astro';
+import SiteHeader from '../components/SiteHeader.astro';
+import ExampleImage from '../media/ExampleImage.astro';
+import ExampleVideo from '../media/ExampleVideo.astro';
+import Screen from './Screen.astro';
+
+// 两侧的四列：暗的、糊的。坐标是设计稿画布上的像素，上下伸到画布外面
+const SIDE = { width: 300, height: 533 };
+const SIDE_FRAMES = [
+  { left: -210, top: 80, file: 'ugc_acme.jpg' },
+  { left: -210, top: 633, file: 'ugc2_dew.jpg' },
+  { left: 150, top: -180, file: 'ugc2_halfmile.jpg' },
+  { left: 150, top: 373, file: 'ugc2_nibbl.jpg' },
+  { left: 150, top: 926, file: 'ugc2_nook.jpg' },
+  { left: 990, top: -60, file: 'ugc_field.jpg' },
+  { left: 990, top: 493, file: 'ugc_dawn.jpg' },
+  { left: 1350, top: -250, file: 'ugc_halfmile.jpg' },
+  { left: 1350, top: 303, file: 'ugc_acme.jpg' },
+  { left: 1350, top: 856, file: 'ugc2_dew.jpg' },
+];
+
+// 中间那一列和主视频一样大：主视频上面和下面的两条
+const MAIN = { width: 428, height: 760 };
+const CENTER_FRAMES = [
+  { left: 506, top: -710, file: 'ugc2_halfmile.jpg' },
+  { left: 506, top: 850, file: 'ugc2_nibbl.jpg' },
+];
+---
+
+<Screen name="04-creators" background="ink" text="paper">
+  <SiteHeader tone="paper" decorative />
+  {SIDE_FRAMES.map((frame) => (
+    <figure
+      class="frame side"
+      aria-hidden="true"
+      style={`left: ${frame.left}px; top: ${frame.top}px`}
+    >
+      <ExampleImage file={frame.file} {...SIDE} class="fill" />
+    </figure>
+  ))}
+  {CENTER_FRAMES.map((frame) => (
+    <figure
+      class="frame center"
+      aria-hidden="true"
+      style={`left: ${frame.left}px; top: ${frame.top}px`}
+    >
+      <ExampleImage file={frame.file} {...MAIN} class="fill" />
+    </figure>
+  ))}
+  <figure class="main">
+    <ExampleVideo
+      name="creator-pebble"
+      poster="ugc_pebble.jpg"
+      posterAlt="示例达人视频的封面：通勤列车上，达人把打开的耳机盒举在脸旁"
+      label="示例达人视频，8 秒，无声：通勤列车上，达人先举起耳机盒，再戴上耳机放松下来"
+      {...MAIN}
+    />
+    <span class="sticker" lang="en">
+      rush hour,
+      <br />
+      but make it quiet
+    </span>
+    <div class="shade" aria-hidden="true"></div>
+    <figcaption class="handle">
+      <ExampleImage
+        file="avatar_pebble.jpg"
+        width={36}
+        height={36}
+        class="avatar"
+      />
+      @noor.on.the.go
+    </figcaption>
+  </figure>
+  <span class="period" aria-hidden="true"></span>
+  <div class="caption">
+    <SectionLabel as="h2">04 / 达人营销 · 示例内容</SectionLabel>
+    <p>
+      <span lang="en">FROM CHINA TO EVERY FEED.</span> 从中国，到每一条信息流。
+    </p>
+  </div>
+
+  <ScreenCorners scroll tone="paper" decorative />
+</Screen>
+
+<style>
+  /* 信息流里别的视频：暗的、糊的，竖向拉长 6% 表示还在刷 */
+  .frame {
+    position: absolute;
+    margin: 0;
+    border-radius: 22px;
+    overflow: hidden;
+    transform: scaleY(1.06);
+    z-index: var(--z-back);
+  }
+
+  .side {
+    width: 300px;
+    height: 533px;
+    opacity: 0.3;
+    filter: blur(7px) grayscale(0.4);
+  }
+
+  .center {
+    width: 428px;
+    height: 760px;
+    opacity: 0.45;
+    filter: blur(4px) grayscale(0.4);
+  }
+
+  .fill {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* 主视频的框。里面的封面图和视频由 ExampleVideo 铺满 */
+  .main {
+    position: absolute;
+    left: 506px;
+    top: 70px;
+    width: 428px;
+    height: 760px;
+    margin: 0;
+    border-radius: var(--radius-video);
+    overflow: hidden;
+    z-index: var(--z-object);
+  }
+
+  /* 口播贴纸 */
+  .sticker {
+    position: absolute;
+    left: 24px;
+    top: 8%;
+    transform: rotate(-2deg);
+    padding: 8px 14px 9px;
+    border-radius: 7px;
+    background: var(--paper-light);
+    color: var(--ink);
+    /* 贴纸是压在示例视频上的字，不是站点自己的字号 */
+    font-size: 22px;
+    line-height: 1.2;
+  }
+
+  .shade {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 30%;
+    background: linear-gradient(
+      0deg,
+      rgba(16, 16, 15, 0.6),
+      rgba(16, 16, 15, 0)
+    );
+  }
+
+  .handle {
+    position: absolute;
+    left: 20px;
+    bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--paper-light);
+    font-size: var(--text-lead);
+  }
+
+  /* 头像外面那层 <picture> 当 flex 的一项，大小就是头像的大小。
+     不用 display: contents：那样里面的 <source> 也会变成一项，前面多出一个 10px 的间距 */
+  .handle :global(picture) {
+    display: flex;
+  }
+
+  .avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1.5px solid var(--paper-light);
+  }
+
+  /* 停住这条流的句号 */
+  .period {
+    position: absolute;
+    left: 852px;
+    top: 690px;
+    width: 170px;
+    height: 170px;
+    border-radius: 50%;
+    background: var(--paper);
+    z-index: var(--z-card);
+  }
+
+  .caption {
+    position: absolute;
+    left: var(--page-margin);
+    bottom: 82px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    z-index: var(--z-chrome);
+  }
+
+  .caption p {
+    margin: 0;
+    font-size: var(--text-body);
+  }
+</style>

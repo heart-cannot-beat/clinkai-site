@@ -1,0 +1,66 @@
+---
+// 首页的一屏：设计稿 1440×900 的画布。里面的东西照 design/screens/ 对应文件的那一帧，
+// 用画布上的像素绝对定位。
+// 这次只做桌面：画布按「页面宽度 ÷ 1440」整体等比缩放（--home-scale 由 index.astro 里的脚本算，
+// 没有脚本时是 1，按原尺寸显示）。手机版要等手机稿（P-02）。
+interface Props {
+  /** design/screens/ 里对应的文件名，如 01-hero */
+  name: string;
+  /** 底色：纸色、深色，或首屏那种有光的纸色 */
+  background?: 'paper' | 'ink' | 'hero-light';
+  /** 画布上文字的默认颜色。深色底的 04 屏用 paper */
+  text?: 'ink' | 'paper';
+}
+
+const { name, background = 'paper', text = 'ink' } = Astro.props;
+---
+
+<section
+  class:list={['screen', `bg-${background}`, `text-${text}`]}
+  data-screen={name}
+>
+  <div class="canvas">
+    <slot />
+  </div>
+</section>
+
+<style>
+  /* 外层占缩放后的高度；底色和画布一样，缩放出现小数像素时两屏之间不会露出别的颜色 */
+  .screen {
+    position: relative;
+    height: calc(900px * var(--home-scale, 1));
+    overflow: hidden;
+  }
+
+  .canvas {
+    position: relative;
+    width: 1440px;
+    height: 900px;
+    overflow: hidden;
+    isolation: isolate;
+    background: inherit;
+    transform: scale(var(--home-scale, 1));
+    transform-origin: 0 0;
+  }
+
+  .bg-paper,
+  .bg-hero-light {
+    background: var(--paper);
+  }
+
+  .bg-ink {
+    background: var(--ink);
+  }
+
+  .bg-hero-light .canvas {
+    background: var(--hero-light);
+  }
+
+  .text-ink {
+    color: var(--ink);
+  }
+
+  .text-paper {
+    color: var(--paper);
+  }
+</style>

@@ -4,6 +4,8 @@
 //   深色底（04 屏）用 tone="paper"，文字和描边换成纸色。
 // - pill（浅色胶囊）：背后是图片，标志和导航各自放在浅色胶囊里，「预约沟通」是深色实心。02、03、03b 屏。
 // 位置照设计稿：贴着所在画面（最近的 position: relative 祖先）的顶部。
+// 首页静态版每一屏的画面里都有页头：只有第一屏的是真页头，其余几屏的加 decorative，
+// 对读屏软件隐藏、不进键盘的 Tab 顺序（鼠标照样能点），免得同一组导航被念七遍。
 import {
   CONTACT_CTA,
   HOME_HREF,
@@ -19,20 +21,36 @@ interface Props {
   tone?: 'ink' | 'paper';
   /** 当前所在的页面：导航项加下划线；contact 时标在「预约沟通」上 */
   current?: NavKey | 'contact';
+  /** 同一页里重复出现的页头：对读屏软件隐藏，不进 Tab 顺序 */
+  decorative?: boolean;
 }
 
-const { variant = 'plain', tone = 'ink', current } = Astro.props;
+const {
+  variant = 'plain',
+  tone = 'ink',
+  current,
+  decorative = false,
+} = Astro.props;
 const pageCurrent = (key: string) => (current === key ? 'page' : undefined);
+const tabindex = decorative ? -1 : undefined;
 ---
 
-<header class:list={['site-header', variant, variant === 'plain' && tone]}>
-  <a class="logo" href={HOME_HREF} aria-label={LOGO_LABEL}>
+<header
+  class:list={['site-header', variant, variant === 'plain' && tone]}
+  aria-hidden={decorative ? 'true' : undefined}
+>
+  <a class="logo" href={HOME_HREF} aria-label={LOGO_LABEL} tabindex={tabindex}>
     <span>{LOGO_TEXT}</span>
     <span class="logo-dot" aria-hidden="true"></span>
   </a>
   <nav class="nav">
     {NAV_ITEMS.map((item) => (
-      <a class="nav-link" href={item.href} aria-current={pageCurrent(item.key)}>
+      <a
+        class="nav-link"
+        href={item.href}
+        aria-current={pageCurrent(item.key)}
+        tabindex={tabindex}
+      >
         {item.label}
       </a>
     ))}
@@ -40,6 +58,7 @@ const pageCurrent = (key: string) => (current === key ? 'page' : undefined);
       class="cta"
       href={CONTACT_CTA.href}
       aria-current={pageCurrent('contact')}
+      tabindex={tabindex}
     >
       {CONTACT_CTA.label}
       <span aria-hidden="true">{CONTACT_CTA.arrow}</span>
