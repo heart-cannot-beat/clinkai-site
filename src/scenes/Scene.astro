@@ -1,0 +1,56 @@
+---
+// 一屏的场景外壳（M-01），照 design/motion.md「通用规则」：
+// 外层的高度是若干个屏高，里面一层用 position: sticky 固定在屏幕上；滚过外层的这一段，
+// 进度从 0 走到 1。这一屏的动效写在同名的 <name>.scene.ts 里（写法见 docs/scenes.md）。
+//
+// 默认是静态帧：外层和里面那层都只是普通的块，里面的内容照原样排，占一屏的位置。
+// 只有 <html> 上记着 data-scene-mode="motion" 时，外层才撑高、里面那层才固定。
+// 手机、微信内置浏览器、「减少动态效果」、没开脚本、GSAP 没加载成功，都落在静态帧上。
+import { sceneBootScript } from './boot';
+import { sceneLoaders } from './registry';
+
+interface Props {
+  /** 场景名，对应 src/ 下的 <name>.scene.ts */
+  name: string;
+  /** 外层有几个屏高。滚完「length − 1」个屏高，进度从 0 走到 1 */
+  length: number;
+}
+
+const { name, length } = Astro.props;
+
+if (!sceneLoaders.has(name)) {
+  throw new Error(`场景「${name}」没有对应的 ${name}.scene.ts`);
+}
+if (!(length > 1)) {
+  throw new Error(
+    `场景「${name}」的 length 是 ${length}：要大于 1，外层比一屏高才有滚动的余地`,
+  );
+}
+---
+
+{/* 赶在这一屏画出来之前定下动效还是静态帧，页面不会先按静态的高度排一遍再跳 */}
+<script is:inline set:html={sceneBootScript} />
+<div class="scene" data-scene={name} style={`--scene-length: ${length}`}>
+  <div class="sticky" data-scene-sticky>
+    <slot />
+  </div>
+</div>
+
+<script>
+  import { startScenes } from './start';
+
+  startScenes();
+</script>
+
+<style>
+  :global(:root[data-scene-mode='motion']) .scene {
+    height: calc(var(--scene-length) * 100vh);
+  }
+
+  :global(:root[data-scene-mode='motion']) .sticky {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow: hidden;
+  }
+</style>

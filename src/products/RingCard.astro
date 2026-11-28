@@ -1,0 +1,153 @@
+---
+// 产品页第 2 屏那一圈里的一张示例广告。数据在 ads-ring.ts，照抄设计稿。
+// 卡片按原尺寸排版（比如 224×280），再整体缩放进画布上的外框；
+// 图片走图片管线，alt 留空：整圈由外层的 role="img" 统一说明。
+import ExampleImage from '../media/ExampleImage.astro';
+import { ringFilter, type RingCard } from './ads-ring';
+
+interface Props {
+  card: RingCard;
+  /** 这一档的明暗和模糊 */
+  look: { brightness?: number; blur?: number };
+  /** 最前面那张：不歪，带投影 */
+  front?: boolean;
+}
+
+const { card, look, front = false } = Astro.props;
+const { cutout } = card;
+const [baseWidth, baseHeight] = card.base;
+const filter = ringFilter(look);
+
+const frameStyle = [
+  `left: ${card.left}px`,
+  `top: ${card.top}px`,
+  `width: ${card.width}px`,
+  `height: ${card.height}px`,
+  card.rotate === undefined ? '' : `transform: rotate(${card.rotate}deg)`,
+  filter === undefined ? '' : `filter: ${filter}`,
+]
+  .filter(Boolean)
+  .join('; ');
+
+const cutoutStyle =
+  cutout &&
+  [
+    'position: absolute',
+    `left: ${cutout.left}px`,
+    `top: ${cutout.top}px`,
+    `width: ${cutout.width}px`,
+    `height: ${cutout.height}px`,
+    'max-width: none',
+    cutout.rotate === undefined ? '' : `transform: rotate(${cutout.rotate}deg)`,
+  ]
+    .filter(Boolean)
+    .join('; ');
+---
+
+<div
+  class:list={[
+    'ring-card',
+    card.tone ?? 'dark',
+    card.inkText && 'ink-text',
+    front && 'front',
+  ]}
+  style={frameStyle}
+>
+  <div
+    class="art"
+    style={`width: ${baseWidth}px; height: ${baseHeight}px; transform: scale(${card.scale})`}
+  >
+    {card.headline && (
+      <span class="headline" lang="en">
+        {card.headline.map((line, index) => (
+          <Fragment>
+            {index > 0 && <br />}
+            {line}
+          </Fragment>
+        ))}
+      </span>
+    )}
+    {card.image && (
+      <ExampleImage
+        file={card.image}
+        width={card.width}
+        height={card.height}
+        class="fill"
+      />
+    )}
+    {cutout && cutoutStyle && (
+      <ExampleImage
+        file={cutout.file}
+        width={Math.round(cutout.width * card.scale)}
+        style={cutoutStyle}
+      />
+    )}
+    {card.label && (
+      <span class="label" lang="en">
+        {card.label}
+      </span>
+    )}
+  </div>
+</div>
+
+<style>
+  .ring-card {
+    position: absolute;
+    overflow: hidden;
+    color: var(--sample-card-cream);
+  }
+
+  .dark {
+    background: var(--sample-card-dark);
+  }
+
+  .cream {
+    background: var(--sample-card-cream);
+  }
+
+  .orange {
+    background: var(--halfmile-orange);
+  }
+
+  .ink-text {
+    color: var(--ink);
+  }
+
+  .front {
+    box-shadow: 0 26px 44px rgba(0, 0, 0, 0.5);
+  }
+
+  .art {
+    position: absolute;
+    left: 0;
+    top: 0;
+    transform-origin: 0 0;
+  }
+
+  .fill {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 50% 50%;
+  }
+
+  /* 示例广告自己的字，不是站点的字号 */
+  .label {
+    position: absolute;
+    left: 16px;
+    top: 16px;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+  }
+
+  .headline {
+    position: absolute;
+    left: 18px;
+    top: 12px;
+    font-size: 54px;
+    line-height: 0.98;
+    letter-spacing: -0.03em;
+  }
+</style>

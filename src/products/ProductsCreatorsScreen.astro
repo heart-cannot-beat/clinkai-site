@@ -1,0 +1,338 @@
+---
+// 我们的产品 · 第 3 屏：ClinkAI Creators，星图。静态帧（也是动效落定后的样子）：
+// design/screens/page-products-creators.html。数据在 star-map.ts。
+// 品牌在中间，四圈轨道是四步，达人是轨道上的星；品牌、账号和内容都是虚构的示例。
+// 星空和轨道是展示用的：一个带说明的 role="img"；四位达人的账号名和状态在它外面的列表里，
+// 读屏读得到，头像的 alt 留空。达人素材在产品页只出现在这一屏。
+// 这一单只做静态帧：进场、转动在 design/motion.md 末尾，以后再做。
+// 点和线都是平的，不加发光、光晕和拖尾（design/motion.md 的提醒）。
+import ScreenCorners from '../components/ScreenCorners.astro';
+import SiteHeader from '../components/SiteHeader.astro';
+import StatusTag from '../components/StatusTag.astro';
+import Screen from '../home/Screen.astro';
+import ExampleImage from '../media/ExampleImage.astro';
+import DemoButton from './DemoButton.astro';
+import ProductHeading from './ProductHeading.astro';
+import {
+  BRAND,
+  CREATORS,
+  LINK_STYLES,
+  MINOR_STARS,
+  ORBIT_SQUASH,
+  ORBIT_TILT,
+  ORBITS,
+  SKY_LINE_ALPHA,
+  SKY_LINES,
+  SKY_STARS,
+} from './star-map';
+
+const fromBrand = (x: number, y: number) =>
+  `M ${BRAND.x} ${BRAND.y} L ${x} ${y}`;
+const orbitTransform = `rotate(${ORBIT_TILT} ${BRAND.x} ${BRAND.y})`;
+// 椭圆的短半轴，保留一位小数（574 × 0.4 在浮点数里不是整的 229.6）
+const squashed = (radius: number) =>
+  Math.round(radius * ORBIT_SQUASH * 10) / 10;
+
+// 写成一整行的字符串：源码里折行会在中文之间多出一个空格
+const DESCRIPTION =
+  '找达人、发邀约、跟进确认、收作品，所有合作状态在一张表里看清。';
+---
+
+<Screen name="page-products-creators" background="ink" text="paper">
+  <SiteHeader tone="paper" current="products" decorative />
+
+  <div
+    class="star-map"
+    role="img"
+    aria-label="示例：一个品牌和四位达人的建联进度，离品牌越近，合作走得越远"
+  >
+    <div class="glow"></div>
+    <svg
+      class="sky"
+      width="1440"
+      height="900"
+      viewBox="0 0 1440 900"
+      fill="none"
+      aria-hidden="true"
+    >
+      {SKY_LINES.map(([x1, y1, x2, y2]) => (
+        <path
+          class="line"
+          d={`M ${x1} ${y1} L ${x2} ${y2}`}
+          stroke-opacity={SKY_LINE_ALPHA}
+        />
+      ))}
+      {SKY_STARS.map(([cx, cy, r, alpha]) => (
+        <circle class="dot" cx={cx} cy={cy} r={r} fill-opacity={alpha} />
+      ))}
+      {ORBITS.map((orbit) => (
+        <ellipse
+          class="line"
+          cx={BRAND.x}
+          cy={BRAND.y}
+          rx={orbit.radius}
+          ry={squashed(orbit.radius)}
+          transform={orbitTransform}
+          stroke-opacity="0.2"
+        />
+      ))}
+      {MINOR_STARS.map((star) => (
+        <path
+          class="line"
+          d={fromBrand(star.x, star.y)}
+          stroke-opacity={star.line}
+        />
+      ))}
+      {CREATORS.map((creator) => {
+        const link = LINK_STYLES[creator.status];
+        return (
+          <path
+            class="link"
+            d={fromBrand(creator.x, creator.y)}
+            stroke-opacity={link.alpha}
+            stroke-dasharray={link.dash}
+            stroke-linecap={link.round ? 'round' : undefined}
+          />
+        );
+      })}
+      {MINOR_STARS.map((star) =>
+        star.hollow ? (
+          <circle
+            class="hollow"
+            cx={star.x}
+            cy={star.y}
+            r={star.r}
+            stroke-opacity={star.alpha}
+          />
+        ) : (
+          <circle
+            class="dot"
+            cx={star.x}
+            cy={star.y}
+            r={star.r}
+            fill-opacity={star.alpha}
+          />
+        ),
+      )}
+      <circle class="brand-dot" cx={BRAND.x} cy={BRAND.y} r={BRAND.r}></circle>
+    </svg>
+    <div class="orbit-names">
+      {ORBITS.map((orbit) => (
+        <span
+          style={`right: ${orbit.label.right}px; top: ${orbit.label.top}px`}
+        >
+          {orbit.name}
+        </span>
+      ))}
+    </div>
+  </div>
+  <p class="brand">{BRAND.name}</p>
+  <ul class="creators">
+    {CREATORS.map((creator) => (
+      <li>
+        <ExampleImage
+          file={creator.avatar}
+          width={creator.avatarBox.size}
+          height={creator.avatarBox.size}
+          class="avatar"
+          style={`left: ${creator.avatarBox.left}px; top: ${creator.avatarBox.top}px; width: ${creator.avatarBox.size}px; height: ${creator.avatarBox.size}px`}
+        />
+        <p
+          class:list={[
+            'creator',
+            creator.text.right !== undefined && 'left-side',
+          ]}
+          style={
+            creator.text.right === undefined
+              ? `left: ${creator.text.left}px; top: ${creator.text.top}px`
+              : `right: ${creator.text.right}px; top: ${creator.text.top}px`
+          }
+        >
+          <span
+            class="handle"
+            lang="en"
+            style={`font-size: ${creator.handleSize}px`}
+          >
+            {creator.handle}
+          </span>
+          <span class="visually-hidden">{creator.progress}</span>
+          <span class="status">
+            <StatusTag status={creator.status}>{creator.statusLabel}</StatusTag>
+          </span>
+        </p>
+      </li>
+    ))}
+  </ul>
+
+  <ProductHeading
+    label="02 / ClinkAI Creators · 达人合作"
+    name="ClinkAI Creators"
+  />
+  <p class="description">{DESCRIPTION}</p>
+  <p class="example-note">示例 · 品牌、账号和内容都是虚构的</p>
+  <p class="hint">越靠近中间，合作走得越远</p>
+
+  <DemoButton />
+  <ScreenCorners tone="paper" decorative />
+</Screen>
+
+<style>
+  .star-map {
+    position: absolute;
+    inset: 0;
+    z-index: var(--z-back);
+  }
+
+  /* 品牌周围一圈很淡的亮：平的径向渐变，不是发光 */
+  .glow {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(
+      circle 560px at 720px 574px,
+      rgba(230, 228, 223, 0.085),
+      rgba(230, 228, 223, 0)
+    );
+  }
+
+  .sky {
+    position: absolute;
+    left: 0;
+    top: 0;
+  }
+
+  /* 星空里的连线、轨道、没写名字的小星连回品牌的细线 */
+  .line {
+    stroke: var(--paper);
+    stroke-width: 1;
+  }
+
+  /* 四位达人连回品牌的线：实线、虚线、点线对应三种状态 */
+  .link {
+    stroke: var(--paper);
+    stroke-width: 1.5;
+  }
+
+  .dot,
+  .brand-dot {
+    fill: var(--paper);
+  }
+
+  .hollow {
+    fill: var(--ink);
+    stroke: var(--paper);
+    stroke-width: 1.3;
+  }
+
+  /* 四步的名字，写在各自轨道的左端 */
+  .orbit-names {
+    position: absolute;
+    inset: 0;
+    font-size: var(--text-nav);
+    line-height: 1.4;
+    color: rgba(230, 228, 223, 0.72);
+  }
+
+  .orbit-names span {
+    position: absolute;
+    white-space: nowrap;
+  }
+
+  .brand {
+    position: absolute;
+    left: 610px;
+    top: 514px;
+    width: 220px;
+    margin: 0;
+    text-align: center;
+    font-size: var(--text-nav);
+    line-height: 1.4;
+    z-index: var(--z-object);
+  }
+
+  .creators {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    z-index: var(--z-card);
+  }
+
+  /* 头像外面一圈底色，把经过它的线和轨道断开 */
+  .avatar {
+    position: absolute;
+    box-sizing: border-box;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1.5px solid var(--paper);
+    box-shadow: 0 0 0 5px var(--ink);
+  }
+
+  .creator {
+    position: absolute;
+    margin: 0;
+    line-height: 1;
+  }
+
+  .left-side {
+    text-align: right;
+  }
+
+  /* 账号名：拉丁字体栈。字号跟着远近变，写在数据里 */
+  .handle {
+    font-family: var(--font-latin);
+    letter-spacing: -0.02em;
+  }
+
+  /* 只给读屏念的文字：做到了哪一步 */
+  .visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .status {
+    display: block;
+    margin-top: 7px;
+    font-size: var(--text-label);
+  }
+
+  .description {
+    position: absolute;
+    left: 1010px;
+    top: 150px;
+    width: 390px;
+    margin: 0;
+    font-size: var(--text-desc);
+    line-height: 1.5;
+    pointer-events: none;
+    z-index: var(--z-chrome);
+  }
+
+  /* 「示例」说明：虚构品牌内容旁边必须有 */
+  .example-note {
+    position: absolute;
+    left: var(--page-margin);
+    top: 808px;
+    margin: 0;
+    font-size: var(--text-label);
+    letter-spacing: 0.02em;
+    color: rgba(230, 228, 223, 0.6);
+    pointer-events: none;
+    z-index: var(--z-chrome);
+  }
+
+  .hint {
+    position: absolute;
+    right: 256px;
+    bottom: 46px;
+    margin: 0;
+    font-size: var(--text-nav);
+    color: rgba(230, 228, 223, 0.72);
+    pointer-events: none;
+    z-index: var(--z-chrome);
+  }
+</style>

@@ -226,7 +226,6 @@ const SERVICES = ['策略', '品牌', '广告', '达人', '内容', '结果分�
       <p class="note">所有虚构品牌内容旁边都必须有。文字或细线框两种。</p>
       <div class="specimens">
         <div class="specimen">
-          <span>B 版胜出，可以加预算</span>
           <ExampleTag />
         </div>
         <div class="specimen cobalt">
@@ -239,16 +238,29 @@ const SERVICES = ['策略', '品牌', '广告', '达人', '内容', '结果分�
     <section class="block" aria-labelledby="status-tag">
       <h2 id="status-tag">状态小标签</h2>
       <p class="note">
-        产品页。颜色见 tokens.css 的 <code>--status-*</code>。
+        产品页第 3 屏的星图，只用在深色底上：一个小圆点加文字。颜色见 tokens.css
+        的 <code>--status-*-on-dark</code>。
       </p>
       <div class="specimens">
-        <div class="specimen">
-          <StatusTag status="ok">已验证</StatusTag>
+        <div class="specimen dark">
           <StatusTag status="ok">已确认</StatusTag>
           <StatusTag status="wait">待确认</StatusTag>
           <StatusTag status="unknown">未知</StatusTag>
         </div>
       </div>
+    </section>
+
+    <section class="block" aria-labelledby="scene">
+      <h2 id="scene">滚动场景（M-01）</h2>
+      <p class="note">
+        每屏一个场景：外层是若干个屏高，里面一层用 <code>position: sticky</code>{' '}
+        固定在屏幕上，GSAP
+        只把这一屏的时间线绑到滚动进度。手机、微信内置浏览器和「减少动态效果」下不加载
+        GSAP，显示静态帧。场景要占满一屏，所以示例单独放一页。
+      </p>
+      <p class="note">
+        <a href="/parts/scene/">打开示例场景 →</a>
+      </p>
     </section>
 
     <section class="block" aria-labelledby="form">
@@ -320,6 +332,11 @@ const SERVICES = ['策略', '品牌', '广告', '达人', '内容', '结果分�
     font-size: var(--text-small);
     line-height: 1.6;
     color: var(--muted);
+  }
+
+  .note a {
+    color: var(--ink);
+    text-decoration: underline;
   }
 
   .block {

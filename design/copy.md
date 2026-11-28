@@ -135,38 +135,95 @@
 
 ## 子页面 · 我们的产品
 
+一页三屏，从上往下滚。三屏的页头都是普通页头，「我们的产品」带下划线。
+
+### 第 1 屏 · 两个工具（只有字）
+
 文件：`screens/page-products.html`
 
-- OUR OWN TOOLS.
+- OUR OWN
+- TOOLS（后面跟一个平面的句号，是图形不是字符）
 - 我们团队每天跑项目用的两个工具。
+- 01
 - ClinkAI Ads
 - 广告测试
 - 一次做出多个版本的广告，用小预算测出哪个更好，再把钱加到赢的那版上。
-- A
-- B
-- C
-- 已验证
-- B 版胜出，可以加预算
-- 示例
-- 预约演示
+- 02
 - ClinkAI Creators
 - 达人合作
 - 找达人、发邀约、跟进确认、收作品，所有合作状态在一张表里看清。
-- @slowmornings.co
-- 已确认
-- @noor.on.the.go
-- 待确认
-- @kenji.runs
-- @trailvolt
-- 未知
+- SCROLL
+
+两行产品名分别跳到本页的第 2 屏和第 3 屏。
+
+### 第 2 屏 · ClinkAI Ads（暗底，七个产品站成一圈）
+
+文件：`screens/page-products-ads.html`
+
+- 01 / ClinkAI Ads · 广告测试
+- ClinkAI Ads
+- 胜出（每个产品最前面那张的右上角，一共 7 处）
+- 示例广告 · 7 个虚构品牌（Nookbot、Dawnroast、Fieldcell、Halfmile、Acme Charge、Dewlab、Nibbl），非真实客户 · 只演示过程，不代表真实投放结果
+- 预约演示
+
+七个产品从左到右（这一屏按用户的要求不用首页的耳机，换成不同的产品）：
+
+| 品牌（虚构） | 品类 | 最前面那张（胜出） | 后面露出来的其他版本 | 最前面那张上加的字 |
+|---|---|---|---|---|
+| Nookbot | 扫地机器人 | `nook_earring` | `nook_stripes` | NOOKBOT |
+| Dawnroast | 咖啡豆 | `dawn_sun` | `dawn_alarm`；米色底加咖啡袋抠图 `dawn_cut_bag` | DAWNROAST |
+| Fieldcell | 户外电源 | `field_deer` | `field_ooh`、`field_knoll` | FIELDCELL |
+| Halfmile（正中间，最大） | 跑鞋 | 橙底加跑鞋抠图 `halfmile_cut_shoe` | `halfmile_dandelion`、`halfmile_puddle` | Land softer. |
+| Acme Charge | 家用新能源车充电枪 | `acme_moon` | `acme_ooh`、`acme_road` | ACME CHARGE |
+| Dewlab | 护肤精华 | `dew_ooh` | `dew_dots`、`dew_shelf` | （不加，图里自带） |
+| Nibbl | 宠物喂食器 | `nibbl_away` | `nibbl_tv` | NIBBL |
+
+三张图里自带英文标题，是画在图里的，不用另外排字：`acme_ooh`（Charge anywhere the road goes.）、`dew_ooh`（Three drops. That's the routine.）、`field_ooh`（Quiet enough for the neighbours.）。
+
+这一屏不放任何结果数字；哪一张「胜出」只是演示。产品的一句话介绍只在第 1 屏出现，这一屏不重复（用户定的），底下也不放分步说明。
+
+### 第 3 屏 · ClinkAI Creators（暗底，星图）
+
+文件：`screens/page-products-creators.html`
+
+- 02 / ClinkAI Creators · 达人合作
+- ClinkAI Creators
+- 找达人、发邀约、跟进确认、收作品，所有合作状态在一张表里看清。
+- 找达人、发邀约、跟进确认、收作品（四圈轨道的名字，从外到里）
+- Pebblesound（中间圆点上方，示例品牌）
+- @slowmornings.co，已确认（最里圈，四步都做完）
+- @kenji.runs，已确认（第 3 圈）
+- @noor.on.the.go，待确认（第 2 圈）
+- @trailvolt，未知（最外圈）
+- 示例 · 品牌、账号和内容都是虚构的
+- 越靠近中间，合作走得越远
+- 预约演示
+
+状态和连线是一一对应的：已确认是实线，待确认是虚线，未知是点线。轨道上没写名字的小点不代表具体数量，不要给它们加数字或文字。
 
 ## 子页面 · 关于我们
 
 文件：`screens/page-about.html`
 
 - WHO
-- WE ARE.
+- WE ARE（后面跟一个平面的句号，是图形不是字符）
 - 一支帮中国品牌出海的增长团队。从策略、品牌、广告、达人、内容，一直做到出结论，都是同一个团队；也自己做工具，让每一轮投放都有据可查。
+
+右边的六行清单：
+
+| 编号 | 名字 | 说明 |
+|---|---|---|
+| 01 | 策略 | 定位、人群、渠道和节奏，先想清楚再花钱。 |
+| 02 | 品牌 | 名字、视觉和语气，按每个市场调整。 |
+| 03 | 广告 | 一个创意做出多个版本，小预算测出赢的那一版。 |
+| 04 | 达人 | 找达人、发邀约、收作品，把品牌带进每一条信息流。 |
+| 05 | 内容 | 社媒、短视频、详情页，持续产出。 |
+| 06 | 结论 | 每一轮测出了什么，都带进下一轮。 |
+
+01、02、05、06 四行的说明和首页 05 屏一字不差。03、04 两行是设计侧用站上已有的话拼的，**等用户确认**。
+
+底部四项事实（没补齐之前整块隐藏）：
+
 - 成立
 - 【待填：年份】
 - 团队

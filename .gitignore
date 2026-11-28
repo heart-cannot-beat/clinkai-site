@@ -1,5 +1,8 @@
 # build output
 dist/
+# 截图对比的输出（npm run test:visual）
+test-results/
+playwright-report/
 # generated types
 .astro/
 

@@ -1,8 +1,8 @@
 {
  "note": "全部图片和视频都是 AI 生成的示例：品牌是虚构的，人物也是 AI 生成的虚构人物，不是真实客户或真实达人。页面上每一处都要标「示例」。达人账号名是编的，上线前逐个查有没有撞到真人账号。",
  "rules": [
-  "kind 为 creator-video、creator-video-frame 和 creator-avatar 的素材只能出现在达人屏（04）和产品页的达人列表里",
-  "kind 为 ad-image 和 product-cutout 的图用在广告屏（02、03、03b）和首屏叠板",
+  "kind 为 creator-video、creator-video-frame 和 creator-avatar 的素材只能出现在达人屏（04）和产品页第 3 屏（星图）里",
+  "kind 为 ad-image 和 product-cutout 的图用在广告屏（02、03、03b）、首屏叠板和产品页第 2 屏",
   "线上版本转成 AVIF/WebP、多尺寸、按需加载（P-05）",
   "视频先给 webm、再给 mp4，两个都要带；永远静音，不带声轨；播放规则见 motion.md 的 04 屏",
   "usedIn 为空的图现在没有任何一屏在用，不用进线上；留着是因为以后的版本可能用到"
@@ -19,7 +19,7 @@
    "category": "家用新能源车充电枪",
    "usedIn": [
     "01-hero",
-    "page-products"
+    "page-products-ads"
    ],
    "transparent": false
   },
@@ -32,9 +32,10 @@
    "brand": "Acme Charge",
    "category": "家用新能源车充电枪",
    "usedIn": [
-    "page-products"
+    "page-products-ads"
    ],
-   "transparent": false
+   "transparent": false,
+   "note": "公路边的广告牌。图里自带标题「Charge anywhere the road goes.」和品牌名"
   },
   {
    "file": "img/acme_road.jpg",
@@ -45,7 +46,7 @@
    "brand": "Acme Charge",
    "category": "家用新能源车充电枪",
    "usedIn": [
-    "page-products"
+    "page-products-ads"
    ],
    "transparent": false
   },
@@ -58,7 +59,7 @@
    "brand": "Dawnroast",
    "category": "咖啡豆",
    "usedIn": [
-    "page-products"
+    "page-products-creators"
    ],
    "transparent": false,
    "creatorHandle": "@slowmornings.co"
@@ -72,7 +73,7 @@
    "brand": "Fieldcell",
    "category": "户外电源",
    "usedIn": [
-    "page-products"
+    "page-products-creators"
    ],
    "transparent": false,
    "creatorHandle": "@trailvolt"
@@ -86,7 +87,7 @@
    "brand": "Halfmile",
    "category": "跑鞋",
    "usedIn": [
-    "page-products"
+    "page-products-creators"
    ],
    "transparent": false,
    "creatorHandle": "@kenji.runs"
@@ -101,11 +102,53 @@
    "category": "降噪耳机",
    "usedIn": [
     "04-creators",
-    "page-products"
+    "page-products-creators"
    ],
    "transparent": false,
    "creatorHandle": "@noor.on.the.go",
    "note": "从达人示例视频最后一帧裁出来的头像"
+  },
+  {
+   "file": "img/dawn_alarm.jpg",
+   "width": 960,
+   "height": 1200,
+   "bytes": 110970,
+   "kind": "ad-image",
+   "brand": "Dawnroast",
+   "category": "咖啡豆",
+   "usedIn": [
+    "page-products-ads"
+   ],
+   "transparent": false,
+   "note": "咖啡豆堆里的闹钟和一袋咖啡"
+  },
+  {
+   "file": "img/dawn_cut_bag.webp",
+   "width": 683,
+   "height": 781,
+   "bytes": 55072,
+   "kind": "product-cutout",
+   "brand": "Dawnroast",
+   "category": "咖啡豆",
+   "usedIn": [
+    "page-products-ads"
+   ],
+   "transparent": true,
+   "note": "咖啡豆袋的抠图，透明底"
+  },
+  {
+   "file": "img/dawn_sun.jpg",
+   "width": 960,
+   "height": 960,
+   "bytes": 98525,
+   "kind": "ad-image",
+   "brand": "Dawnroast",
+   "category": "咖啡豆",
+   "usedIn": [
+    "page-products-ads"
+   ],
+   "transparent": false,
+   "note": "俯拍：一杯咖啡像太阳，旁边一袋咖啡豆"
   },
   {
    "file": "img/dew_dots.jpg",
@@ -116,9 +159,178 @@
    "brand": "Dewlab",
    "category": "护肤精华",
    "usedIn": [
-    "01-hero"
+    "01-hero",
+    "page-products-ads"
    ],
    "transparent": false
+  },
+  {
+   "file": "img/dew_ooh.jpg",
+   "width": 800,
+   "height": 1200,
+   "bytes": 99742,
+   "kind": "ad-image",
+   "brand": "Dewlab",
+   "category": "护肤精华",
+   "usedIn": [
+    "page-products-ads"
+   ],
+   "transparent": false,
+   "note": "地铁通道里的灯箱海报。图里自带标题「Three drops. That’s the routine.」和品牌名"
+  },
+  {
+   "file": "img/dew_shelf.jpg",
+   "width": 720,
+   "height": 1280,
+   "bytes": 69883,
+   "kind": "ad-image",
+   "brand": "Dewlab",
+   "category": "护肤精华",
+   "usedIn": [
+    "page-products-ads"
+   ],
+   "transparent": false,
+   "note": "石台上的一瓶精华，后面一排灰色瓶子"
+  },
+  {
+   "file": "img/field_deer.jpg",
+   "width": 960,
+   "height": 1200,
+   "bytes": 161639,
+   "kind": "ad-image",
+   "brand": "Fieldcell",
+   "category": "户外电源",
+   "usedIn": [
+    "page-products-ads"
+   ],
+   "transparent": false,
+   "note": "林间营地，小鹿凑近户外电源"
+  },
+  {
+   "file": "img/field_knoll.jpg",
+   "width": 960,
+   "height": 960,
+   "bytes": 140563,
+   "kind": "ad-image",
+   "brand": "Fieldcell",
+   "category": "户外电源",
+   "usedIn": [
+    "page-products-ads"
+   ],
+   "transparent": false,
+   "note": "俯拍：电源和它带得动的东西摆成一张图"
+  },
+  {
+   "file": "img/field_ooh.jpg",
+   "width": 1536,
+   "height": 1024,
+   "bytes": 329035,
+   "kind": "ad-image",
+   "brand": "Fieldcell",
+   "category": "户外电源",
+   "usedIn": [
+    "page-products-ads"
+   ],
+   "transparent": false,
+   "note": "雨里的候车亭灯箱。图里自带标题「Quiet enough for the neighbours.」和品牌名"
+  },
+  {
+   "file": "img/halfmile_cut_shoe.webp",
+   "width": 978,
+   "height": 500,
+   "bytes": 98660,
+   "kind": "product-cutout",
+   "brand": "Halfmile",
+   "category": "跑鞋",
+   "usedIn": [
+    "page-products-ads"
+   ],
+   "transparent": true,
+   "note": "跑鞋侧面的抠图，透明底。产品页第 2 屏中间那张橙底广告用它"
+  },
+  {
+   "file": "img/halfmile_dandelion.jpg",
+   "width": 960,
+   "height": 1200,
+   "bytes": 145696,
+   "kind": "ad-image",
+   "brand": "Halfmile",
+   "category": "跑鞋",
+   "usedIn": [
+    "page-products-ads"
+   ],
+   "transparent": false,
+   "note": "跑鞋悬在一朵蒲公英上方"
+  },
+  {
+   "file": "img/halfmile_puddle.jpg",
+   "width": 960,
+   "height": 960,
+   "bytes": 133164,
+   "kind": "ad-image",
+   "brand": "Halfmile",
+   "category": "跑鞋",
+   "usedIn": [
+    "page-products-ads"
+   ],
+   "transparent": false,
+   "note": "踩进水洼前的一刻，水里有倒影"
+  },
+  {
+   "file": "img/nibbl_away.jpg",
+   "width": 960,
+   "height": 1200,
+   "bytes": 146888,
+   "kind": "ad-image",
+   "brand": "Nibbl",
+   "category": "宠物喂食器",
+   "usedIn": [
+    "page-products-ads"
+   ],
+   "transparent": false,
+   "note": "猫躺在喂食器旁边的地毯上"
+  },
+  {
+   "file": "img/nibbl_tv.jpg",
+   "width": 960,
+   "height": 960,
+   "bytes": 74081,
+   "kind": "ad-image",
+   "brand": "Nibbl",
+   "category": "宠物喂食器",
+   "usedIn": [
+    "page-products-ads"
+   ],
+   "transparent": false,
+   "note": "夜里，猫坐在喂食器前面"
+  },
+  {
+   "file": "img/nook_earring.jpg",
+   "width": 1536,
+   "height": 1024,
+   "bytes": 166424,
+   "kind": "ad-image",
+   "brand": "Nookbot",
+   "category": "扫地机器人",
+   "usedIn": [
+    "page-products-ads"
+   ],
+   "transparent": false,
+   "note": "扫地机器人在沙发底下，前面有一只耳环"
+  },
+  {
+   "file": "img/nook_stripes.jpg",
+   "width": 960,
+   "height": 1200,
+   "bytes": 190727,
+   "kind": "ad-image",
+   "brand": "Nookbot",
+   "category": "扫地机器人",
+   "usedIn": [
+    "page-products-ads"
+   ],
+   "transparent": false,
+   "note": "百叶窗的光影里，扫地机器人在角落"
   },
   {
    "file": "img/pebble_cairn_pebbles.jpg",
