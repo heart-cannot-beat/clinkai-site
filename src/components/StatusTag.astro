@@ -1,6 +1,7 @@
 ---
-// 状态小标签，产品页用：已确认（绿）、待确认（黄）、未知（灰）。颜色见 tokens.css。
-// 文字放进 slot，照抄 design/copy.md（比如「已验证」「已确认」「待确认」「未知」）。
+// 状态小标签，产品页第 3 屏的星图用，只用在深色底上：一个 7px 的小圆点加文字，不用底色块。
+// 已确认（绿）、待确认（黄）、未知（灰），颜色见 tokens.css 的 --status-*-on-dark。
+// 文字放进 slot，照抄 design/copy.md（「已确认」「待确认」「未知」）。
 interface Props {
   status: 'ok' | 'wait' | 'unknown';
 }
@@ -9,30 +10,38 @@ const { status } = Astro.props;
 ---
 
 <span class:list={['status-tag', status]}>
+  <span class="dot" aria-hidden="true"></span>
   <slot />
 </span>
 
 <style>
+  /* 圆点坐在文字的基线上。用 flex 排：标签之间的换行不占位置，
+     源码怎么排版都不会在圆点和文字之间多出一个空格 */
   .status-tag {
-    display: inline-block;
-    padding: 3px 9px;
-    border-radius: var(--radius-pill);
+    display: inline-flex;
+    align-items: baseline;
     font-size: var(--text-label);
+    color: rgba(230, 228, 223, 0.8);
     white-space: nowrap;
   }
 
-  .ok {
-    background: var(--status-ok-bg);
-    color: var(--status-ok-ink);
+  .dot {
+    flex: none;
+    width: 7px;
+    height: 7px;
+    margin-right: 6px;
+    border-radius: 50%;
   }
 
-  .wait {
-    background: var(--status-wait-bg);
-    color: var(--status-wait-ink);
+  .ok .dot {
+    background: var(--status-ok-on-dark);
   }
 
-  .unknown {
-    background: var(--status-unknown-bg);
-    color: var(--status-unknown-ink);
+  .wait .dot {
+    background: var(--status-wait-on-dark);
+  }
+
+  .unknown .dot {
+    background: var(--status-unknown-on-dark);
   }
 </style>

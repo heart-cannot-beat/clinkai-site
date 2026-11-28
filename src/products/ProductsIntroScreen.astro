@@ -1,0 +1,147 @@
+---
+// 我们的产品 · 第 1 屏：两个工具，只有字。静态帧：design/screens/page-products.html。
+// 文案照抄 design/copy.md。两行产品名跳到本页的第 2 屏和第 3 屏（src/pages/products.astro 里的锚点）。
+import ScreenCorners from '../components/ScreenCorners.astro';
+import SiteHeader from '../components/SiteHeader.astro';
+import { PRODUCTS_INTRO } from '../data/products';
+import Screen from '../home/Screen.astro';
+
+const TOOLS = [
+  {
+    no: '01',
+    name: 'ClinkAI Ads',
+    kind: '广告测试',
+    text: '一次做出多个版本的广告，用小预算测出哪个更好，再把钱加到赢的那版上。',
+    href: '#ads',
+  },
+  {
+    no: '02',
+    name: 'ClinkAI Creators',
+    kind: '达人合作',
+    text: '找达人、发邀约、跟进确认、收作品，所有合作状态在一张表里看清。',
+    href: '#creators',
+  },
+];
+---
+
+<Screen name="page-products">
+  <SiteHeader current="products" />
+
+  <h1 class="title" lang="en">
+    <span class="line">OUR OWN</span>
+    <span class="line last">
+      TOOLS
+      <span class="period" aria-hidden="true"></span>
+    </span>
+  </h1>
+  <p class="intro">{PRODUCTS_INTRO}</p>
+  <ul class="tools">
+    {TOOLS.map((tool) => (
+      <li class="tool">
+        <span class="no">{tool.no}</span>
+        <h2 class="name">
+          <a href={tool.href} lang="en">
+            {tool.name}
+          </a>
+          <span class="kind">{tool.kind}</span>
+        </h2>
+        <p class="text">{tool.text}</p>
+      </li>
+    ))}
+  </ul>
+
+  <ScreenCorners scroll />
+</Screen>
+
+<style>
+  /* 英文大标题：纯拉丁字体栈（design/README.md 排版规则 1） */
+  .title {
+    position: absolute;
+    left: var(--page-margin);
+    top: 100px;
+    margin: 0;
+    font-family: var(--font-latin);
+    font-size: var(--display-page);
+    line-height: 0.9;
+    font-weight: var(--weight);
+    letter-spacing: -0.04em;
+  }
+
+  .line {
+    display: block;
+  }
+
+  /* 第二行用 flex 把字和句号排在一条基线上：flex 容器里标签之间的换行不占位置，
+     源码怎么排版都不会在 TOOLS 和句号之间多出一个空格（和预约沟通页的标题同一个写法） */
+  .line.last {
+    display: flex;
+    align-items: baseline;
+  }
+
+  /* 标题后面的句号：平面的圆，是图形不是字符 */
+  .period {
+    flex: none;
+    width: 110px;
+    height: 110px;
+    margin-left: 14px;
+    border-radius: 50%;
+    background: var(--ink);
+  }
+
+  .intro {
+    position: absolute;
+    left: var(--page-margin);
+    top: 466px;
+    margin: 0;
+    font-size: var(--text-intro);
+  }
+
+  .tools {
+    position: absolute;
+    left: var(--page-margin);
+    right: var(--page-margin);
+    top: 532px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border-bottom: 1px solid var(--hairline);
+  }
+
+  .tool {
+    display: grid;
+    grid-template-columns: 96px minmax(0, 1fr) 470px;
+    align-items: center;
+    height: 132px;
+    border-top: 1px solid var(--hairline);
+  }
+
+  .no {
+    font-size: var(--text-body);
+  }
+
+  .name {
+    margin: 0;
+    display: flex;
+    align-items: baseline;
+    gap: 22px;
+    font-weight: var(--weight);
+  }
+
+  .name a {
+    font-family: var(--font-latin);
+    font-size: var(--display-row);
+    line-height: 1;
+    letter-spacing: -0.035em;
+  }
+
+  .kind {
+    font-size: var(--text-lead);
+    color: var(--muted);
+  }
+
+  .text {
+    margin: 0;
+    font-size: var(--text-desc);
+    line-height: 1.5;
+  }
+</style>

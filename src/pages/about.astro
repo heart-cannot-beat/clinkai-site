@@ -1,0 +1,11 @@
+---
+// 关于我们（P-03）。一屏，对应 design/screens/page-about.html 的那一帧，不带动效。
+// 页头的「关于我们」指向这一页，地址在 src/data/site.ts。
+import AboutScreen from '../about/AboutScreen.astro';
+import { ABOUT_INTRO, ABOUT_TITLE } from '../data/about';
+import CanvasLayout from '../layouts/CanvasLayout.astro';
+---
+
+<CanvasLayout title={ABOUT_TITLE} description={ABOUT_INTRO}>
+  <AboutScreen />
+</CanvasLayout>

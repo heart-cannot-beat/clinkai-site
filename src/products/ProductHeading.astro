@@ -1,0 +1,45 @@
+---
+// 产品页第 2、3 屏左上角：小节标签加产品名大字。位置照设计稿，两屏一样。
+import SectionLabel from '../components/SectionLabel.astro';
+
+interface Props {
+  /** 小节标签，如「01 / ClinkAI Ads · 广告测试」，照抄 design/copy.md */
+  label: string;
+  /** 产品名 */
+  name: string;
+}
+
+const { label, name } = Astro.props;
+---
+
+<div class="product-label">
+  <SectionLabel>{label}</SectionLabel>
+</div>
+<h2 class="product-name" lang="en">
+  {name}
+</h2>
+
+<style>
+  .product-label {
+    position: absolute;
+    left: var(--page-margin);
+    top: 112px;
+    pointer-events: none;
+    z-index: var(--z-chrome);
+  }
+
+  /* 英文大标题：纯拉丁字体栈（design/README.md 排版规则 1） */
+  .product-name {
+    position: absolute;
+    left: 36px;
+    top: 136px;
+    margin: 0;
+    font-family: var(--font-latin);
+    font-size: var(--display-product);
+    line-height: 1;
+    font-weight: var(--weight);
+    letter-spacing: -0.04em;
+    pointer-events: none;
+    z-index: var(--z-chrome);
+  }
+</style>

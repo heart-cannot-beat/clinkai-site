@@ -63,6 +63,7 @@ ClinkAI 官网：Astro 纯静态站 + TypeScript，托管在 Cloudflare Workers 
 
 - `src/pages/`：页面路由。`/parts/` 是部件陈列页（不进导航、不让搜索引擎收录），新部件做好后摆上去。`/contact/` 是预约沟通页。
 - `src/home/`：首页的各屏，每屏一个组件，对应 `design/screens/` 里的一个文件。现在是静态版：每屏是一张 1440×900 的画布，照设计稿的像素定位，整页按宽度等比缩放（`Screen.astro`）。
+- `src/products/`、`src/about/`：子页面「我们的产品」（`/products/`，一页三屏）和「关于我们」（`/about/`）的各屏，对应 `design/screens/page-*.html`；和首页一样是 1440×900 的画布，外壳是 `src/layouts/CanvasLayout.astro`。广告那一圈和星图的位置数据在 `ads-ring.ts`、`star-map.ts`，`tests/subpages.test.ts` 会和设计稿逐个对照。关于我们底部四项【待填】事实在 `src/data/about.ts`（留着 `null`，不要自己写），没补齐时整块不渲染。
 - `src/media/`、`src/assets/`：示例图片和视频的管线和素材。页面上的图一律用 `ExampleImage`，视频用 `ExampleVideo`，不直接写 `<img>`；构建时会检查。说明见 `docs/media.md`。
 - `src/layouts/BaseLayout.astro`：页面外壳，引入自托管字体、设计规范变量和基础样式。新页面都套它。
 - `src/styles/tokens.css`：照抄 `design/tokens.css`，组件只用这里的变量。交接包的设计规范变了，同步这份文件；`tests/tokens.test.ts` 会比对两边。

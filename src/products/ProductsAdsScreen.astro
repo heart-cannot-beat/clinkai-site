@@ -1,0 +1,150 @@
+---
+// 我们的产品 · 第 2 屏：ClinkAI Ads，七个不同的示例产品站成一圈。
+// 静态帧：design/screens/page-products-ads.html。这一屏还没有设计动效（design/motion.md），按静态做。
+// 整圈是展示用的：一个带说明的 role="img"，里面的图 alt 都留空。
+// 只用广告图片和产品抠图；每个产品最前面那张带「胜出」，只是演示，不放结果数字。
+import ScreenCorners from '../components/ScreenCorners.astro';
+import SiteHeader from '../components/SiteHeader.astro';
+import Screen from '../home/Screen.astro';
+import { RING_DEPTHS, ringPaintOrder } from './ads-ring';
+import DemoButton from './DemoButton.astro';
+import ProductHeading from './ProductHeading.astro';
+import RingCard from './RingCard.astro';
+
+// 后画的压在先画的上面：先是所有后面的版本，再是所有最前面的，最后是「胜出」小标签
+const products = ringPaintOrder();
+
+// 写成一整行的字符串：源码里折行会在中文之间多出一个空格
+const EXAMPLE_NOTE =
+  '示例广告 · 7 个虚构品牌（Nookbot、Dawnroast、Fieldcell、Halfmile、Acme Charge、Dewlab、Nibbl），非真实客户 · 只演示过程，不代表真实投放结果';
+---
+
+<Screen name="page-products-ads" background="ink" text="paper">
+  <SiteHeader tone="paper" current="products" decorative />
+
+  <div
+    class="ring"
+    role="img"
+    aria-label="示例：七个不同产品的广告。每个产品是一叠版本，最前面带「胜出」标记的那张是这一轮测出来赢的；中间的最近、最大，越往两边越远、越小越暗"
+  >
+    {products.flatMap((product) =>
+      product.back.map((card) => (
+        <RingCard card={card} look={RING_DEPTHS[product.depth].back} />
+      )),
+    )}
+    {products.map((product) => (
+      <RingCard
+        card={product.front}
+        look={RING_DEPTHS[product.depth].front}
+        front
+      />
+    ))}
+    <div class="tags" aria-hidden="true">
+      {products.map((product) => (
+        <span
+          class={`tag depth-${product.depth}`}
+          style={`left: ${product.tag.left}px; top: ${product.tag.top}px`}
+        >
+          <span class="tag-dot" />
+          胜出
+        </span>
+      ))}
+    </div>
+  </div>
+
+  <ProductHeading label="01 / ClinkAI Ads · 广告测试" name="ClinkAI Ads" />
+  <p class="example-note">{EXAMPLE_NOTE}</p>
+
+  <DemoButton />
+  <ScreenCorners tone="paper" decorative />
+</Screen>
+
+<style>
+  .ring {
+    position: absolute;
+    inset: 0;
+    z-index: var(--z-back);
+  }
+
+  .tags {
+    position: absolute;
+    inset: 0;
+  }
+
+  /* 「胜出」小标签：米色胶囊，前面一个墨色小点。越远的产品，标签越小越淡 */
+  .tag {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    border-radius: var(--radius-pill);
+    background: var(--sample-card-cream);
+    color: var(--ink);
+    line-height: 1.5;
+    white-space: nowrap;
+  }
+
+  .tag-dot {
+    border-radius: 50%;
+    background: var(--ink);
+  }
+
+  .depth-0 {
+    gap: 7px;
+    padding: 6px 13px;
+    font-size: 14px;
+  }
+
+  .depth-0 .tag-dot {
+    width: 7px;
+    height: 7px;
+  }
+
+  .depth-1 {
+    gap: 6px;
+    padding: 4px 10px;
+    font-size: 12px;
+    opacity: 0.95;
+  }
+
+  .depth-1 .tag-dot {
+    width: 6px;
+    height: 6px;
+  }
+
+  .depth-2 {
+    gap: 5px;
+    padding: 3px 8px;
+    font-size: 10px;
+    opacity: 0.85;
+  }
+
+  .depth-2 .tag-dot {
+    width: 5px;
+    height: 5px;
+  }
+
+  .depth-3 {
+    gap: 4px;
+    padding: 2px 7px;
+    font-size: 9px;
+    opacity: 0.7;
+  }
+
+  .depth-3 .tag-dot {
+    width: 4px;
+    height: 4px;
+  }
+
+  /* 「示例」说明：虚构品牌内容旁边必须有 */
+  .example-note {
+    position: absolute;
+    left: var(--page-margin);
+    top: 770px;
+    margin: 0;
+    font-size: var(--text-label);
+    letter-spacing: 0.02em;
+    color: rgba(230, 228, 223, 0.6);
+    pointer-events: none;
+    z-index: var(--z-chrome);
+  }
+</style>
