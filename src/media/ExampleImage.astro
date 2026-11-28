@@ -1,0 +1,40 @@
+---
+// 示例图：<picture>，AVIF 在前、WebP 兜底，每种格式几档宽度，按显示大小挑。
+// 默认延迟加载；只有首屏的图加 priority（立即加载、优先下载，总体积有上限）。
+// 版本墙里的图也是同一套（src/wall/ 拼 HTML 时调 pictureHtml），见 docs/media.md。
+import {
+  pictureAttributes,
+  preparePicture,
+  type PictureOptions,
+} from './picture';
+
+interface Props extends PictureOptions {
+  /** src/assets/img/ 里的文件名，例如 acme_moon.jpg */
+  file: string;
+  class?: string;
+}
+
+const {
+  file,
+  class: className,
+  alt,
+  priority,
+  style,
+  width,
+  height,
+  // 所在组件的样式作用域属性，原样转给 <img>，这样外面能用 class 给图加样式
+  ...scope
+} = Astro.props;
+const { source, img } = pictureAttributes(await preparePicture(file), {
+  alt,
+  priority,
+  style,
+  width,
+  height,
+});
+---
+
+<picture>
+  <source {...source} />
+  <img {...img} class={className} {...scope} />
+</picture>

@@ -4,13 +4,27 @@ import wallScreen from '../../design/screens/02-wall.html?raw';
 import winnerScreen from '../../design/screens/03-winner.html?raw';
 import designWall from '../../design/wall/tiles.json';
 import { designScreenTiles } from './test-helpers';
-import { buildWall, renderWallTiles, type DesignTile } from './wall';
+import {
+  buildWall,
+  plainImage,
+  renderWallTiles,
+  wallImageFiles,
+  type DesignTile,
+  type WallImage,
+} from './wall';
 
 // 基准是设计交接包里的定稿数据 design/wall/tiles.json 和每屏的 HTML 源。
 // 设计侧重新导出后这里的测试会挂，按 docs/version-wall.md 同步。
 
-// 设计稿里图片的相对路径。用它输出，结果应当和设计稿一字不差
-const designImage = (file: string) => `../assets/img/${file}`;
+// 照设计稿的写法画图：一个 <img>，地址是设计稿里的相对路径。
+// 用它输出，结果应当和设计稿一字不差
+const designImage = plainImage((file) => `../assets/img/${file}`);
+
+// 设计稿里图片的两种写法：铺满整张小图的场景图，和按像素摆放的产品图
+const COVER =
+  'position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 35%';
+const CUTOUT =
+  'position: absolute; left: 17px; top: 27px; width: 64px; height: 30px; max-width: none; transform: rotate(-10deg)';
 
 /** 手写的一张小图，字段和 tiles.json 里的一样全 */
 function tile(overrides: Partial<DesignTile>): DesignTile {
@@ -45,7 +59,7 @@ const smallWall = {
 describe('版本墙：构建时直接读 design/wall/tiles.json', () => {
   const wall = buildWall(designWall, designImage);
 
-  it('图片地址不换时，每一张都和 tiles.json 一样，顺序也一样', () => {
+  it('照设计稿的写法画图时，每一张都和 tiles.json 一样，顺序也一样', () => {
     expect(wall.tiles).toEqual(designWall.tiles);
   });
 
@@ -57,37 +71,50 @@ describe('版本墙：构建时直接读 design/wall/tiles.json', () => {
     const design = {
       tiles: [
         tile({
-          html: '<img src="../assets/img/a.webp" alt="" style="width: 10px"><span lang="en">Mute</span><img src="../assets/img/b.jpg" alt="">',
+          html: `<img src="../assets/img/a.jpg" alt="" style="${COVER}"><span lang="en">Mute</span><img src="../assets/img/b.webp" alt="" style="${CUTOUT}">`,
         }),
       ],
     };
 
-    const site = buildWall(design, (file) => `/_site/wall/${file}`);
+    const site = buildWall(
+      design,
+      plainImage((file) => `/_site/img/${file}`),
+    );
 
     expect(site.tiles[0].html).toBe(
-      '<img src="/_site/wall/a.webp" alt="" style="width: 10px"><span lang="en">Mute</span><img src="/_site/wall/b.jpg" alt="">',
+      `<img src="/_site/img/a.jpg" alt="" style="${COVER}"><span lang="en">Mute</span><img src="/_site/img/b.webp" alt="" style="${CUTOUT}">`,
     );
   });
 
   it('整面墙换完地址后，不剩设计稿里的相对路径', () => {
-    const site = buildWall(designWall, (file) => `/_site/wall/${file}`);
+    const site = buildWall(
+      designWall,
+      plainImage((file) => `/_site/img/${file}`),
+    );
     const html = renderWallTiles(site);
 
     expect(html).not.toContain('../assets/');
-    expect(html.replaceAll('/_site/wall/', '../assets/img/')).toBe(
+    expect(html.replaceAll('/_site/img/', '../assets/img/')).toBe(
       renderWallTiles(wall),
     );
   });
 
   it('图片地址里的特殊字符会转义', () => {
     const design = {
-      tiles: [tile({ html: '<img src="../assets/img/a.webp" alt="">' })],
+      tiles: [
+        tile({
+          html: `<img src="../assets/img/a.webp" alt="" style="${CUTOUT}">`,
+        }),
+      ],
     };
 
-    const site = buildWall(design, () => '/a.webp?w=1&q="2"');
+    const site = buildWall(
+      design,
+      plainImage(() => '/a.webp?w=1&q="2"'),
+    );
 
     expect(site.tiles[0].html).toBe(
-      '<img src="/a.webp?w=1&amp;q=&quot;2&quot;" alt="">',
+      `<img src="/a.webp?w=1&amp;q=&quot;2&quot;" alt="" style="${CUTOUT}">`,
     );
   });
 
@@ -98,10 +125,94 @@ describe('版本墙：构建时直接读 design/wall/tiles.json', () => {
     '',
   ])('小图里的地址不在交接包的图片目录里（%j）就报错，不会原样输出', (src) => {
     const design = {
-      tiles: [tile({ index: 7, html: `<img src="${src}" alt="">` })],
+      tiles: [
+        tile({
+          index: 7,
+          html: `<img src="${src}" alt="" style="${CUTOUT}">`,
+        }),
+      ],
     };
 
     expect(() => buildWall(design, designImage)).toThrow(/第 7 张/);
+  });
+
+  it.each([
+    [
+      '属性顺序不一样',
+      `<img alt="" src="../assets/img/a.webp" style="${CUTOUT}">`,
+    ],
+    ['没有内联样式', '<img src="../assets/img/a.webp" alt="">'],
+    ['不是 <img>', '<video src="../assets/img/a.webp"></video>'],
+  ])('小图里的图片写法认不出来（%s）就报错，不会漏掉不处理', (_, html) => {
+    const design = { tiles: [tile({ index: 7, html })] };
+
+    expect(() => buildWall(design, designImage)).toThrow(/第 7 张/);
+  });
+});
+
+describe('版本墙里的图怎么画，交给调用的人定', () => {
+  const design = {
+    tiles: [
+      tile({
+        width: 200,
+        height: 120,
+        html: `<img src="../assets/img/a.jpg" alt="" style="${COVER}"><span lang="en">Mute</span><img src="../assets/img/b.webp" alt="" style="${CUTOUT}">`,
+      }),
+    ],
+  };
+
+  it('每张图告诉它文件名、设计稿里的内联样式、在画布上显示多大', () => {
+    const drawn: WallImage[] = [];
+
+    buildWall(design, (image) => {
+      drawn.push(image);
+      return '';
+    });
+
+    expect(drawn).toEqual([
+      // 铺满小图的场景图：按小图的框算，宽高都给
+      { file: 'a.jpg', style: COVER, width: 200, height: 120 },
+      // 按像素摆放的产品图：样式里写的宽度
+      { file: 'b.webp', style: CUTOUT, width: 64 },
+    ]);
+  });
+
+  it('画出来的 HTML 原样放回图片原来的位置', () => {
+    const site = buildWall(design, ({ file }) => `[${file}]`);
+
+    expect(site.tiles[0].html).toBe(
+      '[a.jpg]<span lang="en">Mute</span>[b.webp]',
+    );
+  });
+
+  it('样式里看不出图显示多大就报错', () => {
+    const unknown = {
+      tiles: [
+        tile({
+          index: 7,
+          html: '<img src="../assets/img/a.webp" alt="" style="position: absolute; left: 0">',
+        }),
+      ],
+    };
+
+    expect(() => buildWall(unknown, designImage)).toThrow(/第 7 张/);
+  });
+
+  it('列出墙里用到的图片文件名，去重、排好序', () => {
+    const twice = {
+      tiles: [
+        ...design.tiles,
+        tile({
+          html: `<img src="../assets/img/a.jpg" alt="" style="${CUTOUT}">`,
+        }),
+      ],
+    };
+
+    expect(wallImageFiles(twice)).toEqual(['a.jpg', 'b.webp']);
+  });
+
+  it('设计稿的墙里用到 25 张不同的图', () => {
+    expect(wallImageFiles(designWall)).toHaveLength(25);
   });
 });
 
