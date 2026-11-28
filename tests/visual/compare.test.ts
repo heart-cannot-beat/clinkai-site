@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { compare, type Bitmap } from './compare';
+import { compare, paintOver, type Bitmap } from './compare';
 
 /** 一张纯色的图 */
 function solid(
@@ -89,5 +89,40 @@ describe('截图逐像素比', () => {
     expect(() =>
       compare(solid(1440, 900, [0, 0, 0]), solid(1440, 1200, [0, 0, 0]), 0),
     ).toThrow('基准图 1440×900，站点 1440×1200');
+  });
+});
+
+describe('把不比的区域涂掉', () => {
+  it('两张图涂掉同一块，这一块里的差异就不算了，外面的照算', () => {
+    const expected = solid(4, 4, [0, 0, 0]);
+    const actual = solid(4, 4, [0, 0, 0]);
+    paint(actual, 1, 1, [255, 255, 255]);
+    paint(actual, 3, 3, [255, 255, 255]);
+    const areas = [{ x: 1, y: 1, width: 2, height: 2 }];
+
+    paintOver(expected, areas);
+    paintOver(actual, areas);
+
+    expect(compare(expected, actual, 0).differing).toBe(1);
+  });
+
+  it('涂成中性的灰，只涂区域里面', () => {
+    const bitmap = solid(3, 1, [10, 20, 30]);
+
+    paintOver(bitmap, [{ x: 1, y: 0, width: 1, height: 1 }]);
+
+    expect([...bitmap.data]).toEqual([
+      10, 20, 30, 255, 128, 128, 128, 255, 10, 20, 30, 255,
+    ]);
+  });
+
+  it('区域超出图的部分不管', () => {
+    const bitmap = solid(2, 2, [0, 0, 0]);
+
+    paintOver(bitmap, [{ x: -5, y: 1, width: 100, height: 100 }]);
+
+    expect([...bitmap.data.slice(0, 3)]).toEqual([0, 0, 0]);
+    expect([...bitmap.data.slice(8, 11)]).toEqual([128, 128, 128]);
+    expect([...bitmap.data.slice(12, 15)]).toEqual([128, 128, 128]);
   });
 });

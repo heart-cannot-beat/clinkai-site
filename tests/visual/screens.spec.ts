@@ -3,7 +3,9 @@
 import { writeFile } from 'node:fs/promises';
 import { expect, test, type Page, type TestInfo } from '@playwright/test';
 import {
+  areasOf,
   hideImages,
+  hideParts,
   moveTo,
   positionOf,
   settle,
@@ -12,7 +14,13 @@ import {
   type FrameState,
   type Position,
 } from './capture';
-import { compare, type Bitmap, type Difference } from './compare';
+import {
+  compare,
+  paintOver,
+  type Area,
+  type Bitmap,
+  type Difference,
+} from './compare';
 import { NUMBERS_ATTACHMENT, percent, type ScreenNumbers } from './reporter';
 import { DESIGN_ORIGIN, serveFromDisk, SITE_ORIGIN } from './routes';
 import { DESIGN_FRAME, LAYOUT, SCREENS, WITH_IMAGES } from './screens';
@@ -23,27 +31,47 @@ interface Shots {
   position: Position;
   withImages: Bitmap;
   layout: Bitmap;
+  /** 不比的区域（只有设计稿那边会量） */
+  skipped: Area[];
+  /** 配置里写了、但在这一帧里没找到的选择器 */
+  missingParts: string[];
 }
 
-/**
- * 打开页面，给里面的一屏截两张图。
- * moveFrameTo：先把这一屏挪到整页里的这个位置再截（只对设计稿用，见 capture.ts 的 moveTo）。
- */
+/** 只对设计稿做的调整 */
+interface DesignAdjustments {
+  /** 先把这一帧挪到整页里的这个位置再截（见 capture.ts 的 moveTo） */
+  moveFrameTo: Position;
+  /** 藏起来的几块（screens.ts 的 hiddenInDesign） */
+  hide: string[];
+  /** 这几块占的区域不比（screens.ts 的 skippedAreas） */
+  skip: string[];
+}
+
+/** 打开页面，给里面的一屏截两张图。design 只在渲染设计稿时给 */
 async function capture(
   page: Page,
   url: string,
   selector: string,
-  moveFrameTo?: Position,
+  design?: DesignAdjustments,
 ): Promise<Shots> {
   await page.goto(url);
-  if (moveFrameTo) await moveTo(page, moveFrameTo);
   const frame = page.locator(selector);
+  if (design) await moveTo(page, design.moveFrameTo);
+  const missingHidden = await hideParts(page, frame, design?.hide ?? []);
   const state = await settle(page, frame);
   const position = await positionOf(frame);
+  const skipped = await areasOf(frame, design?.skip ?? []);
   const withImages = await shoot(page, frame);
   await hideImages(page);
   const layout = await shoot(page, frame);
-  return { state, position, withImages, layout };
+  return {
+    state,
+    position,
+    withImages,
+    layout,
+    skipped: skipped.areas,
+    missingParts: [...missingHidden, ...skipped.missing],
+  };
 }
 
 /**
@@ -69,6 +97,7 @@ async function keep(
 for (const screen of SCREENS) {
   test(screen.name, async ({ context }, testInfo) => {
     const traffic = await serveFromDisk(context);
+    const maxLayoutPixels = screen.maxLayoutPixels ?? LAYOUT.maxPixels;
 
     // 先截站点：要知道这一屏在整页里的位置，基准图渲染在同一个位置上
     const sitePage = await context.newPage();
@@ -84,7 +113,11 @@ for (const screen of SCREENS) {
       designPage,
       `${DESIGN_ORIGIN}/screens/${screen.name}.html`,
       DESIGN_FRAME,
-      site.position,
+      {
+        moveFrameTo: site.position,
+        hide: (screen.hiddenInDesign ?? []).map((part) => part.selector),
+        skip: (screen.skippedAreas ?? []).map((part) => part.selector),
+      },
     );
     await designPage.close();
 
@@ -105,8 +138,24 @@ for (const screen of SCREENS) {
     expect
       .soft(design.position, '基准图没有渲染在和站点相同的位置上')
       .toEqual(site.position);
+    expect
+      .soft(
+        design.missingParts,
+        'screens.ts 里这一屏的 hiddenInDesign / skippedAreas 有设计稿中找不到的选择器',
+      )
+      .toEqual([]);
     expect.soft(traffic.external, '请求了站外地址').toEqual([]);
     expect.soft(traffic.missing, '请求的文件不存在').toEqual([]);
+
+    // 不比的区域：四张图涂掉同样的几块
+    for (const shot of [
+      design.layout,
+      design.withImages,
+      site.layout,
+      site.withImages,
+    ]) {
+      paintOver(shot, design.skipped);
+    }
 
     const layout = compare(design.layout, site.layout, LAYOUT.tolerance);
     const withImages = compare(
@@ -129,7 +178,7 @@ for (const screen of SCREENS) {
         differing: layout.differing,
         ratio: layout.ratio,
         maxDelta: layout.maxDelta,
-        maxPixels: LAYOUT.maxPixels,
+        maxPixels: maxLayoutPixels,
       },
       withImages: {
         differing: withImages.differing,
@@ -147,9 +196,9 @@ for (const screen of SCREENS) {
       .soft(
         layout.differing,
         `藏起图片后（版式、文字、色块），有 ${layout.differing} 个像素和设计稿差得超过 ${LAYOUT.tolerance}` +
-          `（最大差值 ${layout.maxDelta}），上限 ${LAYOUT.maxPixels} 个。看 layout-diff.png`,
+          `（最大差值 ${layout.maxDelta}），上限 ${maxLayoutPixels} 个。看 layout-diff.png`,
       )
-      .toBeLessThanOrEqual(LAYOUT.maxPixels);
+      .toBeLessThanOrEqual(maxLayoutPixels);
     expect
       .soft(
         withImages.ratio,

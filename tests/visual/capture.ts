@@ -2,7 +2,7 @@
 // 设计稿和站点走的是同一套步骤。
 import type { Locator, Page } from '@playwright/test';
 import { PNG } from 'pngjs';
-import type { Bitmap } from './compare';
+import type { Area, Bitmap } from './compare';
 
 /** 截图前这一屏的状态，有问题的地方列出来 */
 export interface FrameState {
@@ -97,6 +97,57 @@ export async function moveTo(page: Page, position: Position): Promise<void> {
   await page.addStyleTag({
     content: `body { padding: ${position.top}px 0 0 ${position.left}px !important; }`,
   });
+}
+
+/**
+ * 把设计稿那一帧里的几块东西藏起来（位置还占着）：【待填】的占位框，站点有意不画（screens.ts 的 hiddenInDesign）。
+ * 返回在设计稿里没找到的选择器：那说明配置过时了，测试会因此失败。
+ */
+export async function hideParts(
+  page: Page,
+  frame: Locator,
+  selectors: string[],
+): Promise<string[]> {
+  if (selectors.length === 0) return [];
+  const missing: string[] = [];
+  for (const selector of selectors) {
+    if ((await frame.locator(selector).count()) === 0) missing.push(selector);
+  }
+  await page.addStyleTag({
+    content: `${selectors.join(', ')} { visibility: hidden !important; }`,
+  });
+  return missing;
+}
+
+/**
+ * 量出这一帧里几块东西各占哪一块区域（相对这一帧的左上角，向外取整到整像素）。
+ * 用来划出不比的区域（screens.ts 的 skippedAreas）。选择器没找到东西的，不在返回的区域里，记在 missing 里。
+ */
+export async function areasOf(
+  frame: Locator,
+  selectors: string[],
+): Promise<{ areas: Area[]; missing: string[] }> {
+  return frame.evaluate((root, wanted) => {
+    const origin = root.getBoundingClientRect();
+    const areas: { x: number; y: number; width: number; height: number }[] = [];
+    const missing: string[] = [];
+    for (const selector of wanted) {
+      const found = [...root.querySelectorAll(selector)];
+      if (found.length === 0) missing.push(selector);
+      for (const element of found) {
+        const box = element.getBoundingClientRect();
+        const x = Math.floor(box.left - origin.left);
+        const y = Math.floor(box.top - origin.top);
+        areas.push({
+          x,
+          y,
+          width: Math.ceil(box.right - origin.left) - x,
+          height: Math.ceil(box.bottom - origin.top) - y,
+        });
+      }
+    }
+    return { areas, missing };
+  }, selectors);
 }
 
 /** 把页面上的图片和视频藏起来（位置还占着），只留版式、文字和色块 */
