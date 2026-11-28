@@ -1,0 +1,127 @@
+---
+// 示例视频：webm 在前、mp4 在后，两个都带；永远静音，文件里也没有声轨。
+// 播放规则照 design/motion.md 04 屏：
+// - 进入视口才加载、从头播放（preload="none"），离开视口就暂停；不显示控制条。
+// - 退路：系统开了「减少动态效果」、手机上、视频加载失败或浏览器不让自动播放，
+//   都不播，只显示垫在下面的封面图（同样大小的 <img>，走图片管线）。
+// 视频真正开始播放之前是透明的，所以没播的时候看到的总是封面图。
+// 组件铺满所在的框（position: absolute; inset: 0），框由所在的屏负责。
+import { exampleVideoUrl } from './catalog';
+import ExampleImage from './ExampleImage.astro';
+
+interface Props {
+  /** src/assets/video/ 里的文件名，不带扩展名，例如 creator-pebble。webm 和 mp4 都要有 */
+  name: string;
+  /** 封面图：src/assets/img/ 里的文件名，例如 ugc_pebble.jpg */
+  poster: string;
+  /** 封面图的说明，照 design/copy.md */
+  posterAlt: string;
+  /** 视频的说明（aria-label），照 design/copy.md */
+  label: string;
+  /** 框在 1440 宽画布上的大小（像素），封面图按它挑尺寸 */
+  width: number;
+  height: number;
+}
+
+const { name, poster, posterAlt, label, width, height } = Astro.props;
+---
+
+<ExampleImage
+  file={poster}
+  alt={posterAlt}
+  width={width}
+  height={height}
+  class="example-video-fill"
+/>
+<video
+  class="example-video-fill example-video"
+  data-example-video
+  muted
+  loop
+  playsinline
+  disablepictureinpicture
+  preload="none"
+  aria-label={label}
+>
+  <source src={exampleVideoUrl(`${name}.webm`)} type="video/webm" />
+  <source src={exampleVideoUrl(`${name}.mp4`)} type="video/mp4" />
+</video>
+
+<style>
+  .example-video-fill {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .example-video {
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .example-video[data-playing] {
+    opacity: 1;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .example-video {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  import {
+    canPlay,
+    PHONE_QUERY,
+    PLAY_THRESHOLD,
+    REDUCED_MOTION_QUERY,
+  } from './video';
+
+  const reducedMotion = window.matchMedia(REDUCED_MOTION_QUERY);
+  const phone = window.matchMedia(PHONE_QUERY);
+  const allowed = () =>
+    canPlay({ reducedMotion: reducedMotion.matches, phone: phone.matches });
+
+  const stop = (video: HTMLVideoElement) => {
+    video.pause();
+    delete video.dataset.playing;
+  };
+
+  const observer = new IntersectionObserver(
+    (entries) => {
+      for (const { target, isIntersecting } of entries) {
+        const video = target as HTMLVideoElement;
+        if (isIntersecting && allowed()) {
+          // 进入视口：从头播放。浏览器不让播（省电模式等）就留在封面图
+          video.currentTime = 0;
+          video.play().catch(() => stop(video));
+        } else {
+          video.pause();
+        }
+      }
+    },
+    { threshold: PLAY_THRESHOLD },
+  );
+
+  const videos = document.querySelectorAll<HTMLVideoElement>(
+    'video[data-example-video]',
+  );
+  for (const video of videos) {
+    video.muted = true;
+    video.addEventListener('playing', () => {
+      video.dataset.playing = '';
+    });
+    observer.observe(video);
+  }
+
+  // 播放途中打开「减少动态效果」或窗口缩到手机宽度：停下，回到封面图
+  const onChange = () => {
+    if (allowed()) return;
+    for (const video of videos) stop(video);
+  };
+  reducedMotion.addEventListener('change', onChange);
+  phone.addEventListener('change', onChange);
+</script>
