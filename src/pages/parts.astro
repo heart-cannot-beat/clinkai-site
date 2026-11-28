@@ -250,6 +250,19 @@ const SERVICES = ['策略', '品牌', '广告', '达人', '内容', '结果分�
       </div>
     </section>
 
+    <section class="block" aria-labelledby="scene">
+      <h2 id="scene">滚动场景（M-01）</h2>
+      <p class="note">
+        每屏一个场景：外层是若干个屏高，里面一层用 <code>position: sticky</code>{' '}
+        固定在屏幕上，GSAP
+        只把这一屏的时间线绑到滚动进度。手机、微信内置浏览器和「减少动态效果」下不加载
+        GSAP，显示静态帧。场景要占满一屏，所以示例单独放一页。
+      </p>
+      <p class="note">
+        <a href="/parts/scene/">打开示例场景 →</a>
+      </p>
+    </section>
+
     <section class="block" aria-labelledby="form">
       <h2 id="form">表单控件</h2>
       <p class="note">
@@ -319,6 +332,11 @@ const SERVICES = ['策略', '品牌', '广告', '达人', '内容', '结果分�
     font-size: var(--text-small);
     line-height: 1.6;
     color: var(--muted);
+  }
+
+  .note a {
+    color: var(--ink);
+    text-decoration: underline;
   }
 
   .block {

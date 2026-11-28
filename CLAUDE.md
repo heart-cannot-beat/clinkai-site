@@ -35,7 +35,7 @@ ClinkAI 官网：Astro 纯静态站 + TypeScript，托管在 Cloudflare Workers 
 ## 技术约定
 
 - **页面：** Astro 纯静态输出，TypeScript strict。不引 React 或其他前端框架。
-- **滚动动效：** 每屏一个场景模块。「固定在屏幕上」用 CSS `position: sticky`；GSAP + ScrollTrigger 只用来把这一屏的时间线绑到滚动进度，不用它的 pin。手机和系统开了「减少动态效果」（`prefers-reduced-motion: reduce`）时不加载 GSAP，显示静态帧。GSAP 用它自家的免费许可（不是 MIT）：官网这种用途允许，不能转卖，也不能拿它做动效工具类的竞品。
+- **滚动动效：** 每屏一个场景模块。「固定在屏幕上」用 CSS `position: sticky`；GSAP + ScrollTrigger 只用来把这一屏的时间线绑到滚动进度，不用它的 pin。手机、微信内置浏览器和系统开了「减少动态效果」（`prefers-reduced-motion: reduce`）时不加载 GSAP，显示静态帧。GSAP 用它自家的免费许可（不是 MIT）：官网这种用途允许，不能转卖，也不能拿它做动效工具类的竞品。骨架在 `src/scenes/`，一屏怎么接入见 `docs/scenes.md`。
 - **立体效果：** 叠板用 CSS 3D 变换，不用 WebGL 库。
 - **字体：** 自托管；中文用系统字体兜底。
 - **托管：** Cloudflare Workers 静态资源（不用 Pages）。
@@ -63,6 +63,7 @@ ClinkAI 官网：Astro 纯静态站 + TypeScript，托管在 Cloudflare Workers 
 
 - `src/pages/`：页面路由。`/parts/` 是部件陈列页（不进导航、不让搜索引擎收录），新部件做好后摆上去。`/contact/` 是预约沟通页。
 - `src/home/`：首页的各屏，每屏一个组件，对应 `design/screens/` 里的一个文件。现在是静态版：每屏是一张 1440×900 的画布，照设计稿的像素定位，整页按宽度等比缩放（`Screen.astro`）。
+- `src/scenes/`：滚动场景的骨架（场景外壳 `Scene.astro`、退路规则、按需加载 GSAP 的运行时）。每屏的动效写在自己的 `<场景名>.scene.ts` 里，放在 `src/` 下会被自动找到；只有 `src/scenes/gsap.ts` 直接引 GSAP。示例场景在 `/parts/scene/`。说明见 `docs/scenes.md`。
 - `src/products/`、`src/about/`：子页面「我们的产品」（`/products/`，一页三屏）和「关于我们」（`/about/`）的各屏，对应 `design/screens/page-*.html`；和首页一样是 1440×900 的画布，外壳是 `src/layouts/CanvasLayout.astro`。广告那一圈和星图的位置数据在 `ads-ring.ts`、`star-map.ts`，`tests/subpages.test.ts` 会和设计稿逐个对照。关于我们底部四项【待填】事实在 `src/data/about.ts`（留着 `null`，不要自己写），没补齐时整块不渲染。
 - `src/media/`、`src/assets/`：示例图片和视频的管线和素材。页面上的图一律用 `ExampleImage`，视频用 `ExampleVideo`，不直接写 `<img>`；构建时会检查。说明见 `docs/media.md`。
 - `src/layouts/BaseLayout.astro`：页面外壳，引入自托管字体、设计规范变量和基础样式。新页面都套它。

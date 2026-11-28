@@ -1,0 +1,208 @@
+---
+// 滚动场景的示例页（M-01）。一个最简单的场景，证明两件事：时间线绑在滚动进度上；
+// 手机、微信内置浏览器、「减少动态效果」下不加载 GSAP，显示静态帧。
+// 用的是首页同一套东西：Screen 的 1440×900 画布放进 Scene 的固定层。
+// 不进站点导航，不让搜索引擎收录。页面上的字只给开发和设计核对用，不是站点文案。
+import SectionLabel from '../../components/SectionLabel.astro';
+import HomeScale from '../../home/HomeScale.astro';
+import Screen from '../../home/Screen.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Scene from '../../scenes/Scene.astro';
+
+const STEPS = ['01', '02', '03'];
+---
+
+<BaseLayout title="滚动场景示例 · ClinkAI" noindex>
+  <HomeScale slot="head" />
+
+  <main class="home">
+    <header class="note">
+      <h1>滚动场景示例（M-01）</h1>
+      <p>
+        下面是一个场景：外层 3 个屏高，里面一层用 <code>position: sticky</code>
+        固定在屏幕上。往下滚，进度从 0 走到 1。
+      </p>
+      <p>
+        手机、微信内置浏览器、系统开了「减少动态效果」时不加载
+        GSAP，这里只占一屏，显示静态帧（进度条是满的，三格都亮着）。
+      </p>
+      <p>
+        <a href="/parts/">← 回部件陈列</a>
+      </p>
+    </header>
+
+    <Scene name="demo" length={3}>
+      <Screen name="scene-demo">
+        <div class="label">
+          <SectionLabel as="h2">M-01 / 示例场景</SectionLabel>
+        </div>
+
+        {/* 静态帧写的是结束时的样子；动效模式下由 demo.scene.ts 按进度改 */}
+        <p class="number" data-demo-progress>
+          1.00
+        </p>
+        <p class="caption">
+          滚动进度 p。外层的顶边到屏幕顶边时是 0，底边到屏幕底边时是 1。
+        </p>
+
+        <div class="bar">
+          <div class="fill" data-demo-fill></div>
+        </div>
+        <ol class="steps">
+          {STEPS.map((no, index) => (
+            <li class="step" data-demo-step>
+              <span class="no">{no}</span>
+              <span>进度的第 {index + 1} 段</span>
+            </li>
+          ))}
+        </ol>
+
+        <p class="mode">
+          <span class="when-motion">
+            动效：GSAP 已按需加载，时间线绑在滚动进度上。
+          </span>
+          <span class="when-static">静态帧：没有加载 GSAP。</span>
+        </p>
+      </Screen>
+    </Scene>
+
+    <footer class="note">
+      <p>场景到这里结束，后面的内容照常往下排。</p>
+    </footer>
+  </main>
+</BaseLayout>
+
+<style>
+  /* 和首页一样：没有脚本时比例是 1，画布按 1440 宽原尺寸居中显示 */
+  .home {
+    width: calc(1440px * var(--home-scale, 1));
+    margin: 0 auto;
+  }
+
+  .note {
+    box-sizing: border-box;
+    max-width: 760px;
+    padding: 40px var(--page-margin) 48px;
+    font-size: var(--text-small);
+    line-height: 1.6;
+    color: var(--muted);
+  }
+
+  .note h1 {
+    margin: 0 0 12px;
+    font-size: var(--text-card-title);
+    font-weight: var(--weight);
+    color: var(--ink);
+  }
+
+  .note p {
+    margin: 0 0 12px;
+  }
+
+  .note a {
+    color: var(--ink);
+    text-decoration: underline;
+  }
+
+  .label {
+    position: absolute;
+    left: var(--page-margin);
+    top: 108px;
+  }
+
+  .number {
+    position: absolute;
+    left: var(--page-margin);
+    top: 170px;
+    margin: 0;
+    font-family: var(--font-latin);
+    font-size: var(--display-ending);
+    line-height: 1;
+    letter-spacing: -0.04em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .caption {
+    position: absolute;
+    left: var(--page-margin);
+    top: 496px;
+    margin: 0;
+    font-size: var(--text-lead);
+  }
+
+  .bar {
+    position: absolute;
+    left: var(--page-margin);
+    right: var(--page-margin);
+    top: 560px;
+    height: 8px;
+    background: var(--hairline-soft);
+  }
+
+  .fill {
+    height: 100%;
+    background: var(--ink);
+    transform-origin: 0 50%;
+  }
+
+  .steps {
+    position: absolute;
+    left: var(--page-margin);
+    right: var(--page-margin);
+    top: 608px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+  }
+
+  .step {
+    display: flex;
+    gap: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--hairline);
+    font-size: var(--text-desc);
+  }
+
+  .no {
+    color: var(--muted);
+  }
+
+  .mode {
+    position: absolute;
+    left: var(--page-margin);
+    bottom: 40px;
+    margin: 0;
+    font-size: var(--text-small);
+    color: var(--muted);
+  }
+
+  .when-motion {
+    display: none;
+  }
+
+  :global(:root[data-scene-mode='motion']) .when-motion {
+    display: inline;
+  }
+
+  :global(:root[data-scene-mode='motion']) .when-static {
+    display: none;
+  }
+
+  /* 动效模式下，GSAP 还没下载完的那一小会儿：先摆成进度 0 的样子，不要先闪一下静态帧。
+     能用样式表达的写初始样式；数字是文字，先藏起来，时间线建好（data-scene-ready）再露出来 */
+  :global(:root[data-scene-mode='motion']) .fill {
+    transform: scaleX(0);
+  }
+
+  :global(:root[data-scene-mode='motion']) .step {
+    opacity: 0.3;
+  }
+
+  :global(:root[data-scene-mode='motion'] [data-scene]:not([data-scene-ready]))
+    .number {
+    visibility: hidden;
+  }
+</style>

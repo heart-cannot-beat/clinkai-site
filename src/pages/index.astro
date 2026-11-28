@@ -5,6 +5,7 @@
 import CreatorsScreen from '../home/CreatorsScreen.astro';
 import EndingScreen from '../home/EndingScreen.astro';
 import HeroScreen from '../home/HeroScreen.astro';
+import HomeScale from '../home/HomeScale.astro';
 import LayersScreen from '../home/LayersScreen.astro';
 import NextRoundScreen from '../home/NextRoundScreen.astro';
 import WallScreen from '../home/WallScreen.astro';
@@ -13,20 +14,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 ---
 
 <BaseLayout title="ClinkAI">
-  {/* 每一屏是 1440×900 的画布，按页面宽度整体等比缩放。脚本放在 head 里、内联，
-       这样第一帧画出来之前比例就算好了，不会先按原尺寸闪一下 */}
-  <script is:inline slot="head">
-    (function () {
-      const root = document.documentElement;
-      const fit = function () {
-        root.style.setProperty('--home-scale', String(root.clientWidth / 1440));
-      };
-      fit();
-      // 页面宽度变了（改窗口大小、滚动条出现）就重算
-      if ('ResizeObserver' in window) new ResizeObserver(fit).observe(root);
-      else window.addEventListener('resize', fit);
-    })();
-  </script>
+  {/* 每一屏是 1440×900 的画布，按页面宽度整体等比缩放；比例在 head 里用内联脚本算 */}
+  <HomeScale slot="head" />
 
   <main class="home">
     <HeroScreen />
