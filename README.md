@@ -18,4 +18,6 @@ npm run verify   # 格式、lint、类型、测试、构建，一条命令跑全
 
 首页的版本墙（示例广告小图）在构建时生成，做法和设计侧更新后的同步步骤见 [docs/version-wall.md](docs/version-wall.md)。
 
+站点的每一屏和设计稿有逐像素的截图对比（`npm run test:visual`，CI 里也跑），做法和阈值见 [docs/visual-compare.md](docs/visual-compare.md)。
+
 工作流程和规则见 [CLAUDE.md](CLAUDE.md)。设计和文案以 `design/` 交接包为准。
