@@ -1,5 +1,6 @@
 ---
 // 单行输入框：标签在上、输入框在下。品牌名、官网或店铺链接、怎么联系你。
+// 最下面一行是放错误提示的位置，平时藏着，由提交脚本（src/contact/form.ts）填。
 import '../../styles/form.css';
 
 interface Props {
@@ -8,6 +9,7 @@ interface Props {
   type?: 'text' | 'url' | 'email' | 'tel';
   placeholder?: string;
   required?: boolean;
+  maxlength?: number;
   autocomplete?: string;
 }
 
@@ -17,11 +19,12 @@ const {
   type = 'text',
   placeholder,
   required,
+  maxlength,
   autocomplete,
 } = Astro.props;
 ---
 
-<label class="field">
+<label class="field" data-field={name}>
   <span class="field-label">{label}</span>
   <input
     class="field-control"
@@ -29,6 +32,14 @@ const {
     name={name}
     placeholder={placeholder}
     required={required}
+    maxlength={maxlength}
     autocomplete={autocomplete}
+    aria-describedby={`${name}-error`}
   />
+  <span
+    class="field-error"
+    id={`${name}-error`}
+    data-error-for={name}
+    hidden
+  ></span>
 </label>

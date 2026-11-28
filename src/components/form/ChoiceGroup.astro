@@ -1,5 +1,8 @@
 ---
 // 多选胶囊：想去的市场、需要哪些服务。每个选项是一个带复选框的胶囊，可以多选。
+// 最下面一行是放错误提示的位置，平时藏着，由提交脚本（src/contact/form.ts）填。
+import '../../styles/form.css';
+
 interface Props {
   legend: string;
   name: string;
@@ -9,7 +12,11 @@ interface Props {
 const { legend, name, options } = Astro.props;
 ---
 
-<fieldset class="choice-group">
+<fieldset
+  class="choice-group"
+  data-field={name}
+  aria-describedby={`${name}-error`}
+>
   <legend>{legend}</legend>
   <div class="choices">
     {options.map((option) => (
@@ -19,6 +26,12 @@ const { legend, name, options } = Astro.props;
       </label>
     ))}
   </div>
+  <span
+    class="field-error"
+    id={`${name}-error`}
+    data-error-for={name}
+    hidden
+  ></span>
 </fieldset>
 
 <style>
@@ -55,6 +68,11 @@ const { legend, name, options } = Astro.props;
     border: 1px solid rgba(28, 28, 27, 0.3);
     font-size: var(--text-small);
     cursor: pointer;
+  }
+
+  /* 暂定（Issue #15 第 8 问）：出错时描边换成实色墨色 */
+  .choice-group[data-invalid] .choice {
+    border-color: var(--ink);
   }
 
   input {

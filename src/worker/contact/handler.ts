@@ -1,20 +1,20 @@
 // POST /api/contact：预约沟通表单接口。
-// 顺序：方法 → 配置 → 限流 → 读请求体 → 字段校验 → Turnstile → 发信。
-// 不存库；日志只记结果码，不记表单内容、联系方式、token 和 IP。
+// 顺序：方法 → 配置 → 限流 → 读请求体 → 字段校验 → 发信。
+// 不做防刷校验（用户 2026-11-28 决定先不用 Turnstile，见 Issue #15；原实现在 PR #7 的历史里），限流保留。
+// 不存库；日志只记结果码，不记表单内容、联系方式和 IP。
 // 状态码和响应体的约定见 docs/contact-api.md。
 
 import type { EmailMessageBuilder, Env } from '../env';
 import {
   CONTACT_FIELDS,
-  TURNSTILE_FIELD,
   validateFields,
   type FieldSpec,
+  type FieldValue,
 } from './schema';
-import { MAX_TOKEN_LENGTH, parseHostnames, verifyTurnstile } from './turnstile';
 
 export const CONTACT_PATH = '/api/contact';
 
-/** 请求体上限。占位字段全部填满也不到这个数的一半。 */
+/** 请求体上限。所有字段全部填满也不到这个数（handler.test.ts 里有测试盯着）。 */
 export const MAX_BODY_BYTES = 16 * 1024;
 
 /** 和 wrangler.jsonc 里限流的 period 一致 */
@@ -28,9 +28,7 @@ export type ContactErrorCode =
   | 'bad_request'
   | 'payload_too_large'
   | 'validation_failed'
-  | 'turnstile_failed'
   | 'rate_limited'
-  | 'turnstile_unavailable'
   | 'send_failed'
   | 'server_error';
 
@@ -90,12 +88,8 @@ function errorCode(error: unknown): string {
   return 'unknown';
 }
 
-const REQUIRED_CONFIG = [
-  'TURNSTILE_SECRET_KEY',
-  'TURNSTILE_HOSTNAMES',
-  'CONTACT_TO',
-  'CONTACT_FROM',
-] as const;
+/** 接口要的全部配置（Cloudflare secret；本地放 .dev.vars）。缺一个就返回 500 */
+export const REQUIRED_CONFIG = ['CONTACT_TO', 'CONTACT_FROM'] as const;
 
 type BodyResult =
   | { ok: true; data: Record<string, unknown> }
@@ -183,8 +177,10 @@ async function readBody(request: Request): Promise<BodyResult> {
       const form = await new Response(bytes, {
         headers: { 'content-type': contentType },
       }).formData();
-      for (const [key, value] of form) {
-        if (!Object.hasOwn(data, key)) data[key] = value;
+      // 同名的键出现多次（多选）时收成数组，只出现一次时还是单个值
+      for (const key of new Set(form.keys())) {
+        const all = form.getAll(key);
+        data[key] = all.length > 1 ? all : all[0];
       }
     }
   } catch {
@@ -194,16 +190,23 @@ async function readBody(request: Request): Promise<BodyResult> {
 }
 
 function buildEmail(
-  values: Record<string, string>,
+  values: Record<string, FieldValue>,
   fields: readonly FieldSpec[],
   to: string,
   from: string,
 ): EmailMessageBuilder {
+  // 多选的值用顿号连成一行
+  const line = (value: FieldValue) =>
+    Array.isArray(value) ? value.join('、') : value;
   const text = fields
-    .filter((field) => values[field.name] !== undefined)
-    .map((field) => `${field.name}:\n${values[field.name]}`)
+    .flatMap((field) => {
+      const value = values[field.name];
+      return value === undefined ? [] : [`${field.name}:\n${line(value)}`];
+    })
     .join('\n\n');
-  const replyField = fields.find((field) => field.replyTo);
+  const replyField = fields.find(
+    (field) => 'replyTo' in field && field.replyTo,
+  );
   const replyTo = replyField ? values[replyField.name] : undefined;
 
   return {
@@ -211,7 +214,7 @@ function buildEmail(
     from,
     subject: EMAIL_SUBJECT,
     text,
-    ...(replyTo ? { replyTo } : {}),
+    ...(typeof replyTo === 'string' ? { replyTo } : {}),
   };
 }
 
@@ -225,7 +228,7 @@ async function allowedByRateLimit(
     });
     return success;
   } catch (error) {
-    // 限流绑定出错时放行：后面还有 Turnstile 兜底，比把真实用户全拒掉好
+    // 限流绑定出错时放行：宁可这段时间没有限流，也不把真实用户全拒掉
     log('error', 'rate_limit_error', errorCode(error));
     return true;
   }
@@ -239,19 +242,9 @@ export async function handleContact(
     return fail(405, 'method_not_allowed', { headers: { allow: 'POST' } });
   }
 
-  const {
-    TURNSTILE_SECRET_KEY: secret,
-    CONTACT_TO: to,
-    CONTACT_FROM: from,
-  } = env;
-  // 主机名白名单为空时不跳过校验，当作缺配置：宁可接口报错，也不悄悄放过
-  const allowedHostnames = parseHostnames(env.TURNSTILE_HOSTNAMES);
-  if (!secret || !to || !from || allowedHostnames.length === 0) {
-    const missing = REQUIRED_CONFIG.filter((name) =>
-      name === 'TURNSTILE_HOSTNAMES'
-        ? allowedHostnames.length === 0
-        : !env[name],
-    );
+  const { CONTACT_TO: to, CONTACT_FROM: from } = env;
+  if (!to || !from) {
+    const missing = REQUIRED_CONFIG.filter((name) => !env[name]);
     log('error', 'server_error', `missing_config:${missing.join(',')}`);
     return fail(500, 'server_error');
   }
@@ -279,37 +272,6 @@ export async function handleContact(
     return fail(422, 'validation_failed', {
       body: { fields: validation.errors },
     });
-  }
-
-  const token = body.data[TURNSTILE_FIELD];
-  if (
-    typeof token !== 'string' ||
-    token === '' ||
-    token.length > MAX_TOKEN_LENGTH
-  ) {
-    log('warn', 'turnstile_failed', 'missing-or-oversized-token');
-    return fail(403, 'turnstile_failed');
-  }
-
-  const verdict = await verifyTurnstile({
-    token,
-    secret,
-    remoteIp: ip,
-    allowedHostnames,
-  });
-  if (verdict.result !== 'passed') {
-    const detail = verdict.codes.join(',');
-    switch (verdict.result) {
-      case 'rejected':
-        log('warn', 'turnstile_failed', detail);
-        return fail(403, 'turnstile_failed');
-      case 'unavailable':
-        log('error', 'turnstile_unavailable', detail);
-        return fail(503, 'turnstile_unavailable');
-      case 'misconfigured':
-        log('error', 'server_error', `turnstile:${detail}`);
-        return fail(500, 'server_error');
-    }
   }
 
   try {

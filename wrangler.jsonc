@@ -1,7 +1,7 @@
 // Cloudflare Workers 配置。
 // S-02：托管 Astro 的构建产物 dist/；部署走 Cloudflare 的 Workers Builds，设置步骤见 docs/deploy.md。
 // S-03：加了 Worker 脚本（只接 /api/*）和表单接口要的绑定，说明见 docs/contact-api.md。
-// 账号 ID、API Token、Turnstile 密钥、收发件地址都不写进这个文件。
+// 账号 ID、API Token、收发件地址都不写进这个文件。
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
   // 要和 Cloudflare 后台里这个 Worker 的名字一致，否则 Workers Builds 构建会失败

@@ -1,0 +1,136 @@
+---
+// 预约沟通页的表单。样子照 design/screens/page-contact.html，控件用 S-04 的表单控件。
+// 字段、必填和长度上限从接口的字段表读（src/worker/contact/schema.ts），前后端是同一份。
+// 提交由 src/contact/form.ts 接管：它从 data-fields、data-copy 读字段表和提示语。
+// 脚本没加载时，表单按普通方式提交到接口，留言不会丢。
+import ChoiceGroup from '../form/ChoiceGroup.astro';
+import SelectField from '../form/SelectField.astro';
+import SubmitButton from '../form/SubmitButton.astro';
+import TextAreaField from '../form/TextAreaField.astro';
+import TextField from '../form/TextField.astro';
+import {
+  budgetOptions,
+  CONTACT_COPY,
+  CONTACT_PLACEHOLDER,
+  CONTACT_TODO,
+  FIELD_LABELS,
+  MARKETS,
+  SERVICES,
+  SUBMIT_LABEL,
+  type ContactCopy,
+} from '../../data/contact';
+import { CONTACT_PATH } from '../../worker/contact/handler';
+import { buildContactFields } from '../../worker/contact/schema';
+
+interface Props {
+  /** 月预算的分档（【待填】）。没补齐时月预算整块不渲染 */
+  budgetTiers?: readonly string[] | null;
+  /** 提示语和隐私说明。交接包里还没有，见 src/data/contact.ts */
+  copy?: ContactCopy;
+}
+
+const { budgetTiers = CONTACT_TODO.budgetTiers, copy = CONTACT_COPY } =
+  Astro.props;
+
+const fields = buildContactFields(budgetTiers);
+const budget = budgetOptions(budgetTiers);
+
+/** 单行、多行字段的 required 和 maxlength */
+function limits(name: string) {
+  const field = fields.find((item) => item.name === name);
+  return {
+    required: field?.required ?? false,
+    maxlength: field && 'maxLength' in field ? field.maxLength : undefined,
+  };
+}
+---
+
+<form
+  class="contact-form"
+  action={CONTACT_PATH}
+  method="post"
+  data-contact-form
+  data-state="idle"
+  data-fields={JSON.stringify(fields)}
+  data-copy={JSON.stringify(copy)}
+>
+  <TextField label={FIELD_LABELS.brand} name="brand" {...limits('brand')} />
+  <TextField
+    label={FIELD_LABELS.site}
+    name="site"
+    type="url"
+    {...limits('site')}
+  />
+  <ChoiceGroup legend={FIELD_LABELS.market} name="market" options={MARKETS} />
+  <ChoiceGroup
+    legend={FIELD_LABELS.service}
+    name="service"
+    options={SERVICES}
+  />
+  <div class:list={['form-row', !budget && 'single']}>
+    {budget && (
+      <SelectField label={FIELD_LABELS.budget} name="budget" options={budget} />
+    )}
+    <TextField
+      label={FIELD_LABELS.contact}
+      name="contact"
+      placeholder={CONTACT_PLACEHOLDER}
+      {...limits('contact')}
+    />
+  </div>
+  <TextAreaField label={FIELD_LABELS.note} name="note" {...limits('note')} />
+  <SubmitButton>{SUBMIT_LABEL}</SubmitButton>
+  <p class="form-status" role="status" data-contact-status></p>
+  {copy.privacy && (
+    <p class="privacy-note" data-contact-privacy>
+      {copy.privacy}
+    </p>
+  )}
+</form>
+
+<style>
+  .contact-form {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+
+  /* 月预算整块隐藏时，「怎么联系你」占整行（暂定，Issue #15 第 12 问） */
+  .form-row.single {
+    grid-template-columns: 1fr;
+  }
+
+  /* 提示语和隐私说明的位置和样子，设计稿里没有（Issue #15 第 8、9 问）。
+     暂定：都在提交按钮下面，只用现有的字号和颜色变量。 */
+  .form-status,
+  .privacy-note {
+    margin: 0;
+    line-height: 1.5;
+  }
+
+  .form-status {
+    font-size: var(--text-small);
+  }
+
+  /* 没有提示语时不占地方（它是最后一行，不影响上面的排版） */
+  .form-status:empty {
+    margin-top: -18px;
+  }
+
+  .privacy-note {
+    font-size: var(--text-nav);
+    color: var(--muted);
+  }
+
+  @media (max-width: 560px) {
+    .form-row {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

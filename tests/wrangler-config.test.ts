@@ -1,7 +1,11 @@
 import { unstable_readConfig } from 'wrangler';
 import { describe, expect, it } from 'vitest';
+import devVarsExample from '../.dev.vars.example?raw';
 import astroConfig from '../astro.config.mjs';
-import { RETRY_AFTER_SECONDS } from '../src/worker/contact/handler';
+import {
+  REQUIRED_CONFIG,
+  RETRY_AFTER_SECONDS,
+} from '../src/worker/contact/handler';
 
 // 用 wrangler 自己的读取器解析 wrangler.jsonc：字段写错、格式不对，这里就会报错。
 // 路径相对仓库根目录（npm run test 在根目录跑 Vitest）。
@@ -33,12 +37,26 @@ describe('wrangler.jsonc', () => {
 });
 
 describe('wrangler.jsonc：表单接口（S-03）', () => {
-  const SECRET_NAMES = [
-    'TURNSTILE_SECRET_KEY',
-    'TURNSTILE_HOSTNAMES',
-    'CONTACT_TO',
-    'CONTACT_FROM',
-  ];
+  // 接口要的配置只有收发件地址（Turnstile 已经拿掉，见 Issue #15）
+  const SECRET_NAMES = ['CONTACT_TO', 'CONTACT_FROM'];
+
+  it('接口要的配置就是这两个，.dev.vars.example 里也只列这两个', () => {
+    const exampleNames = [...devVarsExample.matchAll(/^([A-Z_]+)=/gm)].map(
+      (match) => match[1],
+    );
+
+    expect([...REQUIRED_CONFIG]).toEqual(SECRET_NAMES);
+    expect(exampleNames).toEqual(SECRET_NAMES);
+  });
+
+  it('.dev.vars.example 里只有虚构的 *.example 地址', () => {
+    const values = [...devVarsExample.matchAll(/^[A-Z_]+="([^"]*)"/gm)].map(
+      (match) => match[1],
+    );
+
+    expect(values).toHaveLength(SECRET_NAMES.length);
+    for (const value of values) expect(value).toMatch(/@[a-z.-]+\.example$/);
+  });
 
   it('Worker 脚本是 src/worker/index.ts，只有 /api/* 先进 Worker', () => {
     // wrangler 读出来的 main 是绝对路径
@@ -71,7 +89,7 @@ describe('wrangler.jsonc：表单接口（S-03）', () => {
     expect(config.previews?.send_email ?? []).toEqual([]);
   });
 
-  it('收发件地址、Turnstile 密钥和主机名白名单不写进配置', () => {
+  it('收发件地址不写进配置', () => {
     for (const name of SECRET_NAMES) {
       expect(config.vars).not.toHaveProperty(name);
       expect(config.previews?.vars ?? {}).not.toHaveProperty(name);

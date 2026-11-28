@@ -27,3 +27,21 @@ textarea.field-control {
   padding: 12px 14px;
   resize: vertical;
 }
+
+/* ---------- 出错状态 ----------
+   设计稿没有画出错的样子，tokens.css 里也没有表示出错的颜色，已在 Issue #15 第 8 问里问设计侧。
+   暂定只用现有变量：描边从 30% 墨色换成实色墨色，字段下面一行小字。设计侧定了以后改这里。 */
+[data-invalid] > .field-control {
+  border-color: var(--ink);
+}
+
+.field-error {
+  font-size: var(--text-nav);
+  line-height: 1.5;
+  color: var(--ink);
+}
+
+/* 浏览器默认的 [hidden] 会被上面这类 display 规则盖掉，这里钉住 */
+.field-error[hidden] {
+  display: none;
+}

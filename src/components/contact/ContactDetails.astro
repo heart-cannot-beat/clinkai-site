@@ -1,0 +1,64 @@
+---
+// 预约沟通页左下角的联系方式：邮箱、微信两行。
+// 两项都是【待填】（design/copy.md 末尾的清单）：没补齐的那一行不渲染，两行都没有时整块不渲染。
+// 位置照设计稿：所在画面（最近的 position: relative 祖先）左下角，左 40px、下 96px。
+import { CONTACT_TODO, DETAIL_LABELS } from '../../data/contact';
+
+interface Props {
+  email?: string | null;
+  wechat?: string | null;
+}
+
+const { email = CONTACT_TODO.email, wechat = CONTACT_TODO.wechat } =
+  Astro.props;
+
+const rows = [
+  { label: DETAIL_LABELS.email, value: email },
+  { label: DETAIL_LABELS.wechat, value: wechat },
+].filter((row) => row.value);
+---
+
+{rows.length > 0 && (
+  <dl class="contact-details">
+    {rows.map((row) => (
+      <div class="row">
+        <dt>{row.label}</dt>
+        <dd>{row.value}</dd>
+      </div>
+    ))}
+  </dl>
+)}
+
+<style>
+  .contact-details {
+    position: absolute;
+    left: var(--page-margin);
+    bottom: 96px;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-size: var(--text-body);
+  }
+
+  .row {
+    display: flex;
+    gap: 12px;
+  }
+
+  dt {
+    width: 48px;
+    color: var(--muted);
+  }
+
+  dd {
+    margin: 0;
+  }
+
+  /* 窄屏没有设计稿：改成跟在介绍文字后面（断点和 contact.astro 一致） */
+  @media (max-width: 1199px) {
+    .contact-details {
+      position: static;
+    }
+  }
+</style>
