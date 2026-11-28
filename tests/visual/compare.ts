@@ -20,6 +20,35 @@ export interface Difference {
   image: Bitmap;
 }
 
+/** 图上的一块长方形区域（像素，相对图的左上角） */
+export interface Area {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+/** 不比的区域涂成这个颜色：中性的灰，在留下来的截图里一眼能看出哪一块没比 */
+const SKIPPED = [128, 128, 128] as const;
+
+/**
+ * 把几块区域涂成同一个颜色（直接改这张图）。两张图涂掉同样的区域再比，这些区域就不算差异。
+ * 区域超出图的部分不管。
+ */
+export function paintOver(bitmap: Bitmap, areas: Area[]): void {
+  for (const area of areas) {
+    const left = Math.max(0, area.x);
+    const top = Math.max(0, area.y);
+    const right = Math.min(bitmap.width, area.x + area.width);
+    const bottom = Math.min(bitmap.height, area.y + area.height);
+    for (let y = top; y < bottom; y += 1) {
+      for (let x = left; x < right; x += 1) {
+        bitmap.data.set(SKIPPED, (y * bitmap.width + x) * 4);
+      }
+    }
+  }
+}
+
 /** 差异图里标出差异的颜色 */
 const MARK = [255, 0, 64] as const;
 
