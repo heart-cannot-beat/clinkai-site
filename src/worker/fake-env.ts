@@ -2,11 +2,8 @@
 import { vi } from 'vitest';
 import type { EmailMessageBuilder, Env } from './env';
 
+// 虚构的 *.example 地址，不是真实邮箱
 export const TEST_CONFIG = {
-  // Turnstile 官方测试密钥（永远通过），不是真密钥。测试里 siteverify 也是假的。
-  TURNSTILE_SECRET_KEY: '1x0000000000000000000000000000000AA',
-  // siteverify 返回的主机名必须在这里面。虚构域名，不写真实的 workers.dev 地址。
-  TURNSTILE_HOSTNAMES: 'clinkai.example,preview.clinkai.example',
   CONTACT_TO: 'inbox@clinkai.example',
   CONTACT_FROM: 'noreply@clinkai.example',
 } as const;

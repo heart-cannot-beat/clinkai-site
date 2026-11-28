@@ -1,7 +1,8 @@
 // 页头上的导航。文字照抄 design/copy.md「所有页面共用」，不要改写。
 //
-// 链接地址现在先照设计稿里的锚点写（#services、#work、#products、#about、#pilot）。
-// 子页面做出来以后（P-03、P-04），在这里改成真实地址，页头组件和首页结尾屏的两个按钮不用动。
+// 导航项的链接地址现在先照设计稿里的锚点写（#services、#work、#products、#about）。
+// 子页面做出来以后（P-03），在这里改成真实地址，页头组件和首页结尾屏的两个按钮不用动。
+// 「预约沟通」已经是真实地址（P-04，src/pages/contact.astro）。
 // 「增长服务」「作品」在交接包里还没有对应的页面或屏，去处等设计侧定（见 Issue #12）。
 
 export type NavKey = 'services' | 'work' | 'products' | 'about';
@@ -26,7 +27,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
 ];
 
 /** 「预约沟通 →」按钮。箭头单独放，读屏时不念 */
-export const CONTACT_CTA = { label: '预约沟通', arrow: '→', href: '#pilot' };
+export const CONTACT_CTA = { label: '预约沟通', arrow: '→', href: '/contact/' };
 
 /** 菜单按钮的无障碍名称（design/copy.md） */
 export const MENU_LABEL = '打开菜单';
