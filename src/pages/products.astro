@@ -1,0 +1,21 @@
+---
+// 我们的产品（P-03）。一页三屏，从上到下对应 design/screens/ 里的
+// page-products、page-products-ads、page-products-creators，每一屏就是那一帧，不带动效。
+// 第 1 屏的两行产品名跳到下面两屏：锚点是这里的 #ads 和 #creators。
+// 页头的「我们的产品」指向这一页，地址在 src/data/site.ts。
+import { PRODUCTS_INTRO, PRODUCTS_TITLE } from '../data/products';
+import CanvasLayout from '../layouts/CanvasLayout.astro';
+import ProductsAdsScreen from '../products/ProductsAdsScreen.astro';
+import ProductsCreatorsScreen from '../products/ProductsCreatorsScreen.astro';
+import ProductsIntroScreen from '../products/ProductsIntroScreen.astro';
+---
+
+<CanvasLayout title={PRODUCTS_TITLE} description={PRODUCTS_INTRO}>
+  <ProductsIntroScreen />
+  <div id="ads">
+    <ProductsAdsScreen />
+  </div>
+  <div id="creators">
+    <ProductsCreatorsScreen />
+  </div>
+</CanvasLayout>

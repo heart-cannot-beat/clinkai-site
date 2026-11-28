@@ -1,0 +1,64 @@
+---
+// 关于我们底部的四项事实：成立、团队、办公地、投放平台，四列排开。
+// 四项都是【待填】（src/data/about.ts）：只要有一项没补齐，整块不渲染，不留占位字样。
+// 位置照设计稿：所在画面左右各 40px、离底 96px。
+import {
+  ABOUT_FACT_LABELS,
+  ABOUT_FACTS,
+  type AboutFactKey,
+  type AboutFacts,
+} from '../data/about';
+
+interface Props {
+  facts?: AboutFacts;
+}
+
+const { facts = ABOUT_FACTS } = Astro.props;
+
+const rows = (Object.keys(ABOUT_FACT_LABELS) as AboutFactKey[]).map((key) => ({
+  label: ABOUT_FACT_LABELS[key],
+  value: facts[key]?.trim() ?? '',
+}));
+const complete = rows.every((row) => row.value !== '');
+---
+
+{complete && (
+  <dl class="about-facts">
+    {rows.map((row) => (
+      <div class="fact">
+        <dt>{row.label}</dt>
+        <dd>{row.value}</dd>
+      </div>
+    ))}
+  </dl>
+)}
+
+<style>
+  .about-facts {
+    position: absolute;
+    left: var(--page-margin);
+    right: var(--page-margin);
+    bottom: 96px;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 24px;
+    font-size: var(--text-body);
+    z-index: var(--z-card);
+  }
+
+  .fact {
+    padding-top: 14px;
+    border-top: 1px solid rgba(28, 28, 27, 0.25);
+  }
+
+  dt {
+    margin-bottom: 8px;
+    font-size: var(--text-nav);
+    color: var(--muted);
+  }
+
+  dd {
+    margin: 0;
+  }
+</style>
