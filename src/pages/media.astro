@@ -1,0 +1,265 @@
+---
+// 示例素材陈列页（P-05）。把 src/assets/ 里的示例图和视频按图片管线的输出摆在一页上，
+// 给开发和设计核对：每张图都转成了 AVIF 和 WebP、出了多个尺寸、按需加载。
+// 不进站点导航，不让搜索引擎收录。这一页自己的标题和说明只给核对用，不是站点文案；
+// 视频的无障碍说明照抄 design/copy.md。
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ExampleTag from '../components/ExampleTag.astro';
+import { exampleImage, exampleImageFiles } from '../media/catalog';
+import ExampleImage from '../media/ExampleImage.astro';
+import ExampleVideo from '../media/ExampleVideo.astro';
+import { FIRST_SCREEN_BUDGET, formatKB } from '../media/budget';
+import { HERO_BOARD_IMAGES, HERO_IMAGE_SIZE } from '../media/hero';
+import { candidateWidths } from '../media/responsive';
+import VersionWall from '../wall/VersionWall.astro';
+
+// 说明文字写成一整行的字符串：源码里折行会在中文句号后面多出一个空格
+const NOTES = {
+  intro:
+    '构建时转成 AVIF 和 WebP、每种出几档宽度。首屏的图立即加载，其余延迟加载。',
+  firstScreen: `按叠板放大后的大小（${HERO_IMAGE_SIZE} 像素见方）出图，立即加载。构建时检查：每个页面不延迟加载的图片加起来不超过 ${formatKB(FIRST_SCREEN_BUDGET)}。这一页的首屏就是这三张。`,
+  wall: '墙里的图和别处是同一套文件，延迟加载。窄屏上整面墙按 1440 宽的画布等比缩小展示。',
+  video:
+    'webm 在前、mp4 在后，永远静音，文件里没有声轨。进入视口才加载、从头播放；开了「减少动态效果」、手机上、加载失败时只显示封面图。',
+};
+
+const CARD = 240;
+const images = exampleImageFiles.map((file) => {
+  const { width, height } = exampleImage(file);
+  return { file, width, height, widths: candidateWidths(width) };
+});
+---
+
+<BaseLayout title="示例素材陈列 · ClinkAI" noindex>
+  <main class="media">
+    <header class="intro">
+      <h1>示例素材陈列（P-05）</h1>
+      <p>
+        图片和视频从 <code>design/assets/</code> 原样拷到
+        <code>src/assets/</code>，{NOTES.intro}说明见
+        <code>docs/media.md</code>。
+      </p>
+      <p>这里的图片和视频全部是 AI 生成的示例素材，品牌和人物都是虚构的。</p>
+    </header>
+
+    <section class="block" aria-labelledby="first-screen">
+      <h2 id="first-screen">首屏的图（01 叠板）</h2>
+      <p class="note">{NOTES.firstScreen}</p>
+      <ul class="boards">
+        {HERO_BOARD_IMAGES.map((file) => (
+          <li class="board">
+            <ExampleImage
+              file={file}
+              width={HERO_IMAGE_SIZE}
+              height={HERO_IMAGE_SIZE}
+              priority
+              class="fill"
+            />
+            <span class="board-tag">
+              <ExampleTag variant="outline" />
+            </span>
+          </li>
+        ))}
+      </ul>
+    </section>
+
+    <section class="block" aria-labelledby="wall">
+      <h2 id="wall">版本墙（02）</h2>
+      <p class="note">{NOTES.wall}</p>
+      <div class="stage" data-stage style="--w: 1440; --h: 900">
+        <div class="frame wall-frame">
+          <VersionWall />
+        </div>
+      </div>
+    </section>
+
+    <section class="block" aria-labelledby="video">
+      <h2 id="video">达人视频（04）</h2>
+      <p class="note">{NOTES.video}</p>
+      <figure class="phone-frame">
+        <ExampleVideo
+          name="creator-pebble"
+          poster="ugc_pebble.jpg"
+          posterAlt="示例达人视频的封面：通勤列车上，达人把打开的耳机盒举在脸旁"
+          label="示例达人视频，8 秒，无声：通勤列车上，达人先举起耳机盒，再戴上耳机放松下来"
+          width={428}
+          height={760}
+        />
+      </figure>
+    </section>
+
+    <section class="block" aria-labelledby="all">
+      <h2 id="all">全部示例图（{images.length} 张）</h2>
+      <ul class="cards">
+        {images.map((image) => (
+          <li class="card">
+            <div class="card-image">
+              <ExampleImage file={image.file} width={CARD} class="contain" />
+            </div>
+            <p class="card-name">
+              <code>{image.file}</code> <ExampleTag />
+            </p>
+            <p class="card-meta">
+              原图 {image.width}×{image.height}，出图宽度{' '}
+              {image.widths.join(' / ')}
+            </p>
+          </li>
+        ))}
+      </ul>
+    </section>
+  </main>
+</BaseLayout>
+
+<script>
+  // 窄屏上把 1440 宽的画布等比缩小；宽屏上按原尺寸显示（和部件陈列页一样）
+  const stages = document.querySelectorAll<HTMLElement>('[data-stage]');
+  const fit = () => {
+    for (const stage of stages) {
+      const width = Number(stage.style.getPropertyValue('--w')) || 1440;
+      const scale = Math.min(1, stage.clientWidth / width);
+      stage.style.setProperty('--scale', String(scale));
+    }
+  };
+  fit();
+  window.addEventListener('resize', fit);
+</script>
+
+<style>
+  .media {
+    box-sizing: border-box;
+    max-width: 1520px;
+    margin: 0 auto;
+    padding: 40px 40px 120px;
+  }
+
+  .intro h1 {
+    margin: 0 0 12px;
+    font-size: var(--text-card-title);
+    font-weight: var(--weight);
+  }
+
+  .intro p,
+  .note {
+    margin: 0 0 12px;
+    max-width: 760px;
+    font-size: var(--text-small);
+    line-height: 1.6;
+    color: var(--muted);
+  }
+
+  .block {
+    margin-top: 56px;
+    padding-top: 20px;
+    border-top: 1px solid var(--hairline);
+  }
+
+  .block h2 {
+    margin: 0 0 16px;
+    font-size: var(--text-lead);
+    font-weight: var(--weight);
+  }
+
+  .boards,
+  .cards {
+    display: grid;
+    gap: 16px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .boards {
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 381px));
+  }
+
+  .board {
+    position: relative;
+    aspect-ratio: 1;
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--paper-light);
+    box-shadow: 0 0 0 1px var(--hairline-soft);
+  }
+
+  .fill {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .board-tag {
+    position: absolute;
+    left: 12px;
+    bottom: 12px;
+    color: var(--paper-light);
+  }
+
+  .stage {
+    width: 100%;
+    max-width: calc(var(--w) * 1px);
+    height: calc(var(--h) * var(--scale, 1) * 1px);
+    overflow: hidden;
+  }
+
+  .frame {
+    position: relative;
+    width: calc(var(--w) * 1px);
+    height: calc(var(--h) * 1px);
+    overflow: hidden;
+    isolation: isolate;
+    transform: scale(var(--scale, 1));
+    transform-origin: 0 0;
+  }
+
+  .wall-frame {
+    background: var(--ink);
+  }
+
+  .phone-frame {
+    position: relative;
+    width: min(100%, 428px);
+    aspect-ratio: 428 / 760;
+    margin: 0;
+    border-radius: 26px;
+    overflow: hidden;
+    background: var(--ink);
+  }
+
+  .cards {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  }
+
+  .card-image {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    aspect-ratio: 1;
+    border-radius: 8px;
+    background: var(--paper-light);
+    overflow: hidden;
+  }
+
+  .contain {
+    display: block;
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+  }
+
+  .card-name,
+  .card-meta {
+    margin: 8px 0 0;
+    font-size: var(--text-label);
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+  }
+
+  .card-meta {
+    margin-top: 2px;
+    color: var(--muted);
+  }
+</style>
