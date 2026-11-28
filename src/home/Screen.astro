@@ -43,6 +43,24 @@ const { name, background = 'paper', text = 'ink' } = Astro.props;
     transform-origin: 0 0;
   }
 
+  /* 放进场景（src/scenes/Scene.astro）并且动效开着时：这一屏占满固定层（一个屏高），
+     画布照小样按「放得下」的比例居中，--scene-scale 是「宽 ÷ 1440」和「高 ÷ 900」里小的那个。
+     屏幕不是 16:10 时，画布两边或上下露出的是这一屏的底色。静态帧下还是上面那一套 */
+  :global(:root[data-scene-mode='motion'] [data-scene-sticky]) > .screen {
+    height: 100%;
+  }
+
+  :global(:root[data-scene-mode='motion'] [data-scene-sticky])
+    > .screen
+    > .canvas {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    margin: -450px 0 0 -720px;
+    transform: scale(var(--scene-scale, 1));
+    transform-origin: 50% 50%;
+  }
+
   .bg-paper,
   .bg-hero-light {
     background: var(--paper);
