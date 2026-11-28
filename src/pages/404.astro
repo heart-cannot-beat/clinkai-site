@@ -1,0 +1,40 @@
+---
+// 404 页（P-06）。Astro 把它构建成 dist/404.html；Cloudflare 找不到路径时返回它，状态码 404
+// （wrangler.jsonc 的 not_found_handling: "404-page"）。不让搜索引擎收录，不进站点地图。
+// 文字在 src/data/not-found.ts：交接包里没有，是等用户确认的草稿。版式见 TextPage。
+import {
+  NOT_FOUND_HEADING,
+  NOT_FOUND_HOME,
+  NOT_FOUND_LEAD,
+  NOT_FOUND_TITLE,
+} from '../data/not-found';
+import TextPage from '../layouts/TextPage.astro';
+---
+
+<TextPage
+  title={NOT_FOUND_TITLE}
+  description={NOT_FOUND_LEAD}
+  heading={NOT_FOUND_HEADING}
+  lead={NOT_FOUND_LEAD}
+  noindex
+>
+  <a slot="actions" class="home-link" href={NOT_FOUND_HOME.href}>
+    {NOT_FOUND_HOME.label}
+    <span aria-hidden="true">{NOT_FOUND_HOME.arrow}</span>
+  </a>
+</TextPage>
+
+<style>
+  /* 实心按钮，和首页结尾屏的「预约沟通」是同一个样子 */
+  .home-link {
+    display: inline-flex;
+    gap: 8px;
+    align-items: center;
+    margin-top: 40px;
+    padding: 16px 28px;
+    border-radius: var(--radius-pill);
+    background: var(--ink);
+    color: var(--paper);
+    font-size: var(--text-button);
+  }
+</style>

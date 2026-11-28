@@ -1,0 +1,118 @@
+---
+// 没有设计稿的文字页（404、隐私说明）共用的版式（P-06）。
+// 交接包里没有这两页，这里照子页面的结构搭：普通页头、左上的英文大标题、标题下面一段中文、
+// 角落部件；数值照「关于我们」的稿子（design/screens/page-about.html），
+// 只用 tokens.css 现有的变量，没有新颜色、新字号。设计稿到了按稿子改（Issue #17）。
+import ScreenCorners from '../components/ScreenCorners.astro';
+import SiteHeader from '../components/SiteHeader.astro';
+import BaseLayout from './BaseLayout.astro';
+
+interface Props {
+  title: string;
+  description: string;
+  noindex?: boolean;
+  /** 英文大标题，一项一行 */
+  heading: readonly string[];
+  /** 标题下面的那段话 */
+  lead: string;
+}
+
+const { title, description, noindex = false, heading, lead } = Astro.props;
+// 右栏有内容（默认插槽）时分两栏，没有时只有左栏
+const wide = Astro.slots.has('default');
+---
+
+<BaseLayout title={title} description={description} noindex={noindex}>
+  <div class="text-page">
+    <SiteHeader />
+    <main class:list={['text-main', wide && 'two-columns']}>
+      <div class="lead">
+        <h1 lang="en">
+          {heading.map((line) => (
+            <span class="line">{line}</span>
+          ))}
+        </h1>
+        <p class="intro">{lead}</p>
+        <slot name="actions" />
+      </div>
+      <slot />
+    </main>
+    <ScreenCorners />
+  </div>
+</BaseLayout>
+
+<style>
+  /* 页头贴顶，内容从 104px 开始，角落部件贴底（和预约沟通页一样）。内容多了页面跟着长高 */
+  .text-page {
+    position: relative;
+    isolation: isolate;
+    box-sizing: border-box;
+    min-height: 100vh;
+    background: var(--paper);
+    color: var(--ink);
+  }
+
+  .text-main {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    align-items: start;
+    padding: 104px var(--page-margin) 120px;
+  }
+
+  /* 左栏 720、右栏最宽 640，和预约沟通页的两栏一样 */
+  .text-main.two-columns {
+    grid-template-columns: 720px minmax(0, 640px);
+  }
+
+  /* 英文大标题用纯拉丁字体栈（design/README.md 排版规则 1）。
+     字号、字距、行距照「关于我们」的标题：140px，两行的顶边相隔 150px */
+  h1 {
+    margin: 0;
+    font-family: var(--font-latin);
+    font-size: var(--display-page);
+    line-height: 1;
+    font-weight: var(--weight);
+    letter-spacing: -0.035em;
+  }
+
+  .line {
+    display: block;
+    white-space: nowrap;
+  }
+
+  .line + .line {
+    margin-top: calc(1em * 10 / 140);
+  }
+
+  /* 「关于我们」的介绍段：22px，行高 1.45，宽 560，离标题 36px */
+  .intro {
+    width: 560px;
+    max-width: 100%;
+    margin: 36px 0 0;
+    font-size: var(--text-intro);
+    line-height: 1.45;
+  }
+
+  /* ---------- 窄屏 ----------
+     和预约沟通页同一个暂定做法（设计稿只有 1440 宽的桌面稿）：改成单列，标题按屏宽缩小；
+     页头只留标志和「预约沟通」，四个导航项放不下，菜单还没有设计稿。
+     这两页没有动效，不用为「减少动态效果」另做处理。 */
+  @media (max-width: 1199px) {
+    .text-page {
+      min-height: 100svh;
+    }
+
+    .text-main.two-columns {
+      grid-template-columns: minmax(0, 640px);
+      row-gap: 56px;
+    }
+
+    h1 {
+      font-size: clamp(56px, 17vw, 140px);
+    }
+
+    .text-page :global(.site-header .nav-link) {
+      display: none;
+    }
+  }
+</style>
