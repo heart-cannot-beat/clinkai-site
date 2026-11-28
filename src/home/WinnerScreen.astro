@@ -7,8 +7,8 @@ import ExampleTag from '../components/ExampleTag.astro';
 import ScreenCorners from '../components/ScreenCorners.astro';
 import SiteHeader from '../components/SiteHeader.astro';
 import { versionWall } from '../wall';
+import ExampleImage from '../media/ExampleImage.astro';
 import VersionWall from '../wall/VersionWall.astro';
-import { exampleImageUrl } from './media';
 import Screen from './Screen.astro';
 
 const { versions } = versionWall.counts;
@@ -30,7 +30,7 @@ const winners = versionWall.tiles.filter((tile) => tile.winner).length;
     <p class="headline faded" lang="en">
       the city.
     </p>
-    <img class="product" src={exampleImageUrl('pebble_cut_hero.webp')} alt="" />
+    <ExampleImage file="pebble_cut_hero.webp" width={700} class="product" />
     <p class="brand">
       PEBBLESOUND
       <ExampleTag variant="outline">示例广告 · 非真实客户</ExampleTag>

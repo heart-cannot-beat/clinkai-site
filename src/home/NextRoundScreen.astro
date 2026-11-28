@@ -5,12 +5,30 @@
 import CounterBlock from '../components/CounterBlock.astro';
 import ScreenCorners from '../components/ScreenCorners.astro';
 import SiteHeader from '../components/SiteHeader.astro';
-import { exampleImageUrl } from './media';
-import { NEXT_ROUND_TILES, renderNextRoundTiles } from './next-round';
+import ExampleImage from '../media/ExampleImage.astro';
+import { pictureHtml, preparePicture } from '../media/picture';
+import {
+  NEXT_ROUND_TILES,
+  nextRoundImageFiles,
+  renderNextRoundTiles,
+} from './next-round';
 import Screen from './Screen.astro';
 
 const count = NEXT_ROUND_TILES.length;
-const tiles = renderNextRoundTiles(NEXT_ROUND_TILES, exampleImageUrl);
+
+// 小图里的图走站点统一的图片管线（和版本墙一样）：先在构建时把图转好，再拼 HTML
+const pictures = new Map(
+  await Promise.all(
+    nextRoundImageFiles(NEXT_ROUND_TILES).map(
+      async (file) => [file, await preparePicture(file)] as const,
+    ),
+  ),
+);
+const tiles = renderNextRoundTiles(NEXT_ROUND_TILES, ({ file, ...options }) => {
+  const picture = pictures.get(file);
+  if (!picture) throw new Error(`下一轮的小图没有登记：${file}`);
+  return pictureHtml(picture, options);
+});
 ---
 
 <Screen name="03b-next-round" background="ink">
@@ -23,7 +41,7 @@ const tiles = renderNextRoundTiles(NEXT_ROUND_TILES, exampleImageUrl);
     <p class="headline faded" lang="en">
       the city.
     </p>
-    <img class="product" src={exampleImageUrl('pebble_cut_hero.webp')} alt="" />
+    <ExampleImage file="pebble_cut_hero.webp" width={400} class="product" />
     <p class="brand">PEBBLESOUND</p>
   </figure>
   <p class="arrow" aria-hidden="true">

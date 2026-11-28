@@ -1,6 +1,9 @@
 // 03 屏第 2 拍右边的 8 个新版本。版面、底色、标题、用哪张图都照 design/screens/03b-next-round.html；
-// 只在构建时运行，输出静态 HTML。测试会把输出和设计稿逐行对照（图片地址除外）。
+// 只在构建时运行，输出静态 HTML。图片怎么画和版本墙是同一套（src/wall/wall.ts 的 WallImageRenderer）：
+// 站点上画成走图片管线的 <picture>，测试里画成设计稿的 <img>，和设计稿逐行对照。
 // 全部是虚构品牌 Pebblesound 的示例广告，只用广告图和产品图。
+
+import type { WallImage, WallImageRenderer } from '../wall/wall';
 
 /** 铺满整张小图的场景图 */
 interface CoverImage {
@@ -163,19 +166,33 @@ function imageStyle(image: CoverImage | CutoutImage): string {
   return `position: absolute; left: ${image.left}px; top: ${image.top}px; width: ${image.width}px; height: ${image.height}px; max-width: none${rotate}`;
 }
 
+/** 小图里的那张图：文件名、内联样式、在 1440 宽画布上显示多大 */
+function wallImage({ image }: NextRoundTile): WallImage {
+  const style = imageStyle(image);
+  // 铺满小图的场景图按小图的框算（cover），产品抠图按它自己的宽度
+  return image.kind === 'cover'
+    ? { file: image.file, style, width: WIDTH, height: HEIGHT }
+    : { file: image.file, style, width: image.width };
+}
+
+/** 小图里用到的图片文件名，去重、排好序 */
+export function nextRoundImageFiles(tiles: readonly NextRoundTile[]): string[] {
+  return [...new Set(tiles.map((tile) => tile.image.file))].sort();
+}
+
 /**
  * 把小图排成静态 HTML，一行一张，写法和设计稿一样。
- * imageUrl 把图片文件名换成页面上能用的地址。
+ * renderImage 把小图里的那张图画成页面上的 HTML。
  */
 export function renderNextRoundTiles(
   tiles: readonly NextRoundTile[],
-  imageUrl: (file: string) => string,
+  renderImage: WallImageRenderer,
 ): string {
   return tiles
     .map(
       (tile) =>
         `<div style="position: absolute; left: ${tile.left}px; top: ${tile.top}px; width: ${WIDTH}px; height: ${HEIGHT}px; overflow: hidden; background: ${tile.background}; color: ${tile.color}">` +
-        `<img src="${imageUrl(tile.image.file)}" alt="" style="${imageStyle(tile.image)}">` +
+        renderImage(wallImage(tile)) +
         `<span style="position: absolute; left: 12px; right: 12px; top: 14px; font-size: 24px; line-height: 1.04; letter-spacing: -0.01em">` +
         `<span lang="${tile.language}">${tile.title[0]}<br>${tile.title[1]}</span></span></div>`,
     )

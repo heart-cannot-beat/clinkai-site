@@ -3,16 +3,19 @@
 // 落板、换层、视差在 M-02 做，这里没有脚本。文案照抄 design/copy.md。
 import ScreenCorners from '../components/ScreenCorners.astro';
 import SiteHeader from '../components/SiteHeader.astro';
-import { exampleImageUrl } from './media';
+import ExampleImage from '../media/ExampleImage.astro';
+import { HERO_BOARD_IMAGES, HERO_IMAGE_SIZE } from '../media/hero';
 import Screen from './Screen.astro';
 
-// 六层，从下往上叠。板上的示例图来自四个虚构品牌（design/README.md「还没做的和已知问题」第 5 条）
+// 六层，从下往上叠。板上的示例图来自四个虚构品牌（design/README.md「还没做的和已知问题」第 5 条）。
+// 三张图是整站仅有的首屏图片：立即加载，总体积有上限（src/media/hero.ts、docs/media.md）
+const [adImage, creatorImage, contentImage] = HERO_BOARD_IMAGES;
 const LAYERS = [
   { no: '01', name: '策略' },
   { no: '02', name: '品牌' },
-  { no: '03', name: '广告', image: 'acme_moon.jpg' },
-  { no: '04', name: '达人', image: 'ugc_dawn.jpg' },
-  { no: '05', name: '内容', image: 'dew_dots.jpg' },
+  { no: '03', name: '广告', image: adImage },
+  { no: '04', name: '达人', image: creatorImage },
+  { no: '05', name: '内容', image: contentImage },
   { no: '06', name: '结论' },
 ];
 
@@ -36,7 +39,15 @@ const LEGEND = [
   <div class="stack" aria-hidden="true">
     {LAYERS.map((layer, index) => (
       <div class={`slab slab-${layer.no}`} style={`--i: ${index}`}>
-        {layer.image && <img src={exampleImageUrl(layer.image)} alt="" />}
+        {layer.image && (
+          <ExampleImage
+            file={layer.image}
+            width={HERO_IMAGE_SIZE}
+            height={HERO_IMAGE_SIZE}
+            priority
+            class="slab-image"
+          />
+        )}
         <span class="slab-label">
           {layer.no} {layer.name}
         </span>
@@ -157,7 +168,7 @@ const LEGEND = [
     color: var(--paper-light);
   }
 
-  .slab img {
+  .slab-image {
     position: absolute;
     inset: 0;
     width: 100%;

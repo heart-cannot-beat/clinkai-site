@@ -61,8 +61,8 @@ ClinkAI 官网：Astro 纯静态站 + TypeScript，托管在 Cloudflare Workers 
 ## 目录
 
 - `src/pages/`：页面路由。`/parts/` 是部件陈列页（不进导航、不让搜索引擎收录），新部件做好后摆上去。
-- `src/home/`：首页的各屏，每屏一个组件，对应 `design/screens/` 里的一个文件。现在是静态版：每屏是一张 1440×900 的画布，照设计稿的像素定位，整页按宽度等比缩放（`Screen.astro`）。04 屏视频的播放规则在 `creator-video.ts`。
-- `src/assets/`：从 `design/assets/` 原样拷来的示例素材。`wall/` 是版本墙用的，`img/` 和 `video/` 是首页其余几屏用的；测试会逐字节对照交接包。
+- `src/home/`：首页的各屏，每屏一个组件，对应 `design/screens/` 里的一个文件。现在是静态版：每屏是一张 1440×900 的画布，照设计稿的像素定位，整页按宽度等比缩放（`Screen.astro`）。
+- `src/media/`、`src/assets/`：示例图片和视频的管线和素材。页面上的图一律用 `ExampleImage`，视频用 `ExampleVideo`，不直接写 `<img>`；构建时会检查。说明见 `docs/media.md`。
 - `src/layouts/BaseLayout.astro`：页面外壳，引入自托管字体、设计规范变量和基础样式。新页面都套它。
 - `src/styles/tokens.css`：照抄 `design/tokens.css`，组件只用这里的变量。交接包的设计规范变了，同步这份文件；`tests/tokens.test.ts` 会比对两边。
 - `src/components/`：公共部件（页头、角落部件、计数块、小节标签、「示例」标签、状态小标签、`form/` 下的表单控件）。部件上的文字照抄 `design/copy.md`，导航的文字和链接集中在 `src/data/site.ts`。

@@ -2,14 +2,17 @@
 // 04 达人 · 一条流。静态帧：design/screens/04-creators.html。
 // 达人素材只出现在这一屏。中间那条是真视频（AI 生成的示例内容，人物和产品都是虚构的），
 // 「示例内容」的标注必须保留。两侧的列是静态图。
-// 播放规则和三条退路见 creator-video.ts（design/motion.md「04 达人」）。
+// 视频的播放规则和三条退路在 ExampleVideo 里（design/motion.md「04 达人」，说明见 docs/media.md）：
+// 进入视口才加载并从头播，离开就暂停，永远静音；减少动态效果、手机、加载失败时只显示封面图。
 import ScreenCorners from '../components/ScreenCorners.astro';
 import SectionLabel from '../components/SectionLabel.astro';
 import SiteHeader from '../components/SiteHeader.astro';
-import { exampleImageUrl, exampleVideoUrl } from './media';
+import ExampleImage from '../media/ExampleImage.astro';
+import ExampleVideo from '../media/ExampleVideo.astro';
 import Screen from './Screen.astro';
 
 // 两侧的四列：暗的、糊的。坐标是设计稿画布上的像素，上下伸到画布外面
+const SIDE = { width: 300, height: 533 };
 const SIDE_FRAMES = [
   { left: -210, top: 80, file: 'ugc_acme.jpg' },
   { left: -210, top: 633, file: 'ugc2_dew.jpg' },
@@ -23,7 +26,8 @@ const SIDE_FRAMES = [
   { left: 1350, top: 856, file: 'ugc2_dew.jpg' },
 ];
 
-// 中间那一列里，主视频上面和下面的两条
+// 中间那一列和主视频一样大：主视频上面和下面的两条
+const MAIN = { width: 428, height: 760 };
 const CENTER_FRAMES = [
   { left: 506, top: -710, file: 'ugc2_halfmile.jpg' },
   { left: 506, top: 850, file: 'ugc2_nibbl.jpg' },
@@ -38,7 +42,7 @@ const CENTER_FRAMES = [
       aria-hidden="true"
       style={`left: ${frame.left}px; top: ${frame.top}px`}
     >
-      <img src={exampleImageUrl(frame.file)} alt="" />
+      <ExampleImage file={frame.file} {...SIDE} class="fill" />
     </figure>
   ))}
   {CENTER_FRAMES.map((frame) => (
@@ -47,27 +51,17 @@ const CENTER_FRAMES = [
       aria-hidden="true"
       style={`left: ${frame.left}px; top: ${frame.top}px`}
     >
-      <img src={exampleImageUrl(frame.file)} alt="" />
+      <ExampleImage file={frame.file} {...MAIN} class="fill" />
     </figure>
   ))}
   <figure class="main">
-    <img
-      class="cover"
-      src={exampleImageUrl('ugc_pebble.jpg')}
-      alt="示例达人视频的封面：通勤列车上，达人把打开的耳机盒举在脸旁"
+    <ExampleVideo
+      name="creator-pebble"
+      poster="ugc_pebble.jpg"
+      posterAlt="示例达人视频的封面：通勤列车上，达人把打开的耳机盒举在脸旁"
+      label="示例达人视频，8 秒，无声：通勤列车上，达人先举起耳机盒，再戴上耳机放松下来"
+      {...MAIN}
     />
-    <video
-      class="video"
-      muted
-      loop
-      playsinline
-      preload="none"
-      aria-label="示例达人视频，8 秒，无声：通勤列车上，达人先举起耳机盒，再戴上耳机放松下来"
-      data-creator-video
-    >
-      <source src={exampleVideoUrl('creator-pebble.webm')} type="video/webm" />
-      <source src={exampleVideoUrl('creator-pebble.mp4')} type="video/mp4" />
-    </video>
     <span class="sticker" lang="en">
       rush hour,
       <br />
@@ -75,7 +69,12 @@ const CENTER_FRAMES = [
     </span>
     <div class="shade" aria-hidden="true"></div>
     <figcaption class="handle">
-      <img src={exampleImageUrl('avatar_pebble.jpg')} alt="" />
+      <ExampleImage
+        file="avatar_pebble.jpg"
+        width={36}
+        height={36}
+        class="avatar"
+      />
       @noor.on.the.go
     </figcaption>
   </figure>
@@ -89,35 +88,6 @@ const CENTER_FRAMES = [
 
   <ScreenCorners scroll tone="paper" decorative />
 </Screen>
-
-<script>
-  import {
-    VISIBLE_RATIO,
-    setupCreatorVideo,
-    type CreatorVideoEnvironment,
-  } from './creator-video';
-
-  // 浏览器没有 IntersectionObserver 时什么都不做：视频不加载，一直显示封面图
-  if ('IntersectionObserver' in window) {
-    const videos = document.querySelectorAll<HTMLVideoElement>(
-      '[data-creator-video]',
-    );
-    for (const video of videos) {
-      const environment: CreatorVideoEnvironment = {
-        matchMedia: (query) => window.matchMedia(query),
-        watchVisibility(onChange) {
-          new IntersectionObserver(
-            (entries) => {
-              for (const entry of entries) onChange(entry.isIntersecting);
-            },
-            { threshold: VISIBLE_RATIO },
-          ).observe(video);
-        },
-      };
-      setupCreatorVideo(video, environment);
-    }
-  }
-</script>
 
 <style>
   /* 信息流里别的视频：暗的、糊的，竖向拉长 6% 表示还在刷 */
@@ -144,9 +114,7 @@ const CENTER_FRAMES = [
     filter: blur(4px) grayscale(0.4);
   }
 
-  .frame img,
-  .cover,
-  .video {
+  .fill {
     position: absolute;
     inset: 0;
     width: 100%;
@@ -154,6 +122,7 @@ const CENTER_FRAMES = [
     object-fit: cover;
   }
 
+  /* 主视频的框。里面的封面图和视频由 ExampleVideo 铺满 */
   .main {
     position: absolute;
     left: 506px;
@@ -164,15 +133,6 @@ const CENTER_FRAMES = [
     border-radius: var(--radius-video);
     overflow: hidden;
     z-index: var(--z-object);
-  }
-
-  /* 视频真的播起来之前不显示，露出下面的封面图（三条退路都靠这个） */
-  .video {
-    opacity: 0;
-  }
-
-  .video[data-playing] {
-    opacity: 1;
   }
 
   /* 口播贴纸 */
@@ -214,7 +174,13 @@ const CENTER_FRAMES = [
     font-size: var(--text-lead);
   }
 
-  .handle img {
+  /* 头像外面那层 <picture> 当 flex 的一项，大小就是头像的大小。
+     不用 display: contents：那样里面的 <source> 也会变成一项，前面多出一个 10px 的间距 */
+  .handle :global(picture) {
+    display: flex;
+  }
+
+  .avatar {
     width: 36px;
     height: 36px;
     border-radius: 50%;

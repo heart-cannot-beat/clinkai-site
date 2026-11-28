@@ -8,10 +8,18 @@ import LayersScreen from '../src/home/LayersScreen.astro';
 import NextRoundScreen from '../src/home/NextRoundScreen.astro';
 import WallScreen from '../src/home/WallScreen.astro';
 import WinnerScreen from '../src/home/WinnerScreen.astro';
-import { NEXT_ROUND_TILES, renderNextRoundTiles } from '../src/home/next-round';
+import {
+  NEXT_ROUND_TILES,
+  nextRoundImageFiles,
+  renderNextRoundTiles,
+} from '../src/home/next-round';
+import { exampleImageFiles } from '../src/media/catalog';
+import { HERO_BOARD_IMAGES } from '../src/media/hero';
+import { preparePicture } from '../src/media/picture';
 import IndexPage from '../src/pages/index.astro';
 import { versionWall } from '../src/wall';
 import { designScreenTiles } from '../src/wall/test-helpers';
+import { plainImage } from '../src/wall/wall';
 
 // 首页静态版（P-01）：每一屏就是 design/screens/ 里对应文件的那一帧。
 // 这里把站点渲染出来的每一屏和设计稿的 HTML 源对照：文字、无障碍说明、用到的图片和视频。
@@ -69,11 +77,36 @@ function descriptions(html: string): string[] {
   );
 }
 
-/** <img> 和 <source> 用到的文件名，按出现的顺序 */
+// 站点上的图走图片管线（src/media/），地址不再是原来的文件名：用管线把地址反查回文件名
+const fileBySrc = new Map<string, string>();
+
+/**
+ * <img> 和视频的 <source> 用到的文件名，按出现的顺序。
+ * <picture> 里的 <source> 写的是 srcset，不在这里算：它和里面那个 <img> 是同一张图。
+ */
 function mediaFiles(html: string): string[] {
   return [...html.matchAll(/<(?:img|source)\b[^>]*?\ssrc="([^"]+)"/g)].map(
-    (match) => decode(match[1]!).split('/').pop()!.split('?')[0]!,
+    (match) => {
+      const src = decode(match[1]!);
+      return fileBySrc.get(src) ?? src.split('/').pop()!.split('?')[0]!;
+    },
   );
+}
+
+/** 页面上的每张图：<img> 标签，和包着它的 <picture>（没有就是空的） */
+function images(html: string): { img: string; picture: string }[] {
+  const found: { img: string; picture: string }[] = [];
+  const rest = html.replace(
+    /<picture\b[^>]*>[\s\S]*?<\/picture>/g,
+    (picture) => {
+      found.push({ img: /<img\b[^>]*>/.exec(picture)?.[0] ?? '', picture });
+      return '';
+    },
+  );
+  for (const match of rest.matchAll(/<img\b[^>]*>/g)) {
+    found.push({ img: match[0], picture: '' });
+  }
+  return found;
 }
 
 let container: AstroContainer;
@@ -81,6 +114,9 @@ const rendered = new Map<ScreenName, string>();
 let page = '';
 
 beforeAll(async () => {
+  for (const file of exampleImageFiles) {
+    fileBySrc.set((await preparePicture(file)).src, file);
+  }
   container = await AstroContainer.create();
   for (const screen of SCREENS) {
     rendered.set(screen.name, await container.renderToString(screen.component));
@@ -203,16 +239,65 @@ describe('首页：数量从数据里数，不手写', () => {
 });
 
 describe('第 3 屏第 2 拍的新版本小图', () => {
-  it('除了图片地址，和设计稿一字不差', () => {
-    const design = designScreenTiles(designFrame('03b-next-round'));
+  const design = designScreenTiles(designFrame('03b-next-round'));
 
+  it('图片按设计稿的写法画出来时，和设计稿一字不差', () => {
     expect(design).toHaveLength(8);
     expect(
       renderNextRoundTiles(
         NEXT_ROUND_TILES,
-        (file) => `../assets/img/${file}`,
+        plainImage((file) => `../assets/img/${file}`),
       ).split('\n'),
     ).toEqual(design);
+  });
+
+  it('告诉图片管线的显示大小：铺满的图按小图的框，产品图按它自己的宽度', () => {
+    const boxes: string[] = [];
+    renderNextRoundTiles(NEXT_ROUND_TILES, ({ file, width, height }) => {
+      boxes.push(`${file} ${width}×${height ?? '自动'}`);
+      return '';
+    });
+
+    expect(boxes).toContain('pebble_subway.jpg 172×250');
+    expect(boxes).toContain('pebble_cut_pair.webp 152×自动');
+    expect(boxes).toHaveLength(8);
+  });
+
+  it('用到的图都在站点的示例图里', () => {
+    const files = nextRoundImageFiles(NEXT_ROUND_TILES);
+
+    expect(files).toHaveLength(8);
+    for (const file of files) expect(exampleImageFiles).toContain(file);
+  });
+});
+
+describe('首页：图片走站点统一的图片管线', () => {
+  it.each(NAMES)(
+    '%s：每张图都有 AVIF、WebP、宽高和 alt，不直接引原图',
+    (name) => {
+      for (const { img, picture } of images(site(name))) {
+        expect(picture, img).toMatch(/<source[^>]*type="image\/avif"/);
+        expect(img).toMatch(/\ssrcset="/);
+        expect(img).toMatch(/\swidth="\d+"/);
+        expect(img).toMatch(/\sheight="\d+"/);
+        // 空的 alt 会被输出成不带值的属性
+        expect(img).toMatch(/\salt[\s=>]/);
+      }
+    },
+  );
+
+  it('只有首屏叠板上的三张立即加载，其余全部延迟加载', () => {
+    const eager = images(page).filter(
+      ({ img }) => !img.includes('loading="lazy"'),
+    );
+
+    expect(mediaFiles(eager.map(({ img }) => img).join(''))).toEqual([
+      ...HERO_BOARD_IMAGES,
+    ]);
+    for (const { img } of eager) {
+      expect(img).toContain('fetchpriority="high"');
+    }
+    expect(images(page).length).toBeGreaterThan(80);
   });
 });
 
@@ -264,6 +349,7 @@ describe('首页：素材和文案的规则', () => {
   });
 });
 
+// 播放规则和三条退路是 ExampleVideo 的事（src/media/video.test.ts）；这里只查 04 屏用对了
 describe('04 屏中间的视频', () => {
   const video = () =>
     /<video\b[^>]*>[\s\S]*?<\/video>/.exec(site('04-creators'))?.[0] ?? '';
@@ -291,12 +377,14 @@ describe('04 屏中间的视频', () => {
     expect(sources[1]).toMatch(/creator-pebble\.mp4"[^>]*type="video\/mp4"/);
   });
 
-  it('下面垫着同样大小的封面图：视频不显示时看到的就是它', () => {
+  it('下面垫着封面图：视频不显示时看到的就是它', () => {
     const html = site('04-creators');
-    const cover = html.indexOf('ugc_pebble.jpg');
+    const cover = html.indexOf('alt="示例达人视频的封面');
 
     expect(cover).toBeGreaterThan(-1);
     expect(cover).toBeLessThan(html.indexOf('<video'));
-    expect(html).toMatch(/<img[^>]*class="cover"[^>]*alt="示例达人视频的封面/);
+    expect(mediaFiles(html.slice(0, html.indexOf('<video'))).at(-1)).toBe(
+      'ugc_pebble.jpg',
+    );
   });
 });
