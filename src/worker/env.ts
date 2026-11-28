@@ -3,6 +3,7 @@
 // - 发信：https://developers.cloudflare.com/email-service/api/send-emails/workers-api/
 // - 限流：https://developers.cloudflare.com/workers/runtime-apis/bindings/rate-limit/
 // - 静态资源：https://developers.cloudflare.com/workers/static-assets/binding/
+// - 访问统计：https://developers.cloudflare.com/analytics/analytics-engine/get-started/
 
 /** Email Service `send()` 的结构化消息（只列了用到的字段） */
 export interface EmailMessageBuilder {
@@ -26,9 +27,21 @@ export interface AssetsFetcher {
   fetch(request: Request): Promise<Response>;
 }
 
+/** Workers Analytics Engine 的数据集。写入不用等，运行时在后台写 */
+export interface AnalyticsEngineDataset {
+  writeDataPoint(point: {
+    /** 抽样用的键，只能给一个，最长 96 字节 */
+    indexes?: string[];
+    blobs?: string[];
+    doubles?: number[];
+  }): void;
+}
+
 export interface Env {
   /** wrangler.jsonc 的 assets.binding */
   ASSETS: AssetsFetcher;
+  /** wrangler.jsonc 的 analytics_engine_datasets。PR 预览里没有这个绑定，接口就不记 */
+  VISITS?: AnalyticsEngineDataset;
   /** wrangler.jsonc 的 send_email */
   EMAIL: SendEmail;
   /** wrangler.jsonc 的 ratelimits */

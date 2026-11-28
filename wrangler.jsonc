@@ -1,6 +1,7 @@
 // Cloudflare Workers 配置。
 // S-02：托管 Astro 的构建产物 dist/；部署走 Cloudflare 的 Workers Builds，设置步骤见 docs/deploy.md。
 // S-03：加了 Worker 脚本（只接 /api/*）和表单接口要的绑定，说明见 docs/contact-api.md。
+// P-06：加了访问统计的绑定，说明见 docs/analytics.md。
 // 账号 ID、API Token、收发件地址都不写进这个文件。
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
@@ -36,8 +37,14 @@
   // Cloudflare Email Service 发信绑定。
   // 不要加 "remote": true：不加时 wrangler dev 只在本地模拟发信，不会真的发出去。
   "send_email": [{ "name": "EMAIL" }],
+  // 访问统计（P-06）：记数接口 POST /api/visit 把每次打开页面记一条，存进 Workers Analytics Engine。
+  // 数据集在第一次写入时自动建，名字和 src/worker/visit/schema.ts 的 VISIT_DATASET 一致。说明见 docs/analytics.md。
+  "analytics_engine_datasets": [
+    { "binding": "VISITS", "dataset": "clinkai_site_visits" },
+  ],
   // PR 预览跑的是 `npx wrangler preview`，配置里没有这个块它会直接报错；块可以为空。
   // 预览不继承生产的绑定和密钥：预览要用的绑定写在这里，静态资源和兼容日期留在顶层。
   // 表单接口的发信、限流绑定和 secret 故意不给预览：预览里提交表单返回 500，不会往真实邮箱发信。
+  // 统计的绑定也故意不给预览：预览里的访问不记，不会混进正式数据。
   "previews": {},
 }

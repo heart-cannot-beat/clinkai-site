@@ -10,9 +10,11 @@ import {
   PRIVACY_UPDATED,
   PRIVACY_UPDATED_LABEL,
   privacySections,
+  VISIT_FIELD_LABELS,
 } from '../src/data/privacy';
 import PrivacyPage from '../src/pages/privacy.astro';
 import { CONTACT_FIELDS } from '../src/worker/contact/schema';
+import { VISIT_DATASET, VISIT_FIELDS } from '../src/worker/visit/schema';
 
 // 隐私说明页（P-06）。文字是草稿（src/data/privacy.ts）。
 // 这里查两件事：页面照着那份文字渲染；说明里讲的事实和代码对得上，代码变了测试会提醒改说明。
@@ -159,14 +161,37 @@ describe('隐私说明里的事实和代码对得上', () => {
   // 「不加载第三方脚本」由 tests/no-online-assets.test.ts 盯着；
   // 「日志里不记录表单内容和联系方式」「IP 不写进日志」由 src/worker/contact/handler.test.ts 盯着。
 
-  it('「目前没有访问统计」：没有统计用的绑定。加统计的那一单要同时改隐私说明', () => {
+  it('「每次打开页面记一条，只有这几项」：就是记数接口约定里的那几项，一项不多', () => {
+    const lists = [...page.matchAll(/<ul[^>]*>[\s\S]*?<\/ul>/g)].map((match) =>
+      [...match[0].matchAll(/<li[^>]*>([\s\S]*?)<\/li>/g)].map((item) =>
+        text(item[1]!),
+      ),
+    );
+    const visits = sections.find((section) => section.id === 'visits')!;
+
+    expect([...VISIT_FIELDS]).toEqual([
+      'path',
+      'referrer',
+      'country',
+      'device',
+    ]);
+    expect(lists[1]).toEqual(
+      VISIT_FIELDS.map((field) => VISIT_FIELD_LABELS[field]),
+    );
+    expect(visits.blocks[1]).toEqual(lists[1]);
+    expect(Object.keys(VISIT_FIELD_LABELS)).toHaveLength(VISIT_FIELDS.length);
+  });
+
+  it('「写进 Cloudflare 的统计服务」：统计用的绑定只有记访问的这一个', () => {
     const config = unstable_readConfig({ config: 'wrangler.jsonc' });
 
-    expect(config.analytics_engine_datasets ?? []).toEqual([]);
-    expect(sections.flatMap((section) => section.blocks.flat())).toContain(
-      '这个网站目前没有访问统计。',
-    );
+    expect(config.analytics_engine_datasets).toEqual([
+      { binding: 'VISITS', dataset: VISIT_DATASET },
+    ]);
   });
+
+  // 「访问记录里没有 IP 地址，不用 cookie，也不给访客编号」由
+  // src/worker/visit/handler.test.ts 和 src/visit/report.test.ts 盯着。
 
   it('「按 IP 地址限制提交次数」：表单接口有限流绑定', () => {
     const config = unstable_readConfig({ config: 'wrangler.jsonc' });
