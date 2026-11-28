@@ -44,8 +44,8 @@ describe('示例素材：站点自己的一份和交接包一致', () => {
     );
   });
 
-  it('现在有 43 张图和 2 个视频在用', () => {
-    expect(inUse.filter((file) => file.startsWith('img/'))).toHaveLength(43);
+  it('现在有 58 张图和 2 个视频在用', () => {
+    expect(inUse.filter((file) => file.startsWith('img/'))).toHaveLength(58);
     expect(inUse.filter((file) => file.startsWith('video/'))).toHaveLength(2);
   });
 

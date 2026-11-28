@@ -1,9 +1,9 @@
 // 页头上的导航。文字照抄 design/copy.md「所有页面共用」，不要改写。
 //
-// 导航项的链接地址现在先照设计稿里的锚点写（#services、#work、#products、#about）。
-// 子页面做出来以后（P-03），在这里改成真实地址，页头组件和首页结尾屏的两个按钮不用动。
-// 「预约沟通」已经是真实地址（P-04，src/pages/contact.astro）。
-// 「增长服务」「作品」在交接包里还没有对应的页面或屏，去处等设计侧定（见 Issue #12）。
+// 「我们的产品」「关于我们」是真实地址（P-03，src/pages/products.astro、about.astro），
+// 「预约沟通」也是（P-04，src/pages/contact.astro）。页头组件和首页结尾屏的按钮都从这里读。
+// 「增长服务」「作品」在交接包里还没有对应的页面或屏，先照设计稿里的锚点写（#services、#work），
+// 去处等设计侧定（见 Issue #12）。
 
 export type NavKey = 'services' | 'work' | 'products' | 'about';
 
@@ -22,8 +22,8 @@ export const LOGO_TEXT = 'CLINKAI';
 export const NAV_ITEMS: readonly NavItem[] = [
   { key: 'services', label: '增长服务 ↗', href: '#services' },
   { key: 'work', label: '作品 ↗', href: '#work' },
-  { key: 'products', label: '我们的产品 ↗', href: '#products' },
-  { key: 'about', label: '关于我们 ↗', href: '#about' },
+  { key: 'products', label: '我们的产品 ↗', href: '/products/' },
+  { key: 'about', label: '关于我们 ↗', href: '/about/' },
 ];
 
 /** 「预约沟通 →」按钮。箭头单独放，读屏时不念 */

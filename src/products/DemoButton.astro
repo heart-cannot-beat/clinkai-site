@@ -1,0 +1,28 @@
+---
+// 产品页第 2、3 屏右下角的「预约演示 →」，在菜单按钮左边。去的是预约沟通页，
+// 地址和页头的「预约沟通」是同一个（src/data/site.ts）。只用在深色底上。
+import { CONTACT_CTA } from '../data/site';
+---
+
+<a class="demo-button" href={CONTACT_CTA.href}>
+  预约演示<span aria-hidden="true">→</span>
+</a>
+
+<style>
+  .demo-button {
+    position: absolute;
+    right: 104px;
+    bottom: 32px;
+    box-sizing: border-box;
+    min-height: var(--tap-min);
+    padding: 0 22px;
+    border: 1px solid var(--paper);
+    border-radius: var(--radius-pill);
+    color: var(--paper);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: var(--text-body);
+    z-index: var(--z-chrome);
+  }
+</style>
