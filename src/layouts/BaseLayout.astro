@@ -1,11 +1,12 @@
 ---
-// 全站页面外壳：自托管字体、设计规范变量、基础样式，以及每个页面的标题、描述和分享卡片（P-06）。
+// 全站页面外壳：自托管字体、设计规范变量、基础样式，每个页面的标题、描述和分享卡片，
+// 以及访问统计的那一小段脚本（P-06）。
 // 字体只有 Inter Tight 400（经 npm 打包，按 unicode-range 分包按需下载）；
 // 中文不加载网络字体，按 tokens.css 的字体栈落到系统字体。
 import '@fontsource/inter-tight/400.css';
 import '../styles/tokens.css';
 import '../styles/base.css';
-import { canonicalUrl } from '../seo/meta';
+import { canonicalPath, canonicalUrl } from '../seo/meta';
 import {
   absoluteUrl,
   DEFAULT_DESCRIPTION,
@@ -34,6 +35,10 @@ const {
 // 不收录的页面不写 canonical 和 og:url；404 页也是这一类，它没有固定的地址
 const canonical = noindex ? null : canonicalUrl(Astro.url.pathname);
 const shareImage = absoluteUrl(SHARE_IMAGE.path);
+
+// 访问统计记的页面路径：构建时定下来写在页面上，不取地址栏里的地址。
+// 所以 404 页不管在哪个地址下打开，记的都是 /404/；查询串也不会被记进去。
+const visitPath = canonicalPath(Astro.url.pathname);
 ---
 
 <html lang="zh-CN">
@@ -64,7 +69,15 @@ const shareImage = absoluteUrl(SHARE_IMAGE.path);
     {/* 个别页面要在画出第一帧之前跑的小段内联脚本（比如首页算画布的缩放比例） */}
     <slot name="head" />
   </head>
-  <body>
+  <body data-visit-path={visitPath}>
     <slot />
   </body>
 </html>
+
+<script>
+  // 访问统计：页面打开时往自己的 /api/visit 发一条（src/visit/report.ts，说明见 docs/analytics.md）。
+  // 这段脚本打包进站点，不加载任何外部代码。
+  import { reportVisit } from '../visit/report';
+
+  reportVisit();
+</script>

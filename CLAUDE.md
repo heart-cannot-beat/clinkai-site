@@ -62,6 +62,7 @@ ClinkAI 官网：Astro 纯静态站 + TypeScript，托管在 Cloudflare Workers 
 
 - `src/pages/`：页面路由。`/parts/` 是部件陈列页（不进导航、不让搜索引擎收录），新部件做好后摆上去。`/contact/` 是预约沟通页。`/privacy/` 是隐私说明页，`404.astro` 是 404 页；这两页的文字是等用户确认的草稿（`src/data/privacy.ts`、`src/data/not-found.ts`）。
 - `src/seo/`：每页的标题、描述和分享卡片，站点地图和 `robots.txt`（构建时生成）。站点的正式地址只写在 `src/seo/site.ts`。新页面传给 BaseLayout 的 `description` 照抄 `design/copy.md`。说明见 `docs/launch-basics.md`。
+- `src/visit/`、`src/worker/visit/`：访问统计。页面脚本往自己的 `POST /api/visit` 发一条，接口写进 Workers Analytics Engine；不加载外部代码，不用 cookie，不存 IP。一条记录里记哪几项集中在 `src/worker/visit/schema.ts`，要多记一项先问用户。看数据用 `node scripts/visits.mjs`。说明见 `docs/analytics.md`。
 - `src/home/`：首页的各屏，每屏一个组件，对应 `design/screens/` 里的一个文件。现在是静态版：每屏是一张 1440×900 的画布，照设计稿的像素定位，整页按宽度等比缩放（`Screen.astro`）。
 - `src/media/`、`src/assets/`：示例图片和视频的管线和素材。页面上的图一律用 `ExampleImage`，视频用 `ExampleVideo`，不直接写 `<img>`；构建时会检查。说明见 `docs/media.md`。
 - `src/layouts/BaseLayout.astro`：页面外壳，引入自托管字体、设计规范变量和基础样式，写出每页的标题、描述和分享卡片。新页面都套它。`TextPage.astro` 是 404 和隐私说明这两个没有设计稿的文字页共用的版式。

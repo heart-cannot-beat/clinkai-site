@@ -20,4 +20,6 @@ npm run verify   # 格式、lint、类型、测试、构建，一条命令跑全
 
 每页的标题、描述和分享卡片，站点地图、`robots.txt`、404 页和隐私说明页见 [docs/launch-basics.md](docs/launch-basics.md)。
 
+访问统计（自己记，不用第三方脚本和 cookie）记什么、怎么看数据见 [docs/analytics.md](docs/analytics.md)。
+
 工作流程和规则见 [CLAUDE.md](CLAUDE.md)。设计和文案以 `design/` 交接包为准。

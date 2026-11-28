@@ -7,8 +7,13 @@
 // - 表单收哪几项：接口的字段表（src/worker/contact/schema.ts），页面上的这一串是从字段表生成的；
 // - 发到收件邮箱、不存库、日志不记内容和 IP：src/worker/contact/handler.ts 和它的测试；
 // - 按 IP 限流：wrangler.jsonc 的 CONTACT_RATE_LIMITER，说明在 docs/contact-api.md；
-// - 没有 cookie、没有第三方脚本、没有访问统计：tests/privacy-page.test.ts 和 tests/no-online-assets.test.ts 盯着。
-// 站点的做法变了（比如加了访问统计），先改这里，测试会提醒。
+// - 访问记录记哪几项：记数接口的约定（src/worker/visit/schema.ts 的 VISIT_FIELDS），页面上的这一串是从它生成的；
+//   不记 IP、不用 cookie、不给访客编号：src/worker/visit/handler.ts、src/visit/report.ts 和它们的测试；
+//   保留三个月：Workers Analytics Engine 的官方说明，链接在 docs/analytics.md；
+// - 没有 cookie、没有第三方脚本：tests/privacy-page.test.ts 和 tests/no-online-assets.test.ts 盯着。
+// 站点的做法变了（比如访问记录多记一项），先改这里，测试会提醒。
+
+import { VISIT_FIELDS, type VisitField } from '../worker/visit/schema';
 
 /** 页面标题，照子页面的写法：「ClinkAI」加页面名 */
 export const PRIVACY_TITLE = 'ClinkAI 隐私说明';
@@ -22,12 +27,22 @@ export const PRIVACY_HEADING = ['PRIVACY.'] as const;
 
 /** 标题下面的那段话 */
 export const PRIVACY_LEAD =
-  '这个网站只在你提交预约沟通表单时收集你填写的内容。下面写明收什么、用来做什么、不做什么。';
+  '这个网站收集两样东西：你在预约沟通表单里填写的内容，和认不出是谁的访问记录。下面写明收什么、用来做什么、不做什么。';
 
 export const PRIVACY_UPDATED_LABEL = '最后更新';
 
 /** 这份说明最后一次改动的日期。改了上面或下面的任何一句，把它也改了 */
 export const PRIVACY_UPDATED = '2026-11-28';
+
+/**
+ * 访问记录里每一项在页面上怎么说。记数接口多记一项，这里不补上类型检查就过不了。
+ */
+export const VISIT_FIELD_LABELS: Record<VisitField, string> = {
+  path: '打开的是哪个页面',
+  referrer: '从哪个网站点过来的（只记域名，不记完整地址）',
+  country: '所在的国家或地区',
+  device: '用的是手机还是电脑',
+};
 
 export interface PrivacySection {
   /** 小节的锚点 */
@@ -69,11 +84,21 @@ export function privacySections({
       ],
     },
     {
+      id: 'visits',
+      title: '访问记录',
+      blocks: [
+        '每次打开页面，网站会记一条访问记录，只有这几项：',
+        VISIT_FIELDS.map((field) => VISIT_FIELD_LABELS[field]),
+        '用来了解哪些页面有人看、访客从哪里来。',
+        '访问记录里没有 IP 地址，不用 cookie，也不给访客编号，所以从这些记录里认不出是谁。国家或地区是托管方按 IP 地址判断出来的，手机还是电脑是从浏览器信息里粗分的；IP 地址和浏览器信息本身都不进记录。',
+        '记录由网站自己的代码写进 Cloudflare 的统计服务，保留三个月。',
+      ],
+    },
+    {
       id: 'hosting',
       title: '访问网站本身',
       blocks: [
         '网站托管在 Cloudflare。和访问任何网站一样，浏览器连到服务器时，托管方会处理 IP 地址、浏览器类型这类传输页面必需的技术信息。',
-        '这个网站目前没有访问统计。',
       ],
     },
     {
