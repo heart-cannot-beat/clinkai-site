@@ -55,6 +55,7 @@ ClinkAI 官网：Astro 纯静态站 + TypeScript，托管在 Cloudflare Workers 
 | `npm run typecheck`    | `astro check`，TypeScript strict                              |
 | `npm run test`         | Vitest；测试里可以用 Astro Container API 渲染 `.astro` 组件   |
 | `npm run verify`       | 依次跑格式检查、lint、类型检查、测试、构建。CI 跑的就是这一条 |
+| `npm run test:visual`  | 截图对比，说明见 `docs/visual-compare.md`。CI 另起一个 job 跑 |
 
 开发服务器需要放后台时用 `npx astro dev --background`，再用 `npx astro dev stop`、`status`、`logs` 管理。
 
@@ -71,3 +72,4 @@ ClinkAI 官网：Astro 纯静态站 + TypeScript，托管在 Cloudflare Workers 
 - `src/contact/`：预约沟通表单的提交脚本。`src/worker/contact/schema.ts` 是表单的字段表，接口、页面和提交脚本共用；接口的约定见 `docs/contact-api.md`。
 - `design/`：设计侧导出的交接包（每屏 HTML 源和参考截图、动效说明、动效小样源码、版本墙生成脚本和变体配置、图片清单、设计规范）。只读；不在格式、lint、类型检查范围内。
 - `tests/`：跨模块测试。单个模块的测试放在它旁边，命名 `*.test.ts`。
+- `tests/visual/`：截图对比（Playwright，`*.spec.ts`，不归 Vitest 跑，也不在 verify 里）。先构建，再把站点的每一屏和 `design/screens/` 的设计稿逐像素比；比哪些屏、阈值多少在 `screens.ts`。第一次跑先 `npx playwright install chromium`。改了画面的 PR 先在本地跑一遍 `npm run test:visual`。
